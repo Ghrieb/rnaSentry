@@ -1,0 +1,7 @@
+^\.git$
+^\.gitignore$
+^\.Rbuildignore$
+^rnaSentry\.Rproj$
+^\.Rproj\.user$
+^.*\.Rhistory$
+^.*\.RData$

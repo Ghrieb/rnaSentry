@@ -1,0 +1,82 @@
+---
+title: "Introduction to rnaSentry"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Introduction to rnaSentry}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Introduction
+
+`rnaSentry` automates the statistical pipeline used to go from a raw bulk
+RNA-seq count matrix to a validated prognostic gene signature: quality
+control and sample-identity auditing, confounder detection prior to
+differential expression, signature construction with cross-validation,
+survival modeling, and external validation. Every automated decision is
+reported with the statistic that justified it.
+
+This vignette demonstrates the pipeline's first stage: quality control and
+biological-sex verification.
+
+# Installation
+
+```{r, eval = FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("rnaSentry")
+```
+
+# Quality control
+
+`qc_explore()` takes a `SummarizedExperiment` of raw counts and audits it
+for duplicate sample identifiers, missing metadata, non-integer count
+values, and library-size outliers.
+
+```{r}
+library(rnaSentry)
+library(SummarizedExperiment)
+
+set.seed(1)
+counts <- matrix(rpois(600, lambda = 200), nrow = 60, ncol = 10,
+                  dimnames = list(paste0("gene", 1:60), paste0("S", 1:10)))
+counts[, 1] <- counts[, 1] * 50L
+coldata <- DataFrame(condition = rep(c("tumor", "normal"), each = 5),
+                      row.names = paste0("S", 1:10))
+se <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
+
+qc <- qc_explore(se)
+qc
+```
+
+# Biological sex verification
+
+`sex_check()` compares reported sex in sample metadata against sex inferred
+from XIST and Y-chromosome marker gene expression, to catch sample swaps
+or metadata errors before they propagate downstream.
+
+```{r}
+genes <- c("XIST", "RPS4Y1", "DDX3Y", "KDM5D")
+expr <- matrix(c(950, 5, 5, 5,   # sample looks female
+                  5, 400, 380, 410),  # sample looks male
+                nrow = 4, dimnames = list(genes, c("S1", "S2")))
+coldata2 <- DataFrame(sex = c("F", "F"), row.names = c("S1", "S2")) # S2 mislabeled
+se2 <- SummarizedExperiment(assays = list(counts = expr), colData = coldata2)
+
+sex_check(se2)
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
