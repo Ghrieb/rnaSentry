@@ -130,8 +130,8 @@ publication can be protected with \code{lock_signature()}.
 \examples{
 library(SummarizedExperiment)
 set.seed(5)
-counts <- matrix(rpois(800, lambda = 500), nrow = 40, ncol = 20,
-                  dimnames = list(paste0("gene", 1:40), paste0("S", 1:20)))
+counts <- matrix(rpois(400, lambda = 500), nrow = 20, ncol = 20,
+                  dimnames = list(paste0("gene", 1:20), paste0("S", 1:20)))
 sig_expr <- colMeans(counts[1:5, , drop = FALSE])
 risk <- scale(sig_expr)[, 1] * 0.4
 event_time <- rexp(20, rate = 0.03 * exp(0.8 * risk))
@@ -144,7 +144,7 @@ coldata <- S4Vectors::DataFrame(time = time, event = event,
 se <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
 
 sig <- build_signature(se, time_col = "time", event_col = "event",
-                       top_n = 5, repeats = 2, folds = 3, seed = 1)
+                       top_n = 5, repeats = 1, folds = 2, seed = 1)
 sig
 
 }

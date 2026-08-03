@@ -6,3 +6,4 @@
 *.tar.gz
 *.Rcheck/
 .DS_Store
+rnaSentry.BiocCheck/

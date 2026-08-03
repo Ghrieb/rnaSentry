@@ -121,7 +121,7 @@ Every statistical decision is returned alongside a plain-language
 \examples{
 library(SummarizedExperiment)
 set.seed(4)
-counts <- matrix(rpois(600, lambda = 200), nrow = 30, ncol = 12,
+counts <- matrix(rpois(360, lambda = 200), nrow = 30, ncol = 12,
                   dimnames = list(paste0("gene", 1:30), paste0("S", 1:12)))
 batch <- factor(rep(c("B1", "B2"), each = 6))
 condition <- factor(rep(c("A", "B"), times = 6))

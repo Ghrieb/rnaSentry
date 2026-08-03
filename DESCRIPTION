@@ -2,11 +2,12 @@ Package: rnaSentry
 Type: Package
 Title: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures
 Version: 0.99.0
-Authors@R: person("Your", "Name", email = "you@example.com",
+Authors@R: person("Abdelkarim Hani", "Ghrieb",
+    email = "ghriebabdelkarimhani@gmail.com",
     role = c("aut", "cre"))
-Description: rnaSentry orchestrates the statistical pipeline underlying
-    prognostic biomarker discovery from bulk RNA-seq SummarizedExperiment
-    objects: sample-identity and quality-control auditing, confounder and
+Description: Orchestrates the statistical pipeline underlying prognostic
+    biomarker discovery from bulk RNA-seq SummarizedExperiment objects:
+    sample-identity and quality-control auditing, confounder and
     design-formula detection prior to differential expression, signature
     construction with explicit cross-validation stability reporting,
     survival modeling (Kaplan-Meier, log-rank, Cox proportional hazards),
@@ -26,23 +27,15 @@ Imports:
     stats,
     graphics
 Suggests:
-    BiocFileCache,
     BiocStyle,
-    DESeq2,
-    GEOquery,
     ggplot2,
     knitr,
-    limma,
-    maxstat,
-    mice,
     rmarkdown,
     S4Vectors,
-    survminer,
-    TCGAbiolinks,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 biocViews: Software, GeneExpression, RNASeq, DifferentialExpression,
     Survival, QualityControl, BatchEffect, Normalization
-URL: https://github.com/yourusername/rnaSentry
-BugReports: https://github.com/yourusername/rnaSentry/issues
+URL: https://github.com/Ghrieb/rnaSentry
+BugReports: https://github.com/Ghrieb/rnaSentry/issues

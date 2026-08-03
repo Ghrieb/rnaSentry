@@ -99,8 +99,8 @@
 #' @examples
 #' library(SummarizedExperiment)
 #' set.seed(5)
-#' counts <- matrix(rpois(800, lambda = 500), nrow = 40, ncol = 20,
-#'                   dimnames = list(paste0("gene", 1:40), paste0("S", 1:20)))
+#' counts <- matrix(rpois(400, lambda = 500), nrow = 20, ncol = 20,
+#'                   dimnames = list(paste0("gene", 1:20), paste0("S", 1:20)))
 #' sig_expr <- colMeans(counts[1:5, , drop = FALSE])
 #' risk <- scale(sig_expr)[, 1] * 0.4
 #' event_time <- rexp(20, rate = 0.03 * exp(0.8 * risk))
@@ -113,7 +113,7 @@
 #' se <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
 #'
 #' sig <- build_signature(se, time_col = "time", event_col = "event",
-#'                        top_n = 5, repeats = 2, folds = 3, seed = 1)
+#'                        top_n = 5, repeats = 1, folds = 2, seed = 1)
 #' sig
 #'
 #' @export
@@ -338,8 +338,8 @@ build_signature <- function(se, time_col, event_col,
     break
   }
   if (is.null(coef_vec) || length(coef_vec) == 0) {
-    stop(paste0("The joint Cox model for the selected genes did not yield finite ",
-                "coefficients; reduce 'top_n' or check for collinear genes."),
+    stop("The joint Cox model for the selected genes did not yield finite ",
+         "coefficients; reduce 'top_n' or check for collinear genes.",
          call. = FALSE)
   }
   genes <- names(coef_vec)
@@ -347,8 +347,8 @@ build_signature <- function(se, time_col, event_col,
   # ---- repeated stratified cross-validation --------------------------------
   n <- length(time_vec)
   cv_rows <- list()
-  flag_fold <- function(check, detail) {
-    flags <<- .add_flag(flags, check, "warning", detail)
+  flag_fold <- function(flags, check, detail) {
+    .add_flag(flags, check, "warning", detail)
   }
   for (r in seq_len(repeats)) {
     fold_ids <- integer(n)
@@ -363,9 +363,9 @@ build_signature <- function(se, time_col, event_col,
       ci <- NA_real_
       if (length(train) < 5 || sum(event_vec[train]) < 2 ||
           sum(event_vec[test]) < 1) {
-        flag_fold("cv_fold_skipped",
-                  sprintf("Fold %d of repeat %d skipped: too few samples or events.",
-                          f, r))
+        flags <- flag_fold(flags, "cv_fold_skipped",
+                           sprintf("Fold %d of repeat %d skipped: too few samples or events.",
+                                   f, r))
       } else {
         d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
                            t(as.matrix(mat[genes, train, drop = FALSE])))
@@ -376,22 +376,22 @@ build_signature <- function(se, time_col, event_col,
           error = function(e) NULL
         )
         if (is.null(fit_tr)) {
-          flag_fold("cv_fold_failed",
-                    sprintf("Cox model failed to fit on fold %d of repeat %d.",
-                            f, r))
+          flags <- flag_fold(flags, "cv_fold_failed",
+                             sprintf("Cox model failed to fit on fold %d of repeat %d.",
+                                     f, r))
         } else {
           b <- stats::coef(fit_tr)
           if (length(b) == 0 || any(!is.finite(b))) {
-            flag_fold("cv_fold_failed",
-                      sprintf("Non-finite coefficients on fold %d of repeat %d.",
-                              f, r))
+            flags <- flag_fold(flags, "cv_fold_failed",
+                               sprintf("Non-finite coefficients on fold %d of repeat %d.",
+                                       f, r))
           } else {
             gn <- names(b)
             score_test <- as.vector(t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
             if (stats::sd(score_test) == 0) {
-              flag_fold("cv_fold_failed",
-                        sprintf("Constant risk score on fold %d of repeat %d.",
-                                f, r))
+              flags <- flag_fold(flags, "cv_fold_failed",
+                                 sprintf("Constant risk score on fold %d of repeat %d.",
+                                         f, r))
             } else {
               conc <- tryCatch(
                 suppressWarnings(
@@ -405,9 +405,9 @@ build_signature <- function(se, time_col, event_col,
                 as.numeric(conc$concordance[1])
               if (!is.finite(ci)) {
                 ci <- NA_real_
-                flag_fold("cv_fold_failed",
-                          sprintf("Concordance undefined on fold %d of repeat %d.",
-                                  f, r))
+                flags <- flag_fold(flags, "cv_fold_failed",
+                                   sprintf("Concordance undefined on fold %d of repeat %d.",
+                                           f, r))
               }
             }
           }

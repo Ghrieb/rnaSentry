@@ -60,7 +60,7 @@
 #' @examples
 #' library(SummarizedExperiment)
 #' set.seed(7)
-#' counts <- matrix(rpois(600, lambda = 500), nrow = 30, ncol = 15,
+#' counts <- matrix(rpois(450, lambda = 500), nrow = 30, ncol = 15,
 #'                  dimnames = list(paste0("gene", 1:30), paste0("S", 1:15)))
 #' sig_expr <- colMeans(counts[1:4, , drop = FALSE])
 #' risk <- scale(sig_expr)[, 1] * 0.4

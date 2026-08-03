@@ -3,13 +3,15 @@ citHeader("To cite rnaSentry in publications use:")
 bibentry(
   bibtype = "Manual",
   title = "rnaSentry: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures",
-  author = person("Your", "Name", email = "you@example.com"),
+  author = person("Abdelkarim Hani", "Ghrieb",
+                  email = "ghriebabdelkarimhani@gmail.com"),
   year = "2026",
   note = "R package version 0.99.0",
-  url = "https://github.com/yourusername/rnaSentry",
+  url = "https://github.com/Ghrieb/rnaSentry",
+  doi = "",
   textVersion = paste0(
-    "Your Name (2026). rnaSentry: Guarded and Auditable Discovery of ",
+    "Abdelkarim Hani Ghrieb (2026). rnaSentry: Guarded and Auditable Discovery of ",
     "Prognostic RNA-Seq Signatures. R package version 0.99.0. ",
-    "https://github.com/yourusername/rnaSentry"
+    "https://github.com/Ghrieb/rnaSentry"
   )
 )

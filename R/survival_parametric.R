@@ -47,7 +47,7 @@
 #' @examples
 #' library(SummarizedExperiment)
 #' set.seed(9)
-#' counts <- matrix(rpois(600, lambda = 500), nrow = 30, ncol = 15,
+#' counts <- matrix(rpois(450, lambda = 500), nrow = 30, ncol = 15,
 #'                  dimnames = list(paste0("gene", 1:30), paste0("S", 1:15)))
 #' sig_expr <- colMeans(counts[1:4, , drop = FALSE])
 #' risk <- scale(sig_expr)[, 1] * 0.4
@@ -176,7 +176,7 @@ survival_parametric <- function(sig, se,
     stringsAsFactors = FALSE
   )
   table <- table[order(table$AIC), ]
-  if (nrow(table) >= 2 && diff(sort(aic_vals)[1:2]) < 2) {
+  if (nrow(table) >= 2 && diff(sort(aic_vals)[seq_len(2)]) < 2) {
     flags <- .add_flag(flags, "aic_models_close", "info",
                        "The two best-fitting models differ in AIC by less than 2; their evidence is nearly equivalent.")
   }

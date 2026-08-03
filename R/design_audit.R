@@ -108,7 +108,7 @@
 #' @examples
 #' library(SummarizedExperiment)
 #' set.seed(4)
-#' counts <- matrix(rpois(600, lambda = 200), nrow = 30, ncol = 12,
+#' counts <- matrix(rpois(360, lambda = 200), nrow = 30, ncol = 12,
 #'                   dimnames = list(paste0("gene", 1:30), paste0("S", 1:12)))
 #' batch <- factor(rep(c("B1", "B2"), each = 6))
 #' condition <- factor(rep(c("A", "B"), times = 6))
@@ -195,21 +195,23 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
   # ---- confounder scan ------------------------------------------------------
   types <- vapply(design_vars, function(v) .design_var_type(cd[[v]]),
                   character(1))
-  conf_rows <- lapply(seq_along(design_vars), function(i) {
+  conf_rows <- vector("list", length(design_vars))
+  for (i in seq_along(design_vars)) {
     v <- design_vars[i]
     x <- cd[[v]]
     ok <- !is.na(x)
     base <- data.frame(variable = v, type = types[i], n = sum(ok),
                        stringsAsFactors = FALSE)
     if (sum(ok) < 2 || types[i] == "empty") {
-      flags <<- .add_flag(flags, "variable_no_data", "warning",
-                          sprintf("Design variable '%s' has no usable values; not tested.",
-                                  v))
-      return(cbind(base, data.frame(
+      flags <- .add_flag(flags, "variable_no_data", "warning",
+                         sprintf("Design variable '%s' has no usable values; not tested.",
+                                 v))
+      conf_rows[[i]] <- cbind(base, data.frame(
         test = "none", statistic = NA_real_, df = NA_character_,
         p_value = NA_real_, effect_size = NA_real_,
         effect_size_type = NA_character_, flagged = FALSE,
-        stringsAsFactors = FALSE)))
+        stringsAsFactors = FALSE))
+      next
     }
     s <- surrogate[ok]
     row <- if (types[i] == "numeric") {
@@ -217,8 +219,8 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     } else {
       .oneway_pc_test(s, x[ok], alpha = alpha)
     }
-    cbind(base, row)
-  })
+    conf_rows[[i]] <- cbind(base, row)
+  }
   confounder_table <- do.call(rbind, conf_rows)
   rownames(confounder_table) <- NULL
   confounder_table$adj_p <- stats::p.adjust(confounder_table$p_value,

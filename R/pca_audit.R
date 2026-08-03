@@ -122,8 +122,8 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
                                n_genes_filtered, filtered_reason))
   }
   if (nrow(mat) < 3) {
-    stop(paste0("Too few variable genes after filtering (n = ",
-                nrow(mat), "); cannot run PCA."), call. = FALSE)
+    stop(sprintf("Too few variable genes after filtering (n = %d); cannot run PCA.",
+                 nrow(mat)), call. = FALSE)
   }
 
   pca <- stats::prcomp(t(mat), center = TRUE, scale. = scale)
@@ -257,11 +257,11 @@ plot_pca_audit <- function(pca_result, pc_x = 1, pc_y = 2, color_by = NULL) {
   n_pcs <- ncol(pca_result$scores)
   if (!is.numeric(pc_x) || length(pc_x) != 1 || pc_x < 1 ||
       pc_x != round(pc_x) || pc_x > n_pcs) {
-    stop(sprintf("'pc_x' must be an integer in 1:%d.", n_pcs), call. = FALSE)
+    stop(sprintf("'pc_x' must be an integer between 1 and %d.", n_pcs), call. = FALSE)
   }
   if (!is.numeric(pc_y) || length(pc_y) != 1 || pc_y < 1 ||
       pc_y != round(pc_y) || pc_y > n_pcs) {
-    stop(sprintf("'pc_y' must be an integer in 1:%d.", n_pcs), call. = FALSE)
+    stop(sprintf("'pc_y' must be an integer between 1 and %d.", n_pcs), call. = FALSE)
   }
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("plot_pca_audit() requires the 'ggplot2' package (in Suggests). ",

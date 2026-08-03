@@ -110,9 +110,9 @@ validate_external <- function(sig, external_se, time_col = NULL,
   }
   if (missing(cutpoint) || is.null(cutpoint) || !is.numeric(cutpoint) ||
       length(cutpoint) != 1 || !is.finite(cutpoint)) {
-    stop(paste0("'cutpoint' must be a single finite number, taken from the ",
-                "discovery cohort (for example km_curve(sig, discovery)$cutpoint); ",
-                "a cutpoint is never computed from the external cohort."),
+    stop("'cutpoint' must be a single finite number, taken from the ",
+         "discovery cohort (for example km_curve(sig, discovery)$cutpoint); ",
+         "a cutpoint is never computed from the external cohort.",
          call. = FALSE)
   }
   if (!is.numeric(min_gene_overlap_frac) || length(min_gene_overlap_frac) != 1 ||
