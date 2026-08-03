@@ -1,0 +1,15 @@
+citHeader("To cite rnaSentry in publications use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "rnaSentry: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures",
+  author = person("Your", "Name", email = "you@example.com"),
+  year = "2026",
+  note = "R package version 0.99.0",
+  url = "https://github.com/yourusername/rnaSentry",
+  textVersion = paste0(
+    "Your Name (2026). rnaSentry: Guarded and Auditable Discovery of ",
+    "Prognostic RNA-Seq Signatures. R package version 0.99.0. ",
+    "https://github.com/yourusername/rnaSentry"
+  )
+)

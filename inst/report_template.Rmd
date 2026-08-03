@@ -1,0 +1,46 @@
+---
+title: "rnaSentry analysis report"
+author: "rnaSentry"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+  stages: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## Pipeline summary
+
+```{r summary}
+cat(sprintf("Stages run: %s.\n",
+            paste(names(params$stages), collapse = ", ")))
+```
+
+## Audit trail
+
+```{r audit}
+flag_tables <- lapply(names(params$stages), function(nm) {
+  f <- params$stages[[nm]]$flags
+  if (is.null(f) || !is.data.frame(f) || nrow(f) == 0) return(NULL)
+  if (!"stage" %in% colnames(f)) f$stage <- nm
+  f
+})
+flag_tables <- Filter(function(x) !is.null(x), flag_tables)
+if (length(flag_tables) > 0) {
+  all_flags <- do.call(rbind, flag_tables)
+  knitr::kable(all_flags)
+} else {
+  cat("No issues flagged at any stage.")
+}
+```
+
+## Stage results
+
+```{r stages}
+for (nm in names(params$stages)) {
+  cat("\n\n###", nm, "\n\n")
+  print(params$stages[[nm]])
+}
+```

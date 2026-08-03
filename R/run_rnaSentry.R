@@ -1,0 +1,128 @@
+# Run the complete rnaSentry pipeline on a single cohort.
+
+#' Run the complete rnaSentry pipeline
+#'
+#' \code{run_rnaSentry()} executes the full rnaSentry pipeline on a single
+#' cohort and collects every stage result into one object:
+#' \enumerate{
+#'   \item \code{\link{design_audit}} over \code{design_vars} (when any are
+#'     supplied).
+#'   \item \code{\link{pca_audit}} (with \code{batch_col} when supplied).
+#'   \item \code{\link{build_signature}}, then \code{\link{lock_signature}} so
+#'     the survival-modeling stages operate on the published signature.
+#'   \item \code{\link{km_curve}}, \code{\link{cox_model}} and
+#'     \code{\link{survival_parametric}} on the locked signature.
+#'   \item \code{\link{generate_report}} assembling all stages into an HTML
+#'     report (when \code{render_report = TRUE}).
+#' }
+#'
+#' The result's \code{stages} list can be passed directly to
+#' \code{\link{generate_report}}, or any stage can be re-run individually
+#' (for example \code{\link{validate_external}} against an independent
+#' cohort, using the cutpoint recorded by the \code{km_curve} stage).
+#'
+#' @param se A \code{SummarizedExperiment} with a count or normalized
+#'   expression assay and survival metadata.
+#' @param time_col Character. Column of \code{colData(se)} with follow-up
+#'   time.
+#' @param event_col Character. Column of \code{colData(se)} with the event
+#'   indicator (0/1 or logical).
+#' @param outcome_col Character. Display label for the outcome. Defaults to
+#'   \code{"overall_survival"}.
+#' @param design_terms Character vector of \code{colData(se)} columns to
+#'   adjust the signature's univariate screening by. Defaults to
+#'   \code{character(0)}.
+#' @param design_vars Character vector of \code{colData(se)} columns scanned
+#'   by the \code{\link{design_audit}} confounder scan. Defaults to
+#'   \code{design_terms}.
+#' @param batch_col Optional character. \code{colData(se)} column tested by
+#'   the \code{\link{pca_audit}} batch scan. Defaults to \code{NULL}.
+#' @param method,top_n,p_threshold,repeats,folds,seed,adjust_for_design Passed
+#'   to \code{\link{build_signature}}.
+#' @param report_file Character. Output file name for the HTML report.
+#' @param report_dir Character. Directory (which must exist) to write the
+#'   report into.
+#' @param render_report Logical. When \code{TRUE} (default) the report is
+#'   rendered as the final step.
+#'
+#' @return An object of class \code{"rnaSentry_run"} (a list) with elements:
+#'   \describe{
+#'     \item{stages}{Named list of the stage results, with entries
+#'       \code{design_audit} (only when \code{design_vars} was supplied),
+#'       \code{pca_audit}, \code{build_signature}, \code{km_curve},
+#'       \code{cox_model} and \code{survival_parametric}.}
+#'     \item{report}{Path of the rendered HTML report, or \code{NULL} when
+#'       \code{render_report = FALSE}.}
+#'   }
+#'
+#' @examples
+#' \dontrun{
+#' run <- run_rnaSentry(se, "time", "event", design_vars = c("batch", "age"))
+#' run
+#' }
+#'
+#' @export
+run_rnaSentry <- function(se, time_col, event_col,
+                          outcome_col = "overall_survival",
+                          design_terms = character(0),
+                          design_vars = design_terms,
+                          batch_col = NULL,
+                          method = c("top_n", "p_value"), top_n = 20,
+                          p_threshold = 0.05, repeats = 5, folds = 5,
+                          seed = NULL, adjust_for_design = TRUE,
+                          report_file = "rnaSentry_report.html",
+                          report_dir = ".", render_report = TRUE) {
+  if (!methods::is(se, "SummarizedExperiment")) {
+    stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
+  }
+  if (!is.character(report_dir) || length(report_dir) != 1 ||
+      !dir.exists(report_dir)) {
+    stop("'report_dir' must name an existing directory.", call. = FALSE)
+  }
+  if (!is.logical(render_report) || length(render_report) != 1 ||
+      is.na(render_report)) {
+    stop("'render_report' must be a single TRUE or FALSE.", call. = FALSE)
+  }
+
+  stages <- list()
+
+  if (length(design_vars) > 0) {
+    stages$design_audit <- design_audit(se, design_vars = design_vars)
+  }
+
+  stages$pca_audit <- pca_audit(se, batch_col = batch_col)
+
+  sig <- build_signature(se, time_col, event_col, outcome_col = outcome_col,
+                         design_terms = design_terms, method = method,
+                         top_n = top_n, p_threshold = p_threshold,
+                         repeats = repeats, folds = folds, seed = seed,
+                         adjust_for_design = adjust_for_design)
+  sig_locked <- lock_signature(sig)
+  stages$build_signature <- sig_locked
+
+  stages$km_curve <- km_curve(sig_locked, se)
+  stages$cox_model <- cox_model(sig_locked, se)
+  stages$survival_parametric <- survival_parametric(sig_locked, se)
+
+  report <- NULL
+  if (render_report) {
+    report <- generate_report(stages, output_file = report_file,
+                              output_dir = report_dir)
+  }
+
+  result <- list(stages = stages, report = report)
+  class(result) <- "rnaSentry_run"
+  result
+}
+
+#' @export
+print.rnaSentry_run <- function(x, ...) {
+  cat("rnaSentry pipeline run.\n")
+  for (nm in names(x$stages)) {
+    cat(sprintf("  - %s\n", nm))
+  }
+  if (!is.null(x$report)) {
+    cat(sprintf("Report: %s\n", x$report))
+  }
+  invisible(x)
+}
