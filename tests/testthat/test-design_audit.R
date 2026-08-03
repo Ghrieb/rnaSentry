@@ -119,6 +119,21 @@ test_that("design_audit skips the interaction scan with a single PC", {
   expect_null(res$interaction_table)
 })
 
+test_that("design_audit applies BH correction to the confounder table", {
+  se <- make_pca_se()
+  res <- design_audit(se, design_vars = c("batch", "age"),
+                      outcome_col = "condition")
+  expect_true("adj_p" %in% colnames(res$confounder_table))
+  expect_equal(is.na(res$confounder_table$adj_p),
+               is.na(res$confounder_table$p_value))
+  expect_equal(res$confounder_table$flagged,
+               !is.na(res$confounder_table$adj_p) &
+                 res$confounder_table$adj_p < res$alpha)
+  # batch is a genuine engineered confounder and must survive correction
+  flagged <- res$confounder_table$variable[res$confounder_table$flagged]
+  expect_true("batch" %in% flagged)
+})
+
 test_that("print.rnaSentry_design is informative", {
   se <- make_pca_se()
   res <- design_audit(se, design_vars = "batch", outcome_col = "condition")

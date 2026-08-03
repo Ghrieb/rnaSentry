@@ -80,8 +80,11 @@
 #'       justifying every automated decision.}
 #'     \item{confounder_table}{Data.frame with one row per candidate variable
 #'       (columns \code{variable}, \code{type}, \code{n}, \code{test},
-#'       \code{statistic}, \code{df}, \code{p_value}, \code{effect_size},
-#'       \code{effect_size_type}, \code{flagged}).}
+#'       \code{statistic}, \code{df}, \code{p_value}, \code{adj_p},
+#'       \code{effect_size}, \code{effect_size_type}, \code{flagged}). The
+#'       \code{p_value} column holds the raw association p-value; \code{adj_p}
+#'       is the Benjamini-Hochberg adjusted p-value across all tested
+#'       candidate variables, and \code{flagged} is based on \code{adj_p}.}
 #'     \item{interaction_tested}{Logical; whether the interaction LRT could be
 #'       performed (it requires at least two PCs and enough samples).}
 #'     \item{interaction_table}{Data.frame with one row per candidate variable
@@ -175,18 +178,13 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
          call. = FALSE)
   }
 
-  flags <- data.frame(check = character(0), severity = character(0),
-                       detail = character(0), stringsAsFactors = FALSE)
-  add_flag <- function(flags, check, severity, detail) {
-    rbind(flags, data.frame(check = check, severity = severity,
-                             detail = detail, stringsAsFactors = FALSE))
-  }
+  flags <- .new_flags("design_audit")
 
   pa <- pca_audit(se, top_n_pcs = max(surrogate_pc + 1, 2))
   n_pcs <- ncol(pa$scores)
   s_idx <- min(surrogate_pc, n_pcs)
   if (s_idx != surrogate_pc) {
-    flags <- add_flag(flags, "surrogate_pc_clamped", "info",
+    flags <- .add_flag(flags, "surrogate_pc_clamped", "info",
                        sprintf("surrogate_pc = %d exceeds the %d available PC(s); using PC%d.",
                                surrogate_pc, n_pcs, s_idx))
   }
@@ -204,9 +202,9 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     base <- data.frame(variable = v, type = types[i], n = sum(ok),
                        stringsAsFactors = FALSE)
     if (sum(ok) < 2 || types[i] == "empty") {
-      flags <<- add_flag(flags, "variable_no_data", "warning",
-                         sprintf("Design variable '%s' has no usable values; not tested.",
-                                 v))
+      flags <<- .add_flag(flags, "variable_no_data", "warning",
+                          sprintf("Design variable '%s' has no usable values; not tested.",
+                                  v))
       return(cbind(base, data.frame(
         test = "none", statistic = NA_real_, df = NA_character_,
         p_value = NA_real_, effect_size = NA_real_,
@@ -223,6 +221,10 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
   })
   confounder_table <- do.call(rbind, conf_rows)
   rownames(confounder_table) <- NULL
+  confounder_table$adj_p <- stats::p.adjust(confounder_table$p_value,
+                                            method = "BH")
+  confounder_table$flagged <- !is.na(confounder_table$adj_p) &
+    confounder_table$adj_p < alpha
 
   # ---- redundancy scan ------------------------------------------------------
   all_vars <- unique(c(outcome_col, design_vars))
@@ -354,7 +356,7 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
                              pairwise_table$var2 == dv, , drop = FALSE]
       pr <- pr[isTRUE(pr$redundant), , drop = FALSE]
       partner <- if (nrow(pr) > 0 && pr$var1[1] == dv) pr$var2[1] else pr$var1[1]
-      flags <- add_flag(flags, "redundant_variable", "warning",
+      flags <- .add_flag(flags, "redundant_variable", "warning",
                          sprintf("Design variable '%s' is redundant with '%s' (effect size %.2f, p = %.3g) and was dropped from the formula.",
                                  dv, partner, pr$effect_size[1], pr$p_value[1]))
     }
@@ -374,11 +376,11 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     bad <- confounder_table$variable[confounder_table$flagged &
                                        !is.na(confounder_table$flagged)]
     rationale <- c(rationale, sprintf(
-      "%d design variable(s) associate with the surrogate gradient at alpha = %.2f and are flagged as potential confounders: %s.",
+      "%d design variable(s) associate with the surrogate gradient at BH-adjusted alpha = %.2f and are flagged as potential confounders: %s.",
       length(bad), alpha, paste(bad, collapse = ", ")))
   } else {
     rationale <- c(rationale, sprintf(
-      "No design variable associates with the surrogate gradient at alpha = %.2f.",
+      "No design variable associates with the surrogate gradient at BH-adjusted alpha = %.2f.",
       alpha))
   }
   if (length(drop_vars) > 0) {

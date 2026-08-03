@@ -2,6 +2,28 @@
 # they exist to keep per-stage statistics (normality checks, effect sizes,
 # assay selection) in one place so every stage reports the same measures.
 
+# Audit-flag ledger. Every stage reports issues through the same schema
+# (check, severity, detail, stage) so downstream consumers such as
+# generate_report() can assemble a uniform audit trail. The stage is carried
+# as an attribute of the empty ledger and materialized into a column on the
+# first append.
+.new_flags <- function(stage) {
+  structure(
+    data.frame(check = character(0), severity = character(0),
+               detail = character(0), stringsAsFactors = FALSE),
+    stage = stage
+  )
+}
+
+.add_flag <- function(flags, check, severity, detail, stage = NULL) {
+  st <- stage
+  if (is.null(st)) st <- attr(flags, "stage")
+  if (is.null(st)) st <- flags$stage[1]
+  rbind(flags, data.frame(check = check, severity = severity,
+                          detail = detail, stage = st,
+                          stringsAsFactors = FALSE))
+}
+
 # Select the analysis assay for PCA/confounder work. Prefers an existing
 # "logcounts" assay, then "vst", otherwise computes log2(counts + 1) on the
 # first assay. Returns a list with the matrix and the assay name used.

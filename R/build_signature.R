@@ -178,12 +178,7 @@ build_signature <- function(se, time_col, event_col,
                  event_col), call. = FALSE)
   }
 
-  flags <- data.frame(check = character(0), severity = character(0),
-                       detail = character(0), stringsAsFactors = FALSE)
-  add_flag <- function(flags, check, severity, detail) {
-    rbind(flags, data.frame(check = check, severity = severity,
-                             detail = detail, stringsAsFactors = FALSE))
-  }
+  flags <- .new_flags("build_signature")
 
   if (!is.null(seed)) {
     set.seed(seed)
@@ -199,7 +194,7 @@ build_signature <- function(se, time_col, event_col,
   mat <- filtered$mat
   n_filtered <- filtered$n_nonfinite + filtered$n_constant
   if (n_filtered > 0) {
-    flags <- add_flag(flags, "gene_filter", "warning",
+    flags <- .add_flag(flags, "gene_filter", "warning",
                        sprintf("Removed %d gene(s) with missing values or zero variance before screening.",
                                n_filtered))
   }
@@ -240,7 +235,7 @@ build_signature <- function(se, time_col, event_col,
     }
     n_take <- min(top_n, length(sig_p))
     if (length(sig_p) < top_n) {
-      flags <- add_flag(flags, "fewer_genes_than_requested", "info",
+      flags <- .add_flag(flags, "fewer_genes_than_requested", "info",
                          sprintf("Only %d gene(s) had a finite p-value; using all of them instead of top_n = %d.",
                                  length(sig_p), top_n))
     }
@@ -274,7 +269,7 @@ build_signature <- function(se, time_col, event_col,
     bad <- !is.finite(b)
     if (any(bad)) {
       dropped <- names(b)[bad]
-      flags <- add_flag(flags, "coefficient_unstable", "warning",
+      flags <- .add_flag(flags, "coefficient_unstable", "warning",
                          sprintf("Gene(s) %s had a non-finite joint Cox coefficient and were dropped from the signature.",
                                  paste(dropped, collapse = ", ")))
       sel_genes <- setdiff(sel_genes, dropped)
@@ -295,7 +290,7 @@ build_signature <- function(se, time_col, event_col,
   n <- length(time_vec)
   cv_rows <- list()
   flag_fold <- function(check, detail) {
-    flags <<- add_flag(flags, check, "warning", detail)
+    flags <<- .add_flag(flags, check, "warning", detail)
   }
   for (r in seq_len(repeats)) {
     fold_ids <- integer(n)

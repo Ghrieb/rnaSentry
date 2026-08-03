@@ -115,12 +115,7 @@ km_curve <- function(sig, se) {
   groups <- factor(ifelse(score >= med, "high", "low"),
                    levels = c("low", "high"))
 
-  flags <- data.frame(check = character(0), severity = character(0),
-                       detail = character(0), stringsAsFactors = FALSE)
-  add_flag <- function(flags, check, severity, detail) {
-    rbind(flags, data.frame(check = check, severity = severity,
-                             detail = detail, stringsAsFactors = FALSE))
-  }
+  flags <- .new_flags("km_curve")
 
   d <- data.frame(time = time_vec, event = event_vec, group = groups)
   fit <- survival::survfit(survival::Surv(time, event) ~ group, data = d)
@@ -140,9 +135,9 @@ km_curve <- function(sig, se) {
   events_low <- sum(d$event[d$group == "low"])
   events_high <- sum(d$event[d$group == "high"])
   if (events_low < 3 || events_high < 3) {
-    flags <- add_flag(flags, "sparse_events", "warning",
-                      sprintf("Risk group event counts are low (low: %d, high: %d); median survival estimates may be unstable.",
-                              events_low, events_high))
+    flags <- .add_flag(flags, "sparse_events", "warning",
+                       sprintf("Risk group event counts are low (low: %d, high: %d); median survival estimates may be unstable.",
+                               events_low, events_high))
   }
 
   result <- list(

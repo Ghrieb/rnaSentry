@@ -53,6 +53,15 @@ test_that("lock and unlock round-trip", {
                     "signature_locked") %in% l2$flags$check))
 })
 
+test_that("flags carry the stage schema for the audit ledger", {
+  sig <- make_signature_for_testing()
+  locked <- lock_signature(sig)
+  expect_true(all(c("check", "severity", "detail", "stage") %in%
+                    colnames(locked$flags)))
+  expect_equal(locked$flags$stage[locked$flags$check == "signature_locked"],
+               "lock_signature")
+})
+
 test_that("print shows the lock state", {
   sig <- make_signature_for_testing()
   expect_output(print(sig), "Not locked")

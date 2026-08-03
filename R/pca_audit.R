@@ -30,6 +30,17 @@ utils::globalVariables(".data")
 #' @param batch_alpha Numeric in (0, 1). Significance threshold used to flag a
 #'   PC whose score associates with \code{batch_col}. Defaults to \code{0.05}.
 #'
+#' @details
+#' Unlike \code{\link{design_audit}}, no multiple-testing correction is
+#' applied to the per-PC batch tests: \code{batch_alpha} is applied to each
+#' test at its nominal level. This is a deliberate choice, because at most
+#' \code{top_n_pcs} (default 5) PCs are tested against a single batch
+#' variable, so the correction would be a near no-op; the raw p-values and a
+#' Benjamini-Hochberg adjusted p-value (\code{adj_p}) are both reported in
+#' \code{batch_tests} so users can apply their own threshold. Candidate
+#' confounder screening in \code{\link{design_audit}}, which tests many
+#' variables at once, is BH-corrected instead.
+#'
 #' @return An object of class \code{"rnaSentry_pca"} (a list) with elements:
 #'   \describe{
 #'     \item{pca}{The \code{stats::prcomp} object.}
@@ -47,8 +58,9 @@ utils::globalVariables(".data")
 #'     \item{batch_col}{The batch column name used, or \code{NULL}.}
 #'     \item{batch_tests}{A data.frame with one row per tested PC (columns
 #'       \code{pc}, \code{test}, \code{statistic}, \code{df}, \code{p_value},
-#'       \code{effect_size}, \code{effect_size_type}, \code{flagged}), or
-#'       \code{NULL} when \code{batch_col} is not supplied.}
+#'       \code{adj_p}, \code{effect_size}, \code{effect_size_type},
+#'       \code{flagged}), or \code{NULL} when \code{batch_col} is not
+#'       supplied.}
 #'     \item{flags}{A data.frame summarizing every issue raised, with columns
 #'       \code{check}, \code{severity}, and \code{detail}.}
 #'   }
@@ -89,12 +101,7 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
   mat_info <- .get_analysis_matrix(se)
   mat <- mat_info$mat
 
-  flags <- data.frame(check = character(0), severity = character(0),
-                       detail = character(0), stringsAsFactors = FALSE)
-  add_flag <- function(flags, check, severity, detail) {
-    rbind(flags, data.frame(check = check, severity = severity,
-                             detail = detail, stringsAsFactors = FALSE))
-  }
+  flags <- .new_flags("pca_audit")
 
   filtered <- .drop_nonvariable(mat)
   mat <- filtered$mat
@@ -110,7 +117,7 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
   }
   filtered_reason <- paste(reasons, collapse = "; ")
   if (n_genes_filtered > 0) {
-    flags <- add_flag(flags, "pca_gene_filter", "warning",
+    flags <- .add_flag(flags, "pca_gene_filter", "warning",
                        sprintf("Removed %d gene(s) before PCA: %s.",
                                n_genes_filtered, filtered_reason))
   }
@@ -134,7 +141,7 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
       bvar_num <- as.numeric(bvar)
       if (stats::sd(bvar_num, na.rm = TRUE) == 0 ||
           length(unique(bvar_num)) < 2) {
-        flags <- add_flag(flags, "batch_single_level", "warning",
+        flags <- .add_flag(flags, "batch_single_level", "warning",
                            paste0("Batch column '", batch_col,
                                   "' has no variation; no batch test performed."))
         bvar_num <- NULL
@@ -148,7 +155,7 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
     } else {
       bfact <- as.factor(bvar)
       if (length(unique(bfact)) < 2) {
-        flags <- add_flag(flags, "batch_single_level", "warning",
+        flags <- .add_flag(flags, "batch_single_level", "warning",
                            paste0("Batch column '", batch_col,
                                   "' has a single level; no batch test performed."))
         bfact <- NULL
@@ -162,9 +169,10 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
     }
     if (!is.null(batch_tests)) {
       rownames(batch_tests) <- NULL
+      batch_tests$adj_p <- stats::p.adjust(batch_tests$p_value, method = "BH")
       n_flagged <- sum(batch_tests$flagged, na.rm = TRUE)
       if (n_flagged > 0) {
-        flags <- add_flag(flags, "batch_associated_pc", "warning",
+        flags <- .add_flag(flags, "batch_associated_pc", "warning",
                            paste0("Batch '", batch_col,
                                   "' significantly associates with ",
                                   n_flagged, " PC(s): ",

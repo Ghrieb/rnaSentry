@@ -36,12 +36,7 @@ lock_signature <- function(sig, lock = TRUE) {
   out <- sig
   fl <- out$flags
   if (is.null(fl) || !is.data.frame(fl)) {
-    fl <- data.frame(check = character(0), severity = character(0),
-                     detail = character(0), stringsAsFactors = FALSE)
-  }
-  add_flag <- function(flags, check, severity, detail) {
-    rbind(flags, data.frame(check = check, severity = severity,
-                             detail = detail, stringsAsFactors = FALSE))
+    fl <- .new_flags("lock_signature")
   }
 
   if (lock) {
@@ -51,16 +46,18 @@ lock_signature <- function(sig, lock = TRUE) {
     out$locked <- TRUE
     out$lock_time <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "UTC"),
                             " UTC")
-    out$flags <- add_flag(fl, "signature_locked", "info",
-                          "Signature locked against downstream mutation.")
+    out$flags <- .add_flag(fl, "signature_locked", "info",
+                           "Signature locked against downstream mutation.",
+                           stage = "lock_signature")
   } else {
     if (!isTRUE(out$locked)) {
       stop("The signature is not locked.", call. = FALSE)
     }
     out$locked <- FALSE
     out$lock_time <- NULL
-    out$flags <- add_flag(fl, "signature_unlocked", "info",
-                          "Signature unlocked; downstream stages may be rerun.")
+    out$flags <- .add_flag(fl, "signature_unlocked", "info",
+                           "Signature unlocked; downstream stages may be rerun.",
+                           stage = "lock_signature")
   }
   out
 }

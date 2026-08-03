@@ -48,8 +48,9 @@ An object of class \code{"rnaSentry_pca"} (a list) with elements:
     \item{batch_col}{The batch column name used, or \code{NULL}.}
     \item{batch_tests}{A data.frame with one row per tested PC (columns
       \code{pc}, \code{test}, \code{statistic}, \code{df}, \code{p_value},
-      \code{effect_size}, \code{effect_size_type}, \code{flagged}), or
-      \code{NULL} when \code{batch_col} is not supplied.}
+      \code{adj_p}, \code{effect_size}, \code{effect_size_type},
+      \code{flagged}), or \code{NULL} when \code{batch_col} is not
+      supplied.}
     \item{flags}{A data.frame summarizing every issue raised, with columns
       \code{check}, \code{severity}, and \code{detail}.}
   }
@@ -70,6 +71,17 @@ The analysis matrix is chosen by preference from an existing assay named
 values are removed because they carry no information for PCA and would
 make \code{stats::prcomp} fail; the number removed and the reason are
 reported in the result (nothing is dropped silently).
+
+
+Unlike \code{\link{design_audit}}, no multiple-testing correction is
+applied to the per-PC batch tests: \code{batch_alpha} is applied to each
+test at its nominal level. This is a deliberate choice, because at most
+\code{top_n_pcs} (default 5) PCs are tested against a single batch
+variable, so the correction would be a near no-op; the raw p-values and a
+Benjamini-Hochberg adjusted p-value (\code{adj_p}) are both reported in
+\code{batch_tests} so users can apply their own threshold. Candidate
+confounder screening in \code{\link{design_audit}}, which tests many
+variables at once, is BH-corrected instead.
 }
 \examples{
 library(SummarizedExperiment)

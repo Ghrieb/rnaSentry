@@ -52,8 +52,11 @@ An object of class \code{"rnaSentry_design"} (a list) with
       justifying every automated decision.}
     \item{confounder_table}{Data.frame with one row per candidate variable
       (columns \code{variable}, \code{type}, \code{n}, \code{test},
-      \code{statistic}, \code{df}, \code{p_value}, \code{effect_size},
-      \code{effect_size_type}, \code{flagged}).}
+      \code{statistic}, \code{df}, \code{p_value}, \code{adj_p},
+      \code{effect_size}, \code{effect_size_type}, \code{flagged}). The
+      \code{p_value} column holds the raw association p-value; \code{adj_p}
+      is the Benjamini-Hochberg adjusted p-value across all tested
+      candidate variables, and \code{flagged} is based on \code{adj_p}.}
     \item{interaction_tested}{Logical; whether the interaction LRT could be
       performed (it requires at least two PCs and enough samples).}
     \item{interaction_table}{Data.frame with one row per candidate variable

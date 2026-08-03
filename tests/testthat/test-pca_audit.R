@@ -85,6 +85,14 @@ test_that("pca_audit stops when too few variable genes remain", {
   expect_error(pca_audit(se), "Too few variable genes")
 })
 
+test_that("pca_audit reports a BH-adjusted p-value alongside raw p", {
+  se <- make_pca_se()
+  res <- pca_audit(se, batch_col = "batch")
+  expect_true("adj_p" %in% colnames(res$batch_tests))
+  expect_equal(res$batch_tests$adj_p,
+               stats::p.adjust(res$batch_tests$p_value, method = "BH"))
+})
+
 test_that("print.rnaSentry_pca runs without error", {
   se <- make_pca_se()
   res <- pca_audit(se, batch_col = "batch")
