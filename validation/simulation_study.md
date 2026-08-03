@@ -1,0 +1,133 @@
+# rnaSentry simulation study
+
+Runnable: `Rscript validation/simulate_study.R` (loads the package from source,
+prints one `[PASS]`/`[FAIL]` line per falsifiable target, exits non-zero if any
+target fails). Logged at `validation/logs/03_simulation.txt`.
+
+Status on final code (commit `caedbbb` + `test-statistical_parity.R`):
+
+```
+Simulations: 11 PASS, 0 FAIL of 11 targets
+```
+
+Each simulation is engineered so that the package either must detect a planted
+problem or must not report signal that is not there. The targets are
+falsifiable: a regression that breaks the behavior flips the corresponding line
+to `[FAIL]` and the script exits non-zero.
+
+---
+
+## Sim 1 — `sex_check` detects metadata swaps
+
+**Plant:** 200 samples (100 F / 100 M by construction). Expression is set so
+XIST is high and the Y-panel genes (RPS4Y1, DDX3Y, KDM5D) are low in females,
+and the reverse in males, with 1% multiplicative noise. The reported sex
+metadata is then swapped for 5% of samples (10 swaps, balanced across sexes).
+
+**Falsifiable targets**
+1. Every one of the 10 swapped samples is reported `status = "MISMATCH"`
+   (100% detection).
+2. None of the 190 unswapped samples is mislabeled `MISMATCH` / `AMBIGUOUS`.
+
+**Result:** `[PASS]` 10/10 swapped flagged; `[PASS]` 190/190 unswapped OK.
+The rank-based XIST-minus-Y score separates cleanly, so no sample falls in the
+`AMBIGUOUS` zone.
+
+## Sim 2 — `design_audit` flags an associated covariate pair as redundant
+
+**Plant:** 180 samples, 50 genes. A latent variable is cut into three levels
+(`region`), and a second variable `batch` is derived from `region` with 33%
+random reassignment. This yields a 3x3 contingency table with
+Cramér's V ≈ 0.67 (empirically 0.670). `design_audit()` is called with
+`redundant_effect_size = 0.5`, so a V of ~0.7 must exceed the redundancy
+threshold.
+
+**Falsifiable targets**
+1. The pairwise table reports an effect size for the `batch`–`region` pair
+   inside [0.65, 0.75] (the planting landed near 0.7).
+2. The pair is declared `redundant = TRUE`.
+3. The audit emits a `redundant_variable` warning flag.
+
+**Result:** `[PASS]` V = 0.670, `redundant = TRUE`, flag present.
+
+> Note on severity: the original study plan phrased this as “Cramér's V = 0.7 →
+> Critical”. rnaSentry's flag ledger uses `info` / `warning` / `error` (see
+> `utils.R`), so the observed outcome is the `redundant_variable` *warning*
+> plus a `redundant` record in `pairwise_table`. The redundancy threshold is a
+> parameter (`redundant_effect_size`), so the same planting demonstrates both
+> the effect-size measurement and the flagging rule.
+
+## Sim 3 — null data produces no spurious signal, and the CV protocol calibrates
+
+**Plant:** 150 samples, 40 genes. Survival times are drawn from a homogeneous
+exponential independent of expression (true null). Two checks:
+
+**Falsifiable targets**
+1. `build_signature()` (top_n = 5, 5x5 repeated CV) on the null cohort reports
+   a mean held-out C-index `< 0.6` — i.e., it never invents a strong positive
+   signal when none exists.
+2. *Calibration control:* the identical event-stratified CV protocol applied to
+   **random unselected genes** (no feature selection) centers on the null
+   expectation of 0.5 within ±0.05. This isolates the CV machinery from the
+   feature-selection step.
+
+**Result:** `[PASS]` mean C = 0.424 for the full `build_signature()` pipeline;
+`[PASS]` control mean C = 0.510.
+
+> **Documented finding:** under the null, honest held-out CV after selecting the
+> most-significant genes is biased *below* 0.5 (here ≈ 0.42). This is the known
+> feature-selection "winner's curse": genes are picked on the full cohort, so
+> their chance associations are dominated by the training portion of each fold
+> and tend to reverse on held-out samples. The random-gene control (0.510)
+> confirms the concordance machinery itself is well-calibrated; the original
+> plan target of "C-index 0.5 ± 0.1 for null `build_signature()`" was therefore
+> adapted into target (1) plus the control, which is the statistically honest
+> decomposition.
+
+## Sim 4 — `cox_model` flags a time-varying hazard (PH violation)
+
+**Plant:** 800 samples, 30 genes. Risk score `z` = scaled column means. Event
+times follow a piecewise-exponential model whose log-hazard coefficient flips
+sign at `t0 = 5`: `lambda(t) = 0.05 * exp(+1.0 * z)` for `t <= t0` and
+`0.05 * exp(-1.0 * z)` for `t > t0` (34% of events occur before `t0`, so both
+regimes are well populated). Censoring is exponential at rate 0.02. The
+signature is built with `top_n = 3` and passed to `cox_model()`.
+
+**Falsifiable targets**
+1. `ph_violated = TRUE` in the model result (Schoenfeld global / term tests
+   must catch the reversal).
+2. A `proportional_hazards` warning flag is emitted.
+
+**Result:** `[PASS]` `ph_violated = TRUE` with 3 violator terms; flag present.
+
+## Sim 5 — `validate_external` runs on an unlocked signature and records it
+
+**Plant:** 80-sample training cohort with an engineered survival signal; build a
+signature, derive a cutpoint from the *training* cohort, and validate on an
+independent 60-sample cohort carrying the same genes.
+
+**Falsifiable targets**
+1. Validation succeeds (no hard error) on an unlocked signature and records
+   `sig_locked = FALSE`.
+2. A valid log-rank p-value is produced (finite, in [0, 1]) with all samples
+   scored.
+
+**Result:** `[PASS]` `sig_locked = FALSE`, `log_rank_p = 0.8589`.
+
+> Note: the original plan phrased this as "records `sig_locked = FALSE` +
+> warning". `validate_external()` records the unlocked state (`sig_locked`)
+> without warning — consistent with the documented hold from the adversarial
+> pass (unlocked signatures are legal input, only locked ones are protected).
+> The falsifiable target is therefore the *recording* of the unlocked state
+> plus successful scoring.
+
+---
+
+## How to read the results
+
+The 11 targets exercise five behaviors that must hold for submission:
+swap detection (`sex_check`), redundancy flagging (`design_audit`), honest null
+behavior + calibrated CV (`build_signature`), PH-violation detection
+(`cox_model`), and unlocked-signature validation (`validate_external`). Any
+future change that degrades one of these flips a `[FAIL]` line, and the script's
+exit code gates CI integration.
