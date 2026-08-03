@@ -138,6 +138,15 @@
   if (levels_n == 2 || .is_approx_normal(pc, groups = group)) {
     model <- stats::aov(pc ~ group)
     f <- summary(model)[[1]]
+    if (is.null(f$`F value`) || length(f$Df) < 2 ||
+        !is.finite(f$`F value`[1])) {
+      return(data.frame(
+        test = "aov", statistic = NA_real_, df = NA_character_,
+        p_value = NA_real_, effect_size = NA_real_,
+        effect_size_type = "eta_squared", flagged = FALSE,
+        stringsAsFactors = FALSE
+      ))
+    }
     df <- sprintf("%d, %d", f$Df[1], f$Df[2])
     data.frame(
       test = "aov", statistic = unname(f$`F value`[1]), df = df,
