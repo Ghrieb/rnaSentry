@@ -23,7 +23,8 @@ Imports:
     SummarizedExperiment,
     survival,
     methods,
-    stats
+    stats,
+    graphics
 Suggests:
     BiocStyle,
     DESeq2,
