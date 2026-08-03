@@ -136,8 +136,8 @@ validate_external <- function(sig, external_se, time_col = NULL,
     }
   }
   time_vec <- as.numeric(cd[[t_col]])
-  if (anyNA(time_vec) || any(time_vec < 0)) {
-    stop(sprintf("'%s' must be a numeric, non-negative, non-missing column.",
+  if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
+    stop(sprintf("'%s' must be a numeric, non-negative, finite, non-missing column.",
                  t_col), call. = FALSE)
   }
   event_raw <- cd[[e_col]]
@@ -184,7 +184,7 @@ validate_external <- function(sig, external_se, time_col = NULL,
   }
   score <- as.vector(b %*% mat[present, , drop = FALSE])
   names(score) <- colnames(mat)
-  if (stats::sd(score) == 0) {
+  if (isTRUE(stats::sd(score) == 0)) {
     stop("The external risk score is constant across samples; cannot define risk groups.",
          call. = FALSE)
   }

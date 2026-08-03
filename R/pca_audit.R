@@ -125,6 +125,10 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
     stop(sprintf("Too few variable genes after filtering (n = %d); cannot run PCA.",
                  nrow(mat)), call. = FALSE)
   }
+  if (ncol(mat) < 2) {
+    stop("Too few samples for PCA; at least two samples are required.",
+         call. = FALSE)
+  }
 
   pca <- stats::prcomp(t(mat), center = TRUE, scale. = scale)
   percent_variance <- pca$sdev^2 / sum(pca$sdev^2) * 100

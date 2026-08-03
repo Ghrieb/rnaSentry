@@ -57,6 +57,14 @@ qc_explore <- function(se, mad_threshold = 3) {
 
   flags <- .new_flags("qc_explore")
 
+  # 0. missing values in the count assay
+  n_missing <- sum(is.na(counts))
+  if (n_missing > 0) {
+    flags <- .add_flag(flags, "missing_counts", "critical",
+                       sprintf("Count assay contains %d missing value(s); library sizes and integer-count checks are unreliable.",
+                               n_missing))
+  }
+
   # 1. duplicate sample IDs
   dupes <- sample_ids[duplicated(sample_ids)]
   if (length(dupes) > 0) {
@@ -89,11 +97,14 @@ qc_explore <- function(se, mad_threshold = 3) {
   # 4. library-size outliers (robust, MAD-based, on log10 scale)
   lib_sizes <- colSums(counts, na.rm = TRUE)
   log_lib <- log10(lib_sizes + 1)
-  med <- stats::median(log_lib)
-  mad_val <- stats::mad(log_lib)
-  outlier_idx <- if (mad_val == 0) logical(length(log_lib)) else
-    abs(log_lib - med) / mad_val > mad_threshold
-  outliers <- sample_ids[outlier_idx]
+  outliers <- character(0)
+  if (all(is.finite(log_lib))) {
+    med <- stats::median(log_lib)
+    mad_val <- stats::mad(log_lib)
+    outlier_idx <- if (isTRUE(mad_val == 0)) logical(length(log_lib)) else
+      abs(log_lib - med) / mad_val > mad_threshold
+    outliers <- sample_ids[outlier_idx]
+  }
   if (length(outliers) > 0) {
     flags <- .add_flag(flags, "library_size_outlier", "warning",
                        paste("Samples with library size >", mad_threshold,

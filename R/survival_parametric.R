@@ -90,8 +90,8 @@ survival_parametric <- function(sig, se,
     }
   }
   time_vec <- as.numeric(cd[[sig$time_col]])
-  if (anyNA(time_vec) || any(time_vec < 0)) {
-    stop(sprintf("'%s' must be a numeric, non-negative, non-missing column.",
+  if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
+    stop(sprintf("'%s' must be a numeric, non-negative, finite, non-missing column.",
                  sig$time_col), call. = FALSE)
   }
   event_raw <- cd[[sig$event_col]]
@@ -126,7 +126,7 @@ survival_parametric <- function(sig, se,
   }
   score <- as.vector(b %*% mat[genes, , drop = FALSE])
   names(score) <- colnames(mat)
-  if (stats::sd(score) == 0) {
+  if (isTRUE(stats::sd(score) == 0)) {
     stop("The risk score is constant across samples; cannot fit a parametric model.",
          call. = FALSE)
   }

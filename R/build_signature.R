@@ -174,11 +174,11 @@ build_signature <- function(se, time_col, event_col,
   }
 
   time_vec <- as.numeric(cd[[time_col]])
-  if (anyNA(time_vec) || any(time_vec < 0)) {
-    stop(sprintf("'%s' must be a numeric, non-negative, non-missing column.",
+  if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
+    stop(sprintf("'%s' must be a numeric, non-negative, finite, non-missing column.",
                  time_col), call. = FALSE)
   }
-  if (stats::sd(time_vec) == 0) {
+  if (isTRUE(stats::sd(time_vec) == 0)) {
     stop(sprintf("'%s' has no variation in follow-up time.", time_col),
          call. = FALSE)
   }
@@ -246,6 +246,13 @@ build_signature <- function(se, time_col, event_col,
     flags <- .add_flag(flags, "gene_filter", "warning",
                        sprintf("Removed %d gene(s) with missing values or zero variance before screening.",
                                n_filtered))
+  }
+  reserved <- intersect(rownames(mat), c("time", "event"))
+  if (length(reserved) > 0) {
+    flags <- .add_flag(flags, "gene_name_collision", "warning",
+                       sprintf("Gene(s) %s share a name with the internal model columns 'time'/'event' and were excluded from screening and the signature; rename them to keep them in the model.",
+                               paste(reserved, collapse = ", ")))
+    mat <- mat[setdiff(rownames(mat), reserved), , drop = FALSE]
   }
   if (nrow(mat) < 1) {
     stop("No variable genes remain after filtering; cannot build a signature.",
@@ -324,7 +331,7 @@ build_signature <- function(se, time_col, event_col,
     if (is.null(fit)) break
     b <- stats::coef(fit)
     if (length(b) == 0) break
-    bad <- !is.finite(b)
+    bad <- !is.finite(b) | !is.finite(exp(b))
     if (any(bad)) {
       dropped <- names(b)[bad]
       flags <- .add_flag(flags, "coefficient_unstable", "warning",
@@ -346,6 +353,10 @@ build_signature <- function(se, time_col, event_col,
 
   # ---- repeated stratified cross-validation --------------------------------
   n <- length(time_vec)
+  if (folds >= n) {
+    stop(sprintf("'folds' (%d) must be smaller than the number of samples (%d); leave-one-out cross-validation cannot estimate a concordance index on single-sample test folds.",
+                 folds, n), call. = FALSE)
+  }
   cv_rows <- list()
   flag_fold <- function(flags, check, detail) {
     .add_flag(flags, check, "warning", detail)
@@ -361,8 +372,8 @@ build_signature <- function(se, time_col, event_col,
       train <- which(fold_ids != f)
       test <- which(fold_ids == f)
       ci <- NA_real_
-      if (length(train) < 5 || sum(event_vec[train]) < 2 ||
-          sum(event_vec[test]) < 1) {
+      if (length(train) < 5 || length(test) < 2 ||
+          sum(event_vec[train]) < 2 || sum(event_vec[test]) < 1) {
         flags <- flag_fold(flags, "cv_fold_skipped",
                            sprintf("Fold %d of repeat %d skipped: too few samples or events.",
                                    f, r))
@@ -388,7 +399,7 @@ build_signature <- function(se, time_col, event_col,
           } else {
             gn <- names(b)
             score_test <- as.vector(t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
-            if (stats::sd(score_test) == 0) {
+            if (isTRUE(stats::sd(score_test) == 0)) {
               flags <- flag_fold(flags, "cv_fold_failed",
                                  sprintf("Constant risk score on fold %d of repeat %d.",
                                          f, r))

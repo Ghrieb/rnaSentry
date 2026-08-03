@@ -30,7 +30,7 @@
 #' @return A data.frame with one row per sample and columns
 #'   \code{sample_id}, \code{reported_sex}, \code{inferred_sex}, and
 #'   \code{status} (one of \code{"OK"}, \code{"MISMATCH"},
-#'   \code{"AMBIGUOUS"}).
+#'   \code{"AMBIGUOUS"}, or \code{"MISSING"} when reported sex is absent).
 #'
 #' @examples
 #' library(SummarizedExperiment)
@@ -90,7 +90,8 @@ sex_check <- function(se, sex_col = "sex", xist_gene = "XIST",
 
   reported <- as.character(SummarizedExperiment::colData(se)[[sex_col]])
   status <- ifelse(inferred == "ambiguous", "AMBIGUOUS",
-                    ifelse(inferred == reported, "OK", "MISMATCH"))
+                   ifelse(is.na(reported), "MISSING",
+                          ifelse(inferred == reported, "OK", "MISMATCH")))
 
   data.frame(
     sample_id = colnames(se),

@@ -363,7 +363,17 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
                                  dv, partner, pr$effect_size[1], pr$p_value[1]))
     }
   }
-  terms <- c(outcome_col, design_vars[!design_vars %in% drop_vars])
+  constant_vars <- design_vars[vapply(design_vars, function(v) {
+    x <- cd[[v]]
+    length(unique(x[!is.na(x)])) < 2
+  }, logical(1))]
+  if (length(constant_vars) > 0) {
+    flags <- .add_flag(flags, "variable_constant", "warning",
+                       sprintf("Design variable(s) %s are constant or have no usable values; excluded from the recommended formula.",
+                               paste(constant_vars, collapse = ", ")))
+  }
+  terms <- c(outcome_col,
+             design_vars[!design_vars %in% c(drop_vars, constant_vars)])
   formula_text <- paste(c("~", if (length(terms) == 0) "1" else
     paste(terms, collapse = " + ")), collapse = " ")
   formula_obj <- stats::as.formula(formula_text)
@@ -389,6 +399,11 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     rationale <- c(rationale, sprintf(
       "Variable(s) %s dropped as redundant with a later-listed variable.",
       paste(sprintf("'%s'", drop_vars), collapse = ", ")))
+  }
+  if (length(constant_vars) > 0) {
+    rationale <- c(rationale, sprintf(
+      "Variable(s) %s excluded from the recommended formula (constant or no usable values).",
+      paste(sprintf("'%s'", constant_vars), collapse = ", ")))
   }
   if (interaction_tested) {
     int_flagged <- interaction_table$flagged[!is.na(interaction_table$flagged)]

@@ -98,8 +98,8 @@ cox_model <- function(sig, se, confounders = character(0)) {
     }
   }
   time_vec <- as.numeric(cd[[sig$time_col]])
-  if (anyNA(time_vec) || any(time_vec < 0)) {
-    stop(sprintf("'%s' must be a numeric, non-negative, non-missing column.",
+  if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
+    stop(sprintf("'%s' must be a numeric, non-negative, finite, non-missing column.",
                  sig$time_col), call. = FALSE)
   }
   event_raw <- cd[[sig$event_col]]
@@ -126,6 +126,12 @@ cox_model <- function(sig, se, confounders = character(0)) {
     stop("'confounders' must not contain duplicates.", call. = FALSE)
   }
   cov_terms <- c(sig$design_terms, confounders)
+  surv_cols <- c(sig$time_col, sig$event_col)
+  collide_cov <- intersect(cov_terms, surv_cols)
+  if (length(collide_cov) > 0) {
+    stop(sprintf("Covariate(s) %s are the survival outcome columns; confounders must be separate from the time/event columns.",
+                 paste(collide_cov, collapse = ", ")), call. = FALSE)
+  }
   dup_cov <- cov_terms[duplicated(cov_terms)]
   if (length(dup_cov) > 0) {
     stop(sprintf("Confounder(s) duplicate a design term: %s.",
@@ -197,6 +203,16 @@ cox_model <- function(sig, se, confounders = character(0)) {
   ci <- stats::confint(fit)
   coef_table$HR_low <- exp(ci[, 1])
   coef_table$HR_high <- exp(ci[, 2])
+
+  nonfinite_est <- !is.finite(coef_table$coefficient) |
+    !is.finite(coef_table$se) | !is.finite(coef_table$HR) |
+    !is.finite(coef_table$HR_low) | !is.finite(coef_table$HR_high)
+  if (any(nonfinite_est)) {
+    flags <- .add_flag(flags, "non_estimable_coefficients", "warning",
+                       sprintf("Term(s) %s have non-finite coefficient or hazard-ratio confidence intervals (possible rank deficiency or exact collinearity); interpret with caution.",
+                               paste(coef_table$term[nonfinite_est],
+                                     collapse = ", ")))
+  }
 
   gene_rows <- coef_table$term %in% genes
   gene_summary <- coef_table[gene_rows, , drop = FALSE]

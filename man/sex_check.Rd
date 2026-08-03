@@ -30,7 +30,7 @@ Defaults to \code{c("RPS4Y1", "DDX3Y", "KDM5D")}.}
 A data.frame with one row per sample and columns
   \code{sample_id}, \code{reported_sex}, \code{inferred_sex}, and
   \code{status} (one of \code{"OK"}, \code{"MISMATCH"},
-  \code{"AMBIGUOUS"}).
+  \code{"AMBIGUOUS"}, or \code{"MISSING"} when reported sex is absent).
 }
 \description{
 Compares the sex recorded in sample metadata against sex inferred from
