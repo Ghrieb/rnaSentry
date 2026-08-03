@@ -20,6 +20,13 @@ test_that("sex_check rejects non-SummarizedExperiment input", {
   expect_error(sex_check(matrix(1, 2, 2)), "SummarizedExperiment")
 })
 
+test_that("sex_check validates sex_col", {
+  se <- make_sex_se()
+  expect_error(sex_check(se, sex_col = character(0)), "single non-empty")
+  expect_error(sex_check(se, sex_col = c("sex", "age")), "single non-empty")
+  expect_error(sex_check(se, sex_col = ""), "single non-empty")
+})
+
 test_that("sex_check errors when sex_col is missing", {
   se <- make_sex_se()
   expect_error(sex_check(se, sex_col = "nope"), "no column")

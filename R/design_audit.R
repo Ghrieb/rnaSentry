@@ -189,8 +189,8 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
                                surrogate_pc, n_pcs, s_idx))
   }
   surrogate <- pa$scores[[s_idx]]
-  other_idx <- which.max(seq_len(n_pcs) != s_idx)
-  other_pc <- if (length(other_idx) > 0) pa$scores[[other_idx]] else NULL
+  other_idx <- which(seq_len(n_pcs) != s_idx)[1]
+  other_pc <- if (!is.na(other_idx)) pa$scores[[other_idx]] else NULL
 
   # ---- confounder scan ------------------------------------------------------
   types <- vapply(design_vars, function(v) .design_var_type(cd[[v]]),

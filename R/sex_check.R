@@ -58,6 +58,10 @@ sex_check <- function(se, sex_col = "sex", xist_gene = "XIST",
   if (!methods::is(se, "SummarizedExperiment")) {
     stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
   }
+  if (!is.character(sex_col) || length(sex_col) != 1 ||
+      is.na(sex_col) || !nzchar(sex_col)) {
+    stop("'sex_col' must be a single non-empty character string.", call. = FALSE)
+  }
   if (!sex_col %in% colnames(SummarizedExperiment::colData(se))) {
     stop(sprintf("colData(se) has no column '%s'.", sex_col), call. = FALSE)
   }

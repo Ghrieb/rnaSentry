@@ -36,6 +36,10 @@ test_that("cox_model returns the documented structure", {
   expect_true("age" %in% cm$terms)
   expect_true(all(c("term", "coefficient", "se", "HR", "HR_low",
                     "HR_high", "p") %in% colnames(cm$coef_table)))
+  expect_true(all(is.finite(cm$coef_table$HR_low) &
+                    is.finite(cm$coef_table$HR_high)))
+  expect_true(all(cm$coef_table$HR_low <= cm$coef_table$HR &
+                    cm$coef_table$HR <= cm$coef_table$HR_high))
   expect_true(all(c("HR", "HR_low", "HR_high", "p", "adj_p") %in%
                     colnames(cm$gene_summary)))
   expect_equal(nrow(cm$gene_summary), length(sig$genes))
