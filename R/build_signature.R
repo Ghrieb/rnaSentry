@@ -268,7 +268,8 @@ build_signature <- function(se, time_col, event_col,
     d0$g <- mat[g, ]
     form <- if (use_adjust) {
       stats::as.formula(paste("survival::Surv(time, event) ~ g +",
-                              paste(design_terms, collapse = " + ")))
+                              paste(.backquote_names(design_terms),
+                                    collapse = " + ")))
     } else {
       stats::as.formula("survival::Surv(time, event) ~ g")
     }
@@ -321,7 +322,8 @@ build_signature <- function(se, time_col, event_col,
   coef_vec <- NULL
   for (iter in seq_len(5)) {
     d <- data.frame(time = time_vec, event = event_vec,
-                    t(as.matrix(mat[sel_genes, , drop = FALSE])))
+                    t(as.matrix(mat[sel_genes, , drop = FALSE])),
+                    check.names = FALSE)
     fit <- tryCatch(
       suppressWarnings(
         survival::coxph(survival::Surv(time, event) ~ ., data = d)
@@ -330,6 +332,7 @@ build_signature <- function(se, time_col, event_col,
     )
     if (is.null(fit)) break
     b <- stats::coef(fit)
+    names(b) <- .strip_backticks(names(b))
     if (length(b) == 0) break
     bad <- !is.finite(b) | !is.finite(exp(b))
     if (any(bad)) {
@@ -379,7 +382,8 @@ build_signature <- function(se, time_col, event_col,
                                    f, r))
       } else {
         d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
-                           t(as.matrix(mat[genes, train, drop = FALSE])))
+                           t(as.matrix(mat[genes, train, drop = FALSE])),
+                           check.names = FALSE)
         fit_tr <- tryCatch(
           suppressWarnings(
             survival::coxph(survival::Surv(time, event) ~ ., data = d_tr)
@@ -392,6 +396,7 @@ build_signature <- function(se, time_col, event_col,
                                      f, r))
         } else {
           b <- stats::coef(fit_tr)
+          names(b) <- .strip_backticks(names(b))
           if (length(b) == 0 || any(!is.finite(b))) {
             flags <- flag_fold(flags, "cv_fold_failed",
                                sprintf("Non-finite coefficients on fold %d of repeat %d.",

@@ -94,9 +94,10 @@ test_that("cox_model Schoenfeld table matches survival::cox.zph", {
   pcol <- intersect(c("p", "Pr(>|Chi|)", "Pr(>Chisq)"), colnames(zt))[1]
   rcol <- intersect(c("rho", "rho[1]"), colnames(zt))[1]
   rho_ref <- if (is.na(rcol)) rep(NA_real_, nrow(zt)) else unname(zt[, rcol])
+  term_ref <- sub("^`(.*)`$", "\\1", rownames(zt))
   expect_equal(cm$zph_summary$p, unname(zt[, pcol]), tolerance = 1e-8)
   expect_equal(cm$zph_summary$rho, rho_ref, tolerance = 1e-8)
-  expect_equal(cm$zph_summary$term, rownames(zt))
+  expect_equal(cm$zph_summary$term, term_ref)
 })
 
 test_that("survival_parametric AIC/loglik/npar match stats::AIC on the same fits", {

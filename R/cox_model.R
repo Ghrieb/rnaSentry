@@ -176,7 +176,7 @@ cox_model <- function(sig, se, confounders = character(0)) {
                                n_missing_cov))
   }
 
-  expr <- as.data.frame(t(mat[genes, , drop = FALSE]))
+  expr <- as.data.frame(t(mat[genes, , drop = FALSE]), check.names = FALSE)
   d <- cbind(data.frame(time = time_vec, event = event_vec), expr)
   for (t in cov_terms) d[[t]] <- cd_df[[t]]
 
@@ -193,7 +193,7 @@ cox_model <- function(sig, se, confounders = character(0)) {
 
   sm <- summary(fit)$coefficients
   coef_table <- data.frame(
-    term = rownames(sm),
+    term = .strip_backticks(rownames(sm)),
     coefficient = unname(sm[, "coef"]),
     se = unname(sm[, "se(coef)"]),
     HR = unname(sm[, "exp(coef)"]),
@@ -235,7 +235,7 @@ cox_model <- function(sig, se, confounders = character(0)) {
     pcol <- intersect(c("p", "Pr(>|Chi|)", "Pr(>Chisq)"), colnames(zt))[1]
     rcol <- intersect(c("rho", "rho[1]"), colnames(zt))[1]
     zph_summary <- data.frame(
-      term = rownames(zt),
+      term = .strip_backticks(rownames(zt)),
       rho = if (is.na(rcol)) NA_real_ else unname(zt[, rcol]),
       p = unname(zt[, pcol]),
       stringsAsFactors = FALSE
@@ -255,7 +255,7 @@ cox_model <- function(sig, se, confounders = character(0)) {
   result <- list(
     genes = genes,
     terms = c(genes, cov_terms),
-    formula = stats::reformulate(c(genes, cov_terms),
+    formula = stats::reformulate(.backquote_names(c(genes, cov_terms)),
                                  response = "survival::Surv(time, event)"),
     fit = fit,
     coef_table = coef_table,

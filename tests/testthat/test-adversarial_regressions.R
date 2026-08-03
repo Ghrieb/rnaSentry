@@ -183,3 +183,34 @@ test_that("downstream stages reject non-finite follow-up time", {
   expect_error(validate_external(sig, se, cutpoint = 1), "finite")
   expect_error(km_curve(sig, se), "finite")
 })
+
+test_that("build_signature and cox_model handle non-syntactic gene symbols", {
+  # Real annotation can contain symbols such as "1-Mar" / "7-Sep" that
+  # data.frame()/coxph would otherwise mangle or backtick; the signature
+  # genes and Cox terms must still match the assay rownames exactly.
+  genes <- c("1-Mar", "7-Sep", "XIST", "ESR1", "MKI67", "A-kinase",
+             "HLA-DRB1", "10-Sep")
+  n <- 60
+  set.seed(99)
+  counts <- matrix(stats::rpois(length(genes) * n, lambda = 300),
+                   nrow = length(genes), ncol = n,
+                   dimnames = list(genes, paste0("S", seq_len(n))))
+  sig_expr <- colMeans(counts[1:4, , drop = FALSE])
+  risk <- scale(sig_expr)[, 1] * 0.4
+  et <- stats::rexp(n, rate = 0.03 * exp(0.8 * risk))
+  ct <- stats::rexp(n, rate = 0.02)
+  cd <- S4Vectors::DataFrame(time = pmin(et, ct),
+                             event = as.integer(et < ct),
+                             row.names = colnames(counts))
+  se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
+  sig <- build_signature(se, "time", "event", top_n = 4, repeats = 2,
+                         folds = 3, seed = 1)
+  expect_true(all(sig$genes %in% genes))
+  expect_true(all(names(sig$coefficients) == sig$genes))
+  cm <- cox_model(sig, se)
+  expect_true(all(cm$coef_table$term %in% c(genes, cm$terms)))
+  expect_true(all(cm$coef_table$term[cm$coef_table$term %in% genes] %in%
+                    genes))
+  expect_identical(km_curve(sig, se)$log_rank_p <= 1, TRUE)
+  expect_true(all(is.finite(survival_parametric(sig, se)$table$AIC)))
+})

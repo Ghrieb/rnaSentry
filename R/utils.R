@@ -15,6 +15,23 @@
   )
 }
 
+# Cox models quote non-syntactic predictor names (for example the gene symbol
+# "1-Mar") with backticks; restore the original identifier so that coefficient
+# names always match the analysis-matrix rownames.
+.strip_backticks <- function(x) {
+  sub("^`(.*)`$", "\\1", x)
+}
+
+# Backquote non-syntactic identifiers (e.g. "RP11-28F1.2") so that a formula
+# built with paste/reformulate parses. Syntactic names are returned unchanged.
+.backquote_names <- function(x) {
+  vapply(x, function(nm) {
+    if (!nzchar(nm)) return(nm)
+    if (identical(make.names(nm), nm)) nm else paste0("`", nm, "`")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+
 .add_flag <- function(flags, check, severity, detail, stage = NULL) {
   st <- stage
   if (is.null(st)) st <- attr(flags, "stage")
