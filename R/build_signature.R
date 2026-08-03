@@ -412,7 +412,7 @@ print.rnaSentry_signature <- function(x, ...) {
               if (is.na(x$cv_summary[["sd"]])) "NA" else
                 sprintf("%.3f", x$cv_summary[["sd"]])))
   cat(if (isTRUE(x$locked)) "Locked.\n" else "Not locked.\n")
-  if (nrow(x$flags) > 0) {
+  if (!is.null(x$flags) && is.data.frame(x$flags) && nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
     for (i in seq_len(nrow(x$flags))) {
       cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
