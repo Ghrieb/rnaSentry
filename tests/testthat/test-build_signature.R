@@ -133,6 +133,57 @@ test_that("build_signature is reproducible under a fixed seed", {
   expect_identical(a$coefficients, b$coefficients)
 })
 
+test_that("build_signature validates adjust_for_design and design terms", {
+  se <- make_survival_se()
+  expect_error(build_signature(se, "time", "event", design_terms = "batch",
+                               adjust_for_design = "yes"),
+               "single TRUE or FALSE")
+  SummarizedExperiment::colData(se)$constant <- rep("x", ncol(se))
+  expect_error(build_signature(se, "time", "event", design_terms = "constant"),
+               "no variation")
+})
+
+test_that("design-adjusted screening excludes batch-driven genes", {
+  set.seed(77)
+  n_g <- 120
+  n_s <- 60
+  counts <- matrix(stats::rpois(n_g * n_s, lambda = 300), nrow = n_g,
+                   ncol = n_s,
+                   dimnames = list(paste0("gene", seq_len(n_g)),
+                                   paste0("S", seq_len(n_s))))
+  batch <- factor(rep(c("B1", "B2"), each = n_s / 2))
+  counts[seq_len(30), batch == "B2"] <- counts[seq_len(30), batch == "B2"] * 3L
+  rate <- ifelse(batch == "B2", 0.08, 0.02)
+  evt <- stats::rexp(n_s, rate = rate)
+  cens <- stats::rexp(n_s, rate = 0.02)
+  se <- SummarizedExperiment(
+    assays = list(counts = counts),
+    colData = S4Vectors::DataFrame(
+      time = pmin(evt, cens), event = as.integer(evt < cens),
+      batch = batch, row.names = colnames(counts)))
+  block <- paste0("gene", 1:30)
+
+  unadj <- build_signature(se, "time", "event", top_n = 3, repeats = 1,
+                           folds = 2, seed = 1, design_terms = "batch",
+                           adjust_for_design = FALSE)
+  expect_true(any(unadj$flags$check == "unadjusted_screening"))
+  expect_equal(unadj$screening_terms, character(0))
+  p_block <- unadj$cox_stats$p[unadj$cox_stats$gene %in% block]
+  p_rest <- unadj$cox_stats$p[!(unadj$cox_stats$gene %in% block)]
+  expect_lt(stats::median(p_block, na.rm = TRUE),
+            stats::median(p_rest, na.rm = TRUE))
+  expect_lt(stats::median(p_block, na.rm = TRUE), 0.01)
+
+  adj <- build_signature(se, "time", "event", top_n = 3, repeats = 1,
+                         folds = 2, seed = 1, design_terms = "batch")
+  expect_true(any(adj$flags$check == "adjusted_screening"))
+  expect_equal(adj$screening_terms, "batch")
+  adj_p_block <- adj$cox_stats$p[adj$cox_stats$gene %in% block]
+  adj_p_rest <- adj$cox_stats$p[!(adj$cox_stats$gene %in% block)]
+  expect_gt(stats::median(adj_p_block, na.rm = TRUE), 0.1)
+  expect_gt(stats::median(adj_p_rest, na.rm = TRUE), 0.1)
+})
+
 test_that("print.rnaSentry_signature is informative", {
   se <- make_survival_se()
   sig <- build_signature(se, "time", "event", top_n = 5, repeats = 1,

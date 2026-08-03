@@ -15,7 +15,8 @@ build_signature(
   repeats = 5,
   folds = 5,
   seed = NULL,
-  design_terms = character(0)
+  design_terms = character(0),
+  adjust_for_design = TRUE
 )
 }
 \arguments{
@@ -53,9 +54,21 @@ or \code{"p_value"} (take every gene with adjusted p-value below
 reproducible results.}
 
 \item{design_terms}{Character vector of \code{colData(se)} columns to
-record as adjustment terms in the signature. These are not used in the
-univariate screening but are carried forward for the adjusted survival
-models in later pipeline stages. Defaults to \code{character(0)}.}
+adjust the univariate screening by. When non-empty and
+\code{adjust_for_design = TRUE}, each gene is tested with
+\code{Surv ~ gene + design_terms}, so that genes whose survival
+association is driven entirely by a confounder (for example batch) are
+not selected. The final signature weights (the joint Cox coefficients)
+are deliberately estimated from a gene-only model so that the risk score
+remains portable to cohorts that do not record the design covariates;
+adjusted inference on the chosen signature is provided by
+\code{cox_model()}. Defaults to \code{character(0)}.}
+
+\item{adjust_for_design}{Logical. When \code{TRUE} (default) and
+\code{design_terms} is non-empty, univariate screening is adjusted for
+the design terms as described above. Setting it to \code{FALSE} runs
+unadjusted screening and raises an \code{unadjusted_screening} warning,
+because the pipeline's confounder guardrails are then bypassed.}
 }
 \value{
 An object of class \code{"rnaSentry_signature"} (a list) with
@@ -64,6 +77,9 @@ An object of class \code{"rnaSentry_signature"} (a list) with
     \item{genes}{Character vector of the final signature genes.}
     \item{outcome}{The \code{outcome_col} display label.}
     \item{time_col, event_col, design_terms}{The metadata columns used.}
+    \item{screening_terms}{Character vector of the design terms actually
+      used to adjust univariate screening (empty when screening was
+      unadjusted).}
     \item{cox_stats}{Data.frame with one row per screened gene (columns
       \code{gene}, \code{HR}, \code{p}, \code{adj_p}).}
     \item{coefficients}{Named numeric vector of joint Cox coefficients for

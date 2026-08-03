@@ -56,9 +56,20 @@
 #' @param seed Optional integer. Seeds the cross-validation fold shuffling for
 #'   reproducible results.
 #' @param design_terms Character vector of \code{colData(se)} columns to
-#'   record as adjustment terms in the signature. These are not used in the
-#'   univariate screening but are carried forward for the adjusted survival
-#'   models in later pipeline stages. Defaults to \code{character(0)}.
+#'   adjust the univariate screening by. When non-empty and
+#'   \code{adjust_for_design = TRUE}, each gene is tested with
+#'   \code{Surv ~ gene + design_terms}, so that genes whose survival
+#'   association is driven entirely by a confounder (for example batch) are
+#'   not selected. The final signature weights (the joint Cox coefficients)
+#'   are deliberately estimated from a gene-only model so that the risk score
+#'   remains portable to cohorts that do not record the design covariates;
+#'   adjusted inference on the chosen signature is provided by
+#'   \code{cox_model()}. Defaults to \code{character(0)}.
+#' @param adjust_for_design Logical. When \code{TRUE} (default) and
+#'   \code{design_terms} is non-empty, univariate screening is adjusted for
+#'   the design terms as described above. Setting it to \code{FALSE} runs
+#'   unadjusted screening and raises an \code{unadjusted_screening} warning,
+#'   because the pipeline's confounder guardrails are then bypassed.
 #'
 #' @return An object of class \code{"rnaSentry_signature"} (a list) with
 #'   elements:
@@ -66,6 +77,9 @@
 #'     \item{genes}{Character vector of the final signature genes.}
 #'     \item{outcome}{The \code{outcome_col} display label.}
 #'     \item{time_col, event_col, design_terms}{The metadata columns used.}
+#'     \item{screening_terms}{Character vector of the design terms actually
+#'       used to adjust univariate screening (empty when screening was
+#'       unadjusted).}
 #'     \item{cox_stats}{Data.frame with one row per screened gene (columns
 #'       \code{gene}, \code{HR}, \code{p}, \code{adj_p}).}
 #'     \item{coefficients}{Named numeric vector of joint Cox coefficients for
@@ -106,8 +120,9 @@
 build_signature <- function(se, time_col, event_col,
                             outcome_col = "overall_survival",
                             method = c("top_n", "p_value"), top_n = 20,
-                            p_threshold = 0.05, repeats = 5, folds = 5,
-                            seed = NULL, design_terms = character(0)) {
+                             p_threshold = 0.05, repeats = 5, folds = 5,
+                             seed = NULL, design_terms = character(0),
+                             adjust_for_design = TRUE) {
   if (!methods::is(se, "SummarizedExperiment")) {
     stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
   }
@@ -150,6 +165,13 @@ build_signature <- function(se, time_col, event_col,
     stop(sprintf("colData(se) has no design term column(s): %s.",
                  paste(missing_terms, collapse = ", ")), call. = FALSE)
   }
+  if (!is.logical(adjust_for_design) || length(adjust_for_design) != 1 ||
+      is.na(adjust_for_design)) {
+    stop("'adjust_for_design' must be a single TRUE or FALSE.", call. = FALSE)
+  }
+  if (anyDuplicated(design_terms)) {
+    stop("'design_terms' must not contain duplicates.", call. = FALSE)
+  }
 
   time_vec <- as.numeric(cd[[time_col]])
   if (anyNA(time_vec) || any(time_vec < 0)) {
@@ -180,6 +202,33 @@ build_signature <- function(se, time_col, event_col,
 
   flags <- .new_flags("build_signature")
 
+  use_adjust <- length(design_terms) > 0 && adjust_for_design
+  if (length(design_terms) > 0) {
+    cd_df <- as.data.frame(cd)
+    for (t in design_terms) {
+      x <- cd_df[[t]]
+      u <- unique(x[!is.na(x)])
+      if (length(u) < 2) {
+        stop(sprintf("Design term '%s' has no variation across samples; drop it or use a variable design.",
+                     t), call. = FALSE)
+      }
+      if (anyNA(x)) {
+        flags <- .add_flag(flags, "design_terms_missing", "info",
+                           sprintf("Design term '%s' has missing values; samples with missing values are excluded from screening.",
+                                   t))
+      }
+    }
+    if (use_adjust) {
+      flags <- .add_flag(flags, "adjusted_screening", "info",
+                         sprintf("Univariate screening adjusted for design term(s): %s.",
+                                 paste(design_terms, collapse = ", ")))
+    } else {
+      flags <- .add_flag(flags, "unadjusted_screening", "warning",
+                         paste0("design_terms were supplied but 'adjust_for_design' is FALSE; ",
+                                "univariate screening is unadjusted and confounded genes may be selected."))
+    }
+  }
+
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -205,11 +254,20 @@ build_signature <- function(se, time_col, event_col,
 
   # ---- univariate Cox screening -------------------------------------------
   d0 <- data.frame(time = time_vec, event = event_vec)
+  if (use_adjust) {
+    for (t in design_terms) d0[[t]] <- as.data.frame(cd)[[t]]
+  }
   screen <- lapply(rownames(mat), function(g) {
     d0$g <- mat[g, ]
+    form <- if (use_adjust) {
+      stats::as.formula(paste("survival::Surv(time, event) ~ g +",
+                              paste(design_terms, collapse = " + ")))
+    } else {
+      stats::as.formula("survival::Surv(time, event) ~ g")
+    }
     fit <- tryCatch(
       suppressWarnings(
-        survival::coxph(survival::Surv(time, event) ~ g, data = d0)
+        survival::coxph(form, data = d0)
       ),
       error = function(e) NULL
     )
@@ -218,8 +276,8 @@ build_signature <- function(se, time_col, event_col,
                         adj_p = NA_real_, stringsAsFactors = FALSE))
     }
     sm <- summary(fit)$coefficients
-    data.frame(gene = g, HR = unname(sm[, "exp(coef)"]),
-               p = unname(sm[, "Pr(>|z|)"]), adj_p = NA_real_,
+    data.frame(gene = g, HR = unname(sm[, "exp(coef)"][1]),
+               p = unname(sm[, "Pr(>|z|)"][1]), adj_p = NA_real_,
                stringsAsFactors = FALSE)
   })
   cox_stats <- do.call(rbind, screen)
@@ -379,6 +437,7 @@ build_signature <- function(se, time_col, event_col,
     time_col = time_col,
     event_col = event_col,
     design_terms = design_terms,
+    screening_terms = if (use_adjust) design_terms else character(0),
     cox_stats = cox_stats,
     coefficients = coef_vec[genes],
     cv_results = cv_results,

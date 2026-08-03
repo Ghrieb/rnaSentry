@@ -36,6 +36,28 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("rnaSentry")
 ```
 
+# Design decisions
+
+Two deliberate choices in the pipeline are worth stating explicitly, because
+they are easy to mistake for oversights.
+
+First, `build_signature()` screens genes *adjusted* for the design terms
+supplied via `design_terms` (by default), so that genes whose survival
+association is driven entirely by a confounder such as batch are not
+selected. The final signature weights, however, are estimated from a
+gene-only model. This asymmetry is intentional: the risk score must remain
+portable to external cohorts that do not record the discovery cohort's
+design covariates. Adjusted inference on the chosen signature is provided
+separately by `cox_model()`.
+
+Second, `pca_audit()` reports both raw and Benjamini-Hochberg adjusted
+p-values for its per-PC batch tests but flags on the raw p-value, whereas
+`design_audit()` flags candidate confounders on BH-adjusted p-values. This,
+too, is intentional: `pca_audit()` tests at most a handful of PCs against a
+single batch variable, where a multiple-testing correction would be a near
+no-op, while `design_audit()` scans many candidate confounders at once and
+needs the correction to control spurious flags.
+
 # Quality control
 
 `qc_explore()` takes a `SummarizedExperiment` of raw counts and audits it
