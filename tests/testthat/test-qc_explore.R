@@ -4,7 +4,7 @@ make_test_se <- function() {
   set.seed(42)
   counts <- matrix(rpois(60, lambda = 200), nrow = 6, ncol = 10,
                     dimnames = list(paste0("gene", 1:6), paste0("S", 1:10)))
-  coldata <- DataFrame(condition = rep(c("A", "B"), each = 5),
+  coldata <- S4Vectors::DataFrame(condition = rep(c("A", "B"), each = 5),
                         row.names = paste0("S", 1:10))
   SummarizedExperiment(assays = list(counts = counts), colData = coldata)
 }

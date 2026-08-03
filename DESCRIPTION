@@ -3,7 +3,7 @@ Type: Package
 Title: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures
 Version: 0.99.0
 Authors@R: person("Your", "Name", email = "you@example.com",
-    role = c("aut", "cre"), comment = c(ORCID = "0000-0000-0000-0000"))
+    role = c("aut", "cre"))
 Description: rnaSentry orchestrates the statistical pipeline underlying
     prognostic biomarker discovery from bulk RNA-seq SummarizedExperiment
     objects: sample-identity and quality-control auditing, confounder and
@@ -21,7 +21,6 @@ RoxygenNote: 7.3.3
 Depends: R (>= 4.4.0)
 Imports:
     SummarizedExperiment,
-    S4Vectors,
     survival,
     methods,
     stats

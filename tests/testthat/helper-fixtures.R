@@ -50,6 +50,41 @@ make_small_survival_se <- function() {
   make_survival_se(n_genes = 30, n_samples = 30, n_signal_genes = 3, seed = 303)
 }
 
+#' Build a synthetic SummarizedExperiment whose batch column drives PC1
+#'
+#' The first half of samples (batch "B1") are given systematically higher
+#' expression on a block of genes than the second half (batch "B2"), so PCA
+#' separates the batches and the batch association test is expected to flag
+#' at least one PC.
+#'
+#' @param n_genes Number of genes.
+#' @param n_samples Number of samples (must be even).
+#' @param seed RNG seed.
+#'
+#' @return A SummarizedExperiment with colData columns \code{batch}
+#'   (factor B1/B2), \code{condition} (A/B) and \code{age} (numeric).
+make_pca_se <- function(n_genes = 30, n_samples = 30, seed = 404) {
+  set.seed(seed)
+  counts <- matrix(stats::rpois(n_genes * n_samples, lambda = 200),
+                   nrow = n_genes, ncol = n_samples,
+                   dimnames = list(paste0("gene", seq_len(n_genes)),
+                                   paste0("S", seq_len(n_samples))))
+  half <- n_samples / 2
+  # systematic batch signal on the first half of the genes
+  signal_rows <- seq_len(floor(n_genes / 2))
+  counts[signal_rows, 1:half] <- counts[signal_rows, 1:half] * 3L
+  batch <- factor(rep(c("B1", "B2"), each = half))
+  coldata <- S4Vectors::DataFrame(
+    batch = batch,
+    condition = factor(rep(c("A", "B"), length.out = n_samples)),
+    age = stats::runif(n_samples, 40, 80),
+    row.names = colnames(counts)
+  )
+  SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = counts), colData = coldata
+  )
+}
+
 #' Build a signature object in a controlled state
 #'
 #' Constructs an \code{rnaSentry_signature} list literal (same shape

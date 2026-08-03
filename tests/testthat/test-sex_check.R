@@ -12,7 +12,7 @@ make_sex_se <- function(mislabel_last = TRUE) {
   expr["GAPDH", ] <- 1000
 
   reported <- c("F", "F", "F", "M", "M", if (mislabel_last) "F" else "M")
-  coldata <- DataFrame(sex = reported, row.names = samples)
+  coldata <- S4Vectors::DataFrame(sex = reported, row.names = samples)
   SummarizedExperiment(assays = list(counts = expr), colData = coldata)
 }
 
@@ -52,7 +52,7 @@ test_that("sex_check reports AMBIGUOUS when neither signal is dominant", {
   y_vals <- matrix(rep(c(5, 5, 400, 400, 400, 400), each = 3),
                    nrow = 3, byrow = TRUE)
   expr[c("RPS4Y1", "DDX3Y", "KDM5D"), ] <- y_vals
-  coldata <- DataFrame(sex = c("F", "F", "F", "M", "M", "M"),
+  coldata <- S4Vectors::DataFrame(sex = c("F", "F", "F", "M", "M", "M"),
                         row.names = samples)
   se <- SummarizedExperiment(assays = list(counts = expr), colData = coldata)
   res <- sex_check(se)
