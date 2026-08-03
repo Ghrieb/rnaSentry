@@ -1,11 +1,14 @@
 #' Kaplan-Meier survival analysis of a signature's risk groups
 #'
 #' Scores each sample of a \code{SummarizedExperiment} with the signature's
-#' joint Cox coefficients, splits the cohort into \code{"low"} and
-#' \code{"high"} risk groups at the median risk score, and fits a Kaplan-Meier
-#' survival curve for each group with a log-rank test. The analysis is
-#' read-only: it works on both locked and unlocked signatures and records the
-#' signature's lock state in its output.
+#' joint Cox coefficients and splits the cohort into \code{"low"} and
+#' \code{"high"} risk groups. By default the split is at the median risk
+#' score of the supplied cohort; pass \code{cutpoint} to re-apply a cutpoint
+#' established elsewhere (for example the discovery-cohort median recorded in
+#' a previous \code{km_curve()} call), so risk groups are comparable across
+#' cohorts. Fits a Kaplan-Meier survival curve for each group with a log-rank
+#' test. The analysis is read-only: it works on both locked and unlocked
+#' signatures and records the signature's lock state in its output.
 #'
 #' @param sig An object of class \code{"rnaSentry_signature"} as returned by
 #'   \code{\link{build_signature}}.
@@ -14,13 +17,20 @@
 #'   (\code{sig$time_col} and \code{sig$event_col}). Expression is taken from
 #'   the same analysis assay used at signature-build time (see
 #'   \code{\link{build_signature}}).
+#' @param cutpoint Numeric risk-score threshold: samples with score
+#'   \code{>= cutpoint} are \code{"high"} and the rest \code{"low"}. When
+#'   \code{NULL} (default) the split is at the median risk score of the
+#'   supplied cohort.
 #'
 #' @return An object of class \code{"rnaSentry_km"} (a list) with elements:
 #'   \describe{
 #'     \item{genes}{The signature genes scored.}
 #'     \item{score}{Per-sample risk score (linear predictor).}
 #'     \item{groups}{Factor with levels \code{"low"} and \code{"high"}
-#'       from the median split.}
+#'       from the risk-score split.}
+#'     \item{cutpoint}{The risk-score cutpoint applied.}
+#'     \item{cutpoint_type}{\code{"median"} when the cohort median was used,
+#'       \code{"custom"} when \code{cutpoint} was supplied.}
 #'     \item{fit}{The \code{survfit} object with one curve per group.}
 #'     \item{log_rank_p}{p-value from the log-rank test.}
 #'     \item{median_survival}{Named vector of median survival per group.}
@@ -51,7 +61,7 @@
 #' km
 #'
 #' @export
-km_curve <- function(sig, se) {
+km_curve <- function(sig, se, cutpoint = NULL) {
   if (!inherits(sig, "rnaSentry_signature")) {
     stop("'sig' must be an rnaSentry_signature object.", call. = FALSE)
   }
@@ -111,8 +121,22 @@ km_curve <- function(sig, se) {
     stop("The risk score is constant across samples; cannot define risk groups.",
          call. = FALSE)
   }
-  med <- stats::median(score)
-  groups <- factor(ifelse(score >= med, "high", "low"),
+
+  if (is.null(cutpoint)) {
+    cp <- stats::median(score)
+    cp_type <- "median"
+  } else {
+    if (!is.numeric(cutpoint) || length(cutpoint) != 1 ||
+        !is.finite(cutpoint)) {
+      stop("'cutpoint' must be a single finite number or NULL.", call. = FALSE)
+    }
+    cp <- cutpoint
+    cp_type <- "custom"
+  }
+  if (sum(score >= cp) == 0 || sum(score < cp) == 0) {
+    stop("'cutpoint' leaves one risk group empty.", call. = FALSE)
+  }
+  groups <- factor(ifelse(score >= cp, "high", "low"),
                    levels = c("low", "high"))
 
   flags <- .new_flags("km_curve")
@@ -144,6 +168,8 @@ km_curve <- function(sig, se) {
     genes = genes,
     score = score,
     groups = groups,
+    cutpoint = cp,
+    cutpoint_type = cp_type,
     fit = fit,
     log_rank_p = log_rank_p,
     median_survival = median_survival,
@@ -165,6 +191,7 @@ print.rnaSentry_km <- function(x, ...) {
   cat(sprintf("Risk groups: low n = %d (%d events), high n = %d (%d events).\n",
               sum(x$groups == "low"), x$events_low,
               sum(x$groups == "high"), x$events_high))
+  cat(sprintf("Cutpoint %.3g (%s).\n", x$cutpoint, x$cutpoint_type))
   cat(sprintf("Median survival: low %.3g, high %s.\n",
               x$median_survival[["low"]],
               if (is.na(x$median_survival[["high"]])) "NA" else

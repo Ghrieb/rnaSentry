@@ -43,6 +43,31 @@ test_that("km_curve returns the documented structure on a built signature", {
   expect_true(all(c("low", "high") %in% names(km$median_survival)))
   expect_false(km$sig_locked)
   expect_true(nzchar(km$created))
+  expect_equal(km$cutpoint_type, "median")
+  expect_equal(km$cutpoint, stats::median(km$score))
+  expect_identical(unname(km$groups == "high"), unname(km$score >= km$cutpoint))
+})
+
+test_that("km_curve re-applies a discovery cutpoint to a new cohort", {
+  se1 <- make_survival_se(seed = 111)
+  sig <- build_signature(se1, "time", "event", top_n = 10, repeats = 2,
+                         folds = 3, seed = 7)
+  discovery <- km_curve(sig, se1)
+  se2 <- make_survival_se(seed = 222)
+  km <- km_curve(sig, se2, cutpoint = discovery$cutpoint)
+  expect_equal(km$cutpoint_type, "custom")
+  expect_equal(km$cutpoint, discovery$cutpoint)
+  expect_identical(unname(km$groups == "high"), unname(km$score >= km$cutpoint))
+  expect_true(all(table(km$groups) >= 1))
+})
+
+test_that("km_curve validates cutpoint", {
+  se <- make_survival_se()
+  sig <- make_signature_for_testing()
+  expect_error(km_curve(sig, se, cutpoint = "high"), "single finite number")
+  expect_error(km_curve(sig, se, cutpoint = c(0, 1)), "single finite number")
+  expect_error(km_curve(sig, se, cutpoint = 1e6), "leaves one risk group empty")
+  expect_error(km_curve(sig, se, cutpoint = -1e6), "leaves one risk group empty")
 })
 
 test_that("km_curve separates high-risk from low-risk survival", {
