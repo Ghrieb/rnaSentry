@@ -71,6 +71,31 @@
 #'   the design terms as described above. Setting it to \code{FALSE} runs
 #'   unadjusted screening and raises an \code{unadjusted_screening} warning,
 #'   because the pipeline's confounder guardrails are then bypassed.
+#' @param min_events_per_parameter Numeric. Minimum acceptable number of
+#'   events per signature gene. When the cohort has fewer events per final
+#'   signature gene, the signature is flagged with an
+#'   \code{events_per_parameter} warning, because cross-validated concordance
+#'   and hazard ratios are unstable at very low event counts. The default of
+#'   \code{5} sits below the classic 10 events-per-variable rule of thumb
+#'   (Peduzzi et al., \emph{J Clin Epidemiol} 1996) but at the lower end of
+#'   the 5-9 events-per-variable range that Vittinghoff and McCulloch
+#'   (\emph{Am J Epidemiol} 2007) argued can be adequate in some settings;
+#'   it is a defensible middle choice, not a guarantee of estimability. Raise
+#'   it to \code{10} for the stricter convention, or lower it to suppress the
+#'   warning on small but well-behaved cohorts.
+#'
+#' @section Assumptions and limitations:
+#' The signature is a linear Cox risk score (larger score = earlier event).
+#' The pipeline assumes standard right-censored survival from bulk RNA-seq
+#' with raw integer counts or a correctly-named \code{logcounts} assay
+#' (pre-scaled data in a \code{counts}-named slot is flagged as
+#' \code{possibly_log_scaled}). It does not model competing risks,
+#' time-varying covariates, left truncation, single-cell data, or
+#' non-survival end points, and it never corrects batch or design effects.
+#' In underpowered cohorts (fewer than \code{min_events_per_parameter}
+#' events per signature gene) the returned concordance and hazard ratios are
+#' unstable and an \code{events_per_parameter} warning is raised; treat such
+#' results as hypothesis-generating rather than confirmatory.
 #'
 #' @return An object of class \code{"rnaSentry_signature"} (a list) with
 #'   elements:
@@ -123,7 +148,8 @@ build_signature <- function(se, time_col, event_col,
                             method = c("top_n", "p_value"), top_n = 20,
                              p_threshold = 0.05, repeats = 5, folds = 5,
                              seed = NULL, design_terms = character(0),
-                             adjust_for_design = TRUE) {
+                             adjust_for_design = TRUE,
+                             min_events_per_parameter = 5) {
   if (!methods::is(se, "SummarizedExperiment")) {
     stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
   }
@@ -172,6 +198,12 @@ build_signature <- function(se, time_col, event_col,
   }
   if (anyDuplicated(design_terms)) {
     stop("'design_terms' must not contain duplicates.", call. = FALSE)
+  }
+  if (!is.numeric(min_events_per_parameter) ||
+      length(min_events_per_parameter) != 1 ||
+      is.na(min_events_per_parameter) || min_events_per_parameter <= 0) {
+    stop("'min_events_per_parameter' must be a single positive number.",
+         call. = FALSE)
   }
 
   time_vec <- as.numeric(cd[[time_col]])
@@ -236,6 +268,11 @@ build_signature <- function(se, time_col, event_col,
 
   mat_info <- .get_analysis_matrix(se)
   mat <- mat_info$mat
+  if (isTRUE(mat_info$log_scaled_possible)) {
+    warning(mat_info$log_scaled_msg, call. = FALSE)
+    flags <- .add_flag(flags, "possibly_log_scaled", "warning",
+                       mat_info$log_scaled_msg)
+  }
   if (anyDuplicated(rownames(mat))) {
     stop("Duplicate gene names in the analysis matrix; use unique feature identifiers.",
          call. = FALSE)
@@ -354,6 +391,20 @@ build_signature <- function(se, time_col, event_col,
          call. = FALSE)
   }
   genes <- names(coef_vec)
+
+  n_events <- sum(event_vec)
+  events_per_parameter <- n_events / length(genes)
+  if (is.finite(events_per_parameter) &&
+      events_per_parameter < min_events_per_parameter) {
+    msg <- sprintf(paste0("Only %d event(s) for a %d-gene signature (%.1f events ",
+                          "per parameter), below 'min_events_per_parameter' = %d. ",
+                          "Cross-validated concordance and hazard ratios are unstable ",
+                          "at this event count; consider fewer genes or a larger cohort."),
+                   n_events, length(genes), events_per_parameter,
+                   min_events_per_parameter)
+    warning(msg, call. = FALSE)
+    flags <- .add_flag(flags, "events_per_parameter", "warning", msg)
+  }
 
   # ---- repeated stratified cross-validation --------------------------------
   n <- length(time_vec)

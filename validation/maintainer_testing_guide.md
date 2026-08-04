@@ -37,7 +37,9 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
 `07_as_cran.txt` (post sign-convention fix; 06 re-run after the
 `NEWS`/man-page updates, 07 re-run after the cox_model concordance parity test —
-both 0 ERROR / 1 WARNING / 1 NOTE).
+both 0 ERROR / 1 WARNING / 1 NOTE), `08_as_cran.txt` (2026-08-04, after the
+guardrail + README/vignette/report-assumptions round — 0 ERROR / 1 WARNING /
+1 NOTE, both environmental).
 
 ## Gate 1 — full test suite
 
@@ -46,9 +48,13 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **120 files / 393 passed / 0 failed / 0 error / 0 warning**.
-The suite must be run via `devtools::test()` (loading environment differs from
-a plain `test_dir`). Log: `logs/00.1_test.txt`.
+Expected: **128 blocks / 414 passed / 0 failed / 0 error / 32 warnings**.
+The 32 warnings are the `events_per_parameter` guardrail firing on
+deliberately small synthetic fixtures used by tests that exercise other
+behavior; each guardrail has a dedicated test that asserts its own firing
+(see Gate 3 and `test_audit.md`). The suite must be run via
+`devtools::test()` (loading environment differs from a plain `test_dir`).
+Log: `logs/00.1_test.txt`.
 
 ## Gate 2 — adversarial review
 
@@ -70,6 +76,9 @@ It scans `.R` (code and `@examples`), `.Rmd` (vignette and report template),
 phrasing. Hits are permitted only under `validation/` (the intentional
 before/after correction narrative); any hit elsewhere fails the gate (exit 1).
 First run (2026-08-04): 15 hits, all inside `validation/`, 0 elsewhere.
+After the 2026-08-04 guardrail/documentation round the sweep scanned 52 files
+and found 19 hits, all still inside `validation/` (the intentional
+before/after correction narrative), exit 0.
 
 ## Gate 3 — statistical parity
 
@@ -94,6 +103,15 @@ package with an independent reference implementation and asserts equality:
   sign-convention bug in `build_signature()` and `validate_external()` that
   had reported `1 − Harrell's C` (see `face_validity_review.md` and
   `test_audit.md`).
+- `sex_check` rank score ↔ the documented XIST-vs-Y rule re-derived from the
+  assay (closes parity item 7).
+
+Gate 3 also covers the two runtime guardrails added 2026-08-04: a fixture
+with deliberately pre-logged, non-integer `counts` must fire
+`possibly_log_scaled` (and a raw integer matrix must not), and a fixture
+with few events relative to `top_n` must fire `events_per_parameter` (and an
+adequately powered one must not). These live in `test-build_signature.R`,
+`test-validate_external.R`, and `test-pca_audit.R`.
 
 ## Gate 4 — simulation study (11 falsifiable targets)
 
@@ -125,7 +143,10 @@ real data / 0.490 on simulated nulls). An earlier reading of 0.217 was the
 symptom of the sign-convention bug described under Gate 3, now fixed. Known
 limitation: the discovery cohort has 83 events for a 20-gene signature (~4.2
 events/parameter, below the ~10 rule of thumb) — see the "Known limitation"
-note in `face_validity_review.md`. Log: `logs/04_face_validity.txt`, report:
+note in `face_validity_review.md`. As of 2026-08-04 `build_signature()`
+*catches this automatically*: 4.2 < `min_events_per_parameter` (default 5),
+so a re-run of the repro flags `events_per_parameter` and the report audit
+trail surfaces it. Log: `logs/04_face_validity.txt`, report:
 `logs/face_validity_report.html`.
 
 ## Gate 6 — cross-platform (not yet run on this machine)
@@ -140,7 +161,7 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
-2. Gate 1 suite (120/393).
+2. Gate 1 suite (128/414; 32 expected guardrail warnings on small fixtures).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).

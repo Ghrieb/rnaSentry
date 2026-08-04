@@ -103,6 +103,12 @@ pca_audit <- function(se, batch_col = NULL, top_n_pcs = 5, scale = TRUE,
 
   flags <- .new_flags("pca_audit")
 
+  if (isTRUE(mat_info$log_scaled_possible)) {
+    warning(mat_info$log_scaled_msg, call. = FALSE)
+    flags <- .add_flag(flags, "possibly_log_scaled", "warning",
+                       mat_info$log_scaled_msg)
+  }
+
   filtered <- .drop_nonvariable(mat)
   mat <- filtered$mat
   n_genes_filtered <- filtered$n_nonfinite + filtered$n_constant

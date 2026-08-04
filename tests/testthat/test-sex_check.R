@@ -68,3 +68,32 @@ test_that("sex_check reports AMBIGUOUS when neither signal is dominant", {
   expect_equal(res$status[res$sample_id == "S3"], "AMBIGUOUS")
   expect_true(all(res$status[res$sample_id %in% c("S1", "S2")] == "OK"))
 })
+
+test_that("sex_check inference matches the documented XIST-minus-Y rule", {
+  # Parity check: recompute the documented rank-score rule (score =
+  # rank(XIST) - rank(Y panel); >= 1 -> F, <= -1 -> M, else ambiguous)
+  # independently from the assay and assert sex_check() reproduces it.
+  # Fixture spans all three branches: S1-S2 female, S3 ambiguous (XIST and
+  # Y expression comparable), S4-S6 male.
+  genes <- c("XIST", "RPS4Y1", "DDX3Y", "KDM5D")
+  samples <- paste0("S", 1:6)
+  expr <- matrix(0, nrow = 4, ncol = 6, dimnames = list(genes, samples))
+  expr["XIST", ] <- c(1000, 900, 600, 5, 5, 5)
+  y_vals <- matrix(rep(c(5, 5, 400, 400, 400, 400), each = 3),
+                   nrow = 3, byrow = TRUE)
+  expr[c("RPS4Y1", "DDX3Y", "KDM5D"), ] <- y_vals
+  coldata <- S4Vectors::DataFrame(sex = c("F", "F", "F", "M", "M", "M"),
+                        row.names = samples)
+  se <- SummarizedExperiment(assays = list(counts = expr), colData = coldata)
+
+  xist_expr <- as.numeric(expr["XIST", ])
+  y_expr <- colMeans(expr[c("RPS4Y1", "DDX3Y", "KDM5D"), , drop = FALSE])
+  expected_score <- rank(xist_expr) - rank(y_expr)
+  expected_inferred <- unname(ifelse(expected_score >= 1, "F",
+                                     ifelse(expected_score <= -1, "M",
+                                            "ambiguous")))
+
+  res <- sex_check(se)
+  expect_identical(res$inferred_sex, expected_inferred)
+  expect_identical(res$status[res$inferred_sex == "ambiguous"], "AMBIGUOUS")
+})

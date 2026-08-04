@@ -99,7 +99,9 @@ have it. No action required from the package.
   `pandoc`**: the check's own pandoc discovery did not honor the
   `RSTUDIO_PANDOC` environment variable used elsewhere in the gate.
   Bioconductor build machines have pandoc installed; the vignette and this
-  gate build it successfully with `RSTUDIO_PANDOC` set.
+  gate build it successfully with `RSTUDIO_PANDOC` set. As of 2026-08-04 the
+  package ships a top-level `README.md` (install, quick start, "When to use /
+  When NOT to use", limitations) in addition to the plain-text `NEWS`.
 - **Examples with CPU/elapsed > 5s (build_signature, 7.4s user)**:
   investigated — the entire cost is `library(SummarizedExperiment)` in the
   fresh check session (measured 7.60s loading GenomicRanges, IRanges,

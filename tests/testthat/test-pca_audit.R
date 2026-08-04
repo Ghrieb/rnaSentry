@@ -109,3 +109,13 @@ test_that("plot_pca_audit returns a ggplot and validates input", {
   expect_error(plot_pca_audit(res, color_by = "nope"), "no column")
   expect_error(plot_pca_audit(res, pc_x = 99), "pc_x")
 })
+
+test_that("pca_audit flags an already-log-scaled count assay", {
+  se <- make_pca_se()
+  prelogged <- log2(as.matrix(SummarizedExperiment::assay(se, "counts")) + 1)
+  SummarizedExperiment::assay(se, "counts") <- prelogged
+  expect_warning(
+    res <- pca_audit(se),
+    "already log-transformed")
+  expect_true(any(res$flags$check == "possibly_log_scaled"))
+})

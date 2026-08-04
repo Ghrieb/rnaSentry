@@ -16,7 +16,8 @@ build_signature(
   folds = 5,
   seed = NULL,
   design_terms = character(0),
-  adjust_for_design = TRUE
+  adjust_for_design = TRUE,
+  min_events_per_parameter = 5
 )
 }
 \arguments{
@@ -69,6 +70,19 @@ adjusted inference on the chosen signature is provided by
 the design terms as described above. Setting it to \code{FALSE} runs
 unadjusted screening and raises an \code{unadjusted_screening} warning,
 because the pipeline's confounder guardrails are then bypassed.}
+
+\item{min_events_per_parameter}{Numeric. Minimum acceptable number of
+events per signature gene. When the cohort has fewer events per final
+signature gene, the signature is flagged with an
+\code{events_per_parameter} warning, because cross-validated concordance
+and hazard ratios are unstable at very low event counts. The default of
+\code{5} sits below the classic 10 events-per-variable rule of thumb
+(Peduzzi et al., \emph{J Clin Epidemiol} 1996) but at the lower end of
+the 5-9 events-per-variable range that Vittinghoff and McCulloch
+(\emph{Am J Epidemiol} 2007) argued can be adequate in some settings;
+it is a defensible middle choice, not a guarantee of estimability. Raise
+it to \code{10} for the stricter convention, or lower it to suppress the
+warning on small but well-behaved cohorts.}
 }
 \value{
 An object of class \code{"rnaSentry_signature"} (a list) with
@@ -128,6 +142,21 @@ expected by the survival modeling and validation stages
 is returned \emph{unlocked}; downstream stages that must not be rerun after
 publication can be protected with \code{lock_signature()}.
 }
+\section{Assumptions and limitations}{
+
+The signature is a linear Cox risk score (larger score = earlier event).
+The pipeline assumes standard right-censored survival from bulk RNA-seq
+with raw integer counts or a correctly-named \code{logcounts} assay
+(pre-scaled data in a \code{counts}-named slot is flagged as
+\code{possibly_log_scaled}). It does not model competing risks,
+time-varying covariates, left truncation, single-cell data, or
+non-survival end points, and it never corrects batch or design effects.
+In underpowered cohorts (fewer than \code{min_events_per_parameter}
+events per signature gene) the returned concordance and hazard ratios are
+unstable and an \code{events_per_parameter} warning is raised; treat such
+results as hypothesis-generating rather than confirmatory.
+}
+
 \examples{
 library(SummarizedExperiment)
 set.seed(5)

@@ -91,6 +91,18 @@ are named in a flag.
 The stage is read-only: it works on both locked and unlocked signatures and
 records the signature's lock state in its output.
 }
+\section{Assumptions and limitations}{
+
+External risk groups are defined exclusively by the supplied discovery
+cutpoint; the stage never re-estimates a threshold from the external
+cohort. The cohort is assumed to be bulk RNA-seq with standard
+right-censored survival and the same assay convention as the discovery
+data (raw counts or a correctly-named \code{logcounts} assay; pre-scaled
+data in a \code{counts}-named slot is flagged as
+\code{possibly_log_scaled}). Competing risks and other non-standard
+survival structures are not modeled.
+}
+
 \examples{
 library(SummarizedExperiment)
 set.seed(11)

@@ -49,6 +49,9 @@ test_that("build_signature validates its options", {
                "positive integer")
   expect_error(build_signature(se, "time", "event", folds = 1.5),
                "positive integer")
+  expect_error(build_signature(se, "time", "event",
+                               min_events_per_parameter = 0),
+               "positive number")
   expect_error(build_signature(se, "time", "event", design_terms = "nope"),
                "no design term")
 })
@@ -189,4 +192,78 @@ test_that("print.rnaSentry_signature is informative", {
   sig <- build_signature(se, "time", "event", top_n = 5, repeats = 1,
                          folds = 2, seed = 5)
   expect_output(print(sig), "signature")
+})
+
+test_that("build_signature flags an already-log-scaled count assay", {
+  set.seed(21)
+  n_g <- 40
+  n_s <- 30
+  counts <- matrix(stats::rpois(n_g * n_s, lambda = 400), nrow = n_g,
+                   ncol = n_s,
+                   dimnames = list(paste0("g", seq_len(n_g)),
+                                   paste0("S", seq_len(n_s))))
+  prelogged <- log2(counts + 1)
+  event_time <- stats::rexp(n_s, rate = 0.03)
+  censor_time <- stats::rexp(n_s, rate = 0.02)
+  se <- SummarizedExperiment(
+    assays = list(counts = prelogged),
+    colData = S4Vectors::DataFrame(
+      time = pmin(event_time, censor_time),
+      event = as.integer(event_time < censor_time),
+      row.names = colnames(counts)))
+  # min_events_per_parameter = 1 isolates the scale warning from the EPV
+  # warning so the test targets exactly the guardrail under test.
+  expect_warning(
+    sig <- build_signature(se, "time", "event", top_n = 5, repeats = 1,
+                           folds = 2, seed = 1,
+                           min_events_per_parameter = 1),
+    "already log-transformed")
+  expect_true(any(sig$flags$check == "possibly_log_scaled"))
+  expect_equal(sig$flags$severity[sig$flags$check == "possibly_log_scaled"],
+               "warning")
+})
+
+test_that("build_signature does not flag raw integer counts", {
+  se <- make_survival_se()
+  expect_warning(
+    sig <- build_signature(se, "time", "event", top_n = 3, repeats = 1,
+                           folds = 2, seed = 6,
+                           min_events_per_parameter = 1),
+    NA)
+  expect_false(any(sig$flags$check == "possibly_log_scaled"))
+})
+
+test_that("build_signature flags few events per parameter", {
+  set.seed(22)
+  n_g <- 60
+  n_s <- 40
+  counts <- matrix(stats::rpois(n_g * n_s, lambda = 300), nrow = n_g,
+                   ncol = n_s,
+                   dimnames = list(paste0("g", seq_len(n_g)),
+                                   paste0("S", seq_len(n_s))))
+  event_time <- stats::rexp(n_s, rate = 0.01)
+  censor_time <- stats::rexp(n_s, rate = 0.04)
+  se <- SummarizedExperiment(
+    assays = list(counts = counts),
+    colData = S4Vectors::DataFrame(
+      time = pmin(event_time, censor_time),
+      event = as.integer(event_time < censor_time),
+      row.names = colnames(counts)))
+  n_events <- sum(SummarizedExperiment::colData(se)$event)
+  expect_lt(n_events, 40)
+  expect_warning(
+    sig <- build_signature(se, "time", "event", top_n = 8, repeats = 1,
+                           folds = 2, seed = 2),
+    "events per parameter")
+  expect_true(any(sig$flags$check == "events_per_parameter"))
+  expect_equal(sig$flags$severity[sig$flags$check == "events_per_parameter"],
+               "warning")
+})
+
+test_that("build_signature does not flag adequate event counts", {
+  se <- make_survival_se()
+  sig <- build_signature(se, "time", "event", top_n = 3, repeats = 1,
+                         folds = 2, seed = 6)
+  expect_false(any(sig$flags$check == "events_per_parameter"))
+  expect_false(any(sig$flags$check == "possibly_log_scaled"))
 })

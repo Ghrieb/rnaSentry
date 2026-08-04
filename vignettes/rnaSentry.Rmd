@@ -1,6 +1,6 @@
 ---
 title: "Introduction to rnaSentry"
-author: "Your Name"
+author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:
   BiocStyle::html_document:
@@ -96,6 +96,118 @@ se2 <- SummarizedExperiment(assays = list(counts = expr), colData = coldata2)
 
 sex_check(se2)
 ```
+
+# The survival pipeline in one run
+
+`run_rnaSentry()` orchestrates the full pipeline on a single cohort:
+confounder scan, PCA audit, signature construction with cross-validation,
+Kaplan-Meier risk groups, an adjusted Cox model, and parametric survival
+models. Here we build a synthetic cohort with an engineered survival
+signal, split it into discovery and validation halves, and run the pipeline
+on the discovery half.
+
+```{r}
+set.seed(1)
+n_genes <- 120
+n_samples <- 120
+counts <- matrix(stats::rpois(n_genes * n_samples, lambda = 500),
+                 nrow = n_genes, ncol = n_samples,
+                 dimnames = list(paste0("gene", 1:n_genes),
+                                 paste0("S", 1:n_samples)))
+sig_expr <- colMeans(counts[1:5, , drop = FALSE])
+risk <- scale(sig_expr)[, 1] * 0.4
+event_time <- stats::rexp(n_samples, rate = 0.03 * exp(0.8 * risk))
+censor_time <- stats::rexp(n_samples, rate = 0.02)
+coldata <- DataFrame(time = pmin(event_time, censor_time),
+                     event = as.integer(event_time < censor_time),
+                     condition = factor(rep(c("A", "B"), length.out = n_samples)),
+                     batch = factor(rep(c("B1", "B2", "B3"), length.out = n_samples)),
+                     row.names = colnames(counts))
+se_all <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
+
+discovery <- se_all[, 1:72]
+external <- se_all[, 73:120]
+
+run <- run_rnaSentry(discovery, time_col = "time", event_col = "event",
+                     top_n = 5, repeats = 2, folds = 3, seed = 7,
+                     design_vars = c("condition", "batch"),
+                     design_terms = "condition")
+run
+```
+
+The result's `stages` list holds each stage's full result, including the
+`flags` data.frame that records every issue raised:
+
+```{r}
+run$stages$build_signature$flags
+```
+
+## External validation
+
+The discovery cutpoint is recorded by the `km_curve` stage. Re-scoring the
+held-out samples against that same cutpoint, without re-estimating anything
+from the external data, gives an honest portability check:
+
+```{r}
+val <- validate_external(run$stages$build_signature, external,
+                         cutpoint = run$stages$km_curve$cutpoint)
+val
+```
+
+# Assumptions and limitations
+
+`rnaSentry` is deliberately narrow. Read this before trusting any output.
+
+- **Bulk, right-censored survival only.** The pipeline expects bulk RNA-seq
+  and standard right-censored (time, event) end points. Single-cell data,
+  continuous or binary outcomes, competing risks, time-varying covariates,
+  and left truncation are out of scope.
+- **Linear Cox risk scores.** A signature is a weighted linear combination
+  of gene expression. Higher scores mean higher hazard (shorter survival);
+  all concordance estimates use this convention.
+- **No batch correction, no differential expression.** Confounders are
+  *detected and reported*, and univariate screening can be *adjusted* for
+  design terms, but the pipeline never corrects or removes effects and makes
+  no DE calls.
+- **The small-cohort trap.** With fewer than ~5 events per signature gene,
+  cross-validated concordance and hazard ratios are unstable.
+  `build_signature()` warns (`events_per_parameter`); a flagged signature
+  should be treated as hypothesis-generating, not confirmatory.
+- **Right input scale.** Raw counts are log2-transformed internally. If you
+  store already-logged data under a name like `counts`, it will be
+  double-logged; the pipeline warns (`possibly_log_scaled`). Store
+  pre-scaled data under the name `logcounts`.
+
+## Avoiding common mistakes
+
+Two misuses are easy to hit and easy to avoid.
+
+First, wrong input scale. If your expression matrix is already
+log-transformed but stored under a `counts`-named assay, every downstream
+stage sees a double-logged matrix. The pipeline catches this and warns:
+
+```{r, warning = TRUE}
+prelogged <- log2(as.matrix(assay(se_all, "counts")) + 1)
+se_wrong <- se_all
+assay(se_wrong, "counts") <- prelogged
+build_signature(se_wrong, "time", "event", top_n = 5, repeats = 1,
+                folds = 2, seed = 7, min_events_per_parameter = 1)
+```
+
+The fix is to name such an assay `logcounts`, which the pipeline uses as-is
+without a second transform.
+
+Second, underpowered discovery. On a small cohort, `build_signature()`
+warns that the event count per signature gene is low:
+
+```{r, warning = TRUE}
+small <- se_all[, 1:40]
+build_signature(small, "time", "event", top_n = 10, repeats = 1,
+                folds = 2, seed = 7)
+```
+
+Both warnings are also recorded in each stage's `flags` data.frame, so they
+propagate into the rendered report's audit trail.
 
 # Session info
 

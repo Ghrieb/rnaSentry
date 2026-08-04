@@ -45,6 +45,15 @@
 #' @param render_report Logical. When \code{TRUE} (default) the report is
 #'   rendered as the final step.
 #'
+#' @section Assumptions and limitations:
+#' The pipeline targets bulk RNA-seq with standard right-censored survival
+#' and linear Cox risk scores (see the Assumptions sections of
+#' \code{\link{build_signature}} and \code{\link{cox_model}}). It detects and
+#' reports batch and design confounders but does not correct for them, and it
+#' makes no differential-expression calls. On small cohorts an
+#' \code{events_per_parameter} warning from \code{\link{build_signature}} is
+#' expected and should be interpreted as a call for caution, not ignored.
+#'
 #' @return An object of class \code{"rnaSentry_run"} (a list) with elements:
 #'   \describe{
 #'     \item{stages}{Named list of the stage results, with entries

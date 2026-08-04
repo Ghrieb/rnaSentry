@@ -48,6 +48,16 @@
 #'   remaining overlap is at least \code{min_gene_overlap_frac}. When
 #'   \code{FALSE} (default) any missing gene is an error.
 #'
+#' @section Assumptions and limitations:
+#' External risk groups are defined exclusively by the supplied discovery
+#' cutpoint; the stage never re-estimates a threshold from the external
+#' cohort. The cohort is assumed to be bulk RNA-seq with standard
+#' right-censored survival and the same assay convention as the discovery
+#' data (raw counts or a correctly-named \code{logcounts} assay; pre-scaled
+#' data in a \code{counts}-named slot is flagged as
+#' \code{possibly_log_scaled}). Competing risks and other non-standard
+#' survival structures are not modeled.
+#'
 #' @return An object of class \code{"rnaSentry_external"} (a list) with
 #'   elements:
 #'   \describe{
@@ -160,7 +170,13 @@ validate_external <- function(sig, external_se, time_col = NULL,
 
   flags <- .new_flags("validate_external")
 
-  mat <- .get_analysis_matrix(external_se)$mat
+  mat_info <- .get_analysis_matrix(external_se)
+  mat <- mat_info$mat
+  if (isTRUE(mat_info$log_scaled_possible)) {
+    warning(mat_info$log_scaled_msg, call. = FALSE)
+    flags <- .add_flag(flags, "possibly_log_scaled", "warning",
+                       mat_info$log_scaled_msg)
+  }
   present <- genes[genes %in% rownames(mat)]
   missing_genes <- setdiff(genes, rownames(mat))
 

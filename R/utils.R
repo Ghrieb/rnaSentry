@@ -41,23 +41,54 @@
                           stringsAsFactors = FALSE))
 }
 
+# Detect expression matrices that look already log-transformed but are not
+# stored in a preferred assay slot. The pipeline log2-transforms the first
+# assay when no "logcounts"/"vst" assay exists, so pre-scaled data sitting in
+# a "counts"-named slot would be double-logged. Two signals must agree before
+# we warn, so low-depth or filtered-but-correct integer count data is not
+# false-flagged: (1) the values are non-integer, and (2) the maximum is below
+# log2_scale_max (a ceiling far too small for raw bulk read counts).
+# Returns a list with "possible" (logical) and a ready-to-report "message".
+.log_detect_log_scaled <- function(mat) {
+  log2_scale_max <- 40
+  non_integer <- any(abs(mat - round(mat)) > 1e-8, na.rm = TRUE)
+  possible <- isTRUE(non_integer) &&
+    isTRUE(max(mat, na.rm = TRUE) < log2_scale_max)
+  message <- if (possible) {
+    sprintf(paste0("The first assay looks already log-transformed (non-integer ",
+                   "values with a maximum below %d). rnaSentry will log2-transform ",
+                   "it again, double-logging expression. Rename the assay to ",
+                   "\"logcounts\" or supply raw integer counts."), log2_scale_max)
+  } else {
+    NA_character_
+  }
+  list(possible = possible, message = message)
+}
+
 # Select the analysis assay for PCA/confounder work. Prefers an existing
 # "logcounts" assay, then "vst", otherwise computes log2(counts + 1) on the
-# first assay. Returns a list with the matrix and the assay name used.
+# first assay. Returns a list with the matrix, the assay name used, and a
+# flag/message from .log_detect_log_scaled() so stages can surface a
+# double-log warning through the flag ledger.
 .get_analysis_matrix <- function(se) {
   anames <- SummarizedExperiment::assayNames(se)
   preferred <- c("logcounts", "vst")
   chosen <- preferred[preferred %in% anames]
   if (length(chosen) > 0) {
     mat <- as.matrix(SummarizedExperiment::assay(se, chosen[1]))
-    return(list(mat = mat, assay = chosen[1]))
+    return(list(mat = mat, assay = chosen[1],
+                log_scaled_possible = FALSE,
+                log_scaled_msg = NA_character_))
   }
   mat <- as.matrix(SummarizedExperiment::assay(se, 1))
   if (!is.numeric(mat)) {
     stop("The first assay is not numeric; provide count or normalized expression data.",
          call. = FALSE)
   }
-  list(mat = log2(mat + 1), assay = "log2(counts+1)")
+  detect <- .log_detect_log_scaled(mat)
+  list(mat = log2(mat + 1), assay = "log2(counts+1)",
+       log_scaled_possible = detect$possible,
+       log_scaled_msg = detect$message)
 }
 
 # Drop rows with zero variance or any non-finite value. Returns a list with

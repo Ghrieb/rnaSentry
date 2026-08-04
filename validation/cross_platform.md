@@ -14,8 +14,9 @@ blocked, and exactly how to finish it.
 - `R CMD check --as-cran` on the fresh tarball → **0 ERROR, 1 WARNING
   (`qpdf` missing, external tool), 1 NOTE (HTML `tidy` missing, external
   tool)**; both external-tool only. Log: `logs/00.4_as_cran.txt`.
-- Full `devtools::test()` → **120 files / 393 passed / 0 failed**.
-  Log: `logs/00.1_test.txt`.
+- Full `devtools::test()` → **128 blocks / 414 passed / 0 failed / 0 error**
+  (32 expected warnings from the `events_per_parameter` guardrail on
+  deliberately small fixtures). Log: `logs/00.1_test.txt`.
 
 ## Blocked (needs a Docker-capable machine or remote service)
 

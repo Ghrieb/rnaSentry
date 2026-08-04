@@ -67,6 +67,16 @@ a violation flags the model.
 The stage is read-only: it works on both locked and unlocked signatures and
 records the signature's lock state in its output.
 }
+\section{Assumptions and limitations}{
+
+The model assumes proportional hazards (tested and flagged via
+\code{cox.zph}) and standard right-censored survival. It does not model
+competing risks, time-varying covariates, or left truncation. Like the
+rest of the pipeline it makes no batch-effect correction; adjustment for
+recorded design covariates is supplied through \code{sig$design_terms}
+and \code{confounders}.
+}
+
 \examples{
 library(SummarizedExperiment)
 set.seed(7)

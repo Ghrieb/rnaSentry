@@ -91,6 +91,17 @@ The result's \code{stages} list can be passed directly to
 (for example \code{\link{validate_external}} against an independent
 cohort, using the cutpoint recorded by the \code{km_curve} stage).
 }
+\section{Assumptions and limitations}{
+
+The pipeline targets bulk RNA-seq with standard right-censored survival
+and linear Cox risk scores (see the Assumptions sections of
+\code{\link{build_signature}} and \code{\link{cox_model}}). It detects and
+reports batch and design confounders but does not correct for them, and it
+makes no differential-expression calls. On small cohorts an
+\code{events_per_parameter} warning from \code{\link{build_signature}} is
+expected and should be interpreted as a call for caution, not ignored.
+}
+
 \examples{
 \dontrun{
 run <- run_rnaSentry(se, "time", "event", design_vars = c("batch", "age"))

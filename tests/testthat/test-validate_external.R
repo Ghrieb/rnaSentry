@@ -151,3 +151,17 @@ test_that("print and plot are informative and return the object", {
   grDevices::dev.off()
   expect_identical(res, val)
 })
+
+test_that("validate_external flags an already-log-scaled external cohort", {
+  se <- make_survival_se()
+  sig <- build_signature(se, "time", "event", top_n = 10, repeats = 2,
+                         folds = 3, seed = 7)
+  ext <- make_cohort_se(sig, seed = 202)
+  prelogged <- log2(as.matrix(SummarizedExperiment::assay(ext, "counts")) + 1)
+  SummarizedExperiment::assay(ext, "counts") <- prelogged
+  ext_cutoff <- stats::median(km_curve(sig, ext)$score)
+  expect_warning(
+    val <- validate_external(sig, ext, cutpoint = ext_cutoff),
+    "already log-transformed")
+  expect_true(any(val$flags$check == "possibly_log_scaled"))
+})
