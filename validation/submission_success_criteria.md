@@ -66,10 +66,10 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | # | Rule | Current status |
 |---|---|---|
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
-| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR / 1 WARNING / 1 NOTE (logs 05–11) |
-| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 12 advisory NOTES; GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
+| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR / 1 WARNING / 1 NOTE (logs 05–13) |
+| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES; GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
 | B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — pending (Docker/rhub/win-builder); local Windows/R 4.5.2 green; see `cross_platform.md` |
-| B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds; covers intake, QC, sex check, pipeline, external validation, lock, limitations |
+| B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
 | B7 | DESCRIPTION fields complete (`Authors@R` with maintainer email, `biocViews`, `License`, `URL`, `BugReports`) | PASS — `biocViews`: Software, GeneExpression, RNASeq, DifferentialExpression, Survival, QualityControl, BatchEffect, Normalization |
 | B8 | Version 0.99.x targets Bioc devel | PASS — 0.99.0 |
@@ -81,7 +81,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | Gate | What it runs | Expected | Artifact |
 |---|---|---|---|
 | Gate 1 | Full test suite | 142 blocks / 441 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt` |
-| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; 19 hits inside (correction narrative), 60 files scanned | `test_audit.md`, `grep_stale_numbers.ps1` |
+| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; 20 hits inside (correction narrative), 157 files scanned | `test_audit.md`, `grep_stale_numbers.ps1` |
 | Gate 3 | Statistical parity | items 1–7 closed | `test-statistical_parity.R` |
 | Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt` |
 | Gate 5 | Real-data face validity | discrimination beyond chance, correct biology, honest external check | `face_validity_review.md`, `logs/04_face_validity.txt` |
@@ -91,7 +91,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 
 ## D. Definition of "ready to submit"
 
-All of A1–A8 pass, B1–B8 green, B9–B10 completed by the maintainer, Gate 6
+All of S1–S10 pass, B1–B8 green, B9–B10 completed by the maintainer, Gate 6
 records at least one non-Windows platform pass, and the Phase-3 live gate is
 logged. At that point the GitHub push and the Contributions issue
 (`Bioconductor/Contributions#...`, title `rnaSentry`) can be opened.

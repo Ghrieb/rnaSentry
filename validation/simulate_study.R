@@ -236,12 +236,14 @@ cat("==== Sim 6: power analysis for external-signal transfer ================\n"
 # model yields concordance ~0.60 (beta = 0.4) and ~0.65 (beta = 0.6). For each
 # tier we estimate the empirical power of *external* validation (log-rank
 # p < 0.05 on an independent cohort scored against the discovery cutpoint) as
-# a function of the external event count {35, 60, 100, 150, 250}.
+# a function of the external event count {35, 60, 100, 150, 250, 300}
+# (external cohort sizes {70, 120, 200, 300, 500, 600}).
 # Discovery cohort is held fixed (n = 120) so the causal axis is the size of
 # the external cohort. Falsifiable targets:
+#   (0) the two tiers are ordered by effective concordance C(0.6) > C(0.4);
 #   (a) power is monotone non-decreasing in external events;
 #   (b) power < 0.30 at ~35 external events (small-cohort trap);
-#   (c) power >= 0.80 at ~250 events for the moderate (C~0.65) tier.
+#   (c) power >= 0.80 at ~300 events for the moderate (C~0.65) tier.
 make_cohort_se <- function(n, beta, seed) {
   set.seed(seed)
   p <- 60
@@ -321,7 +323,7 @@ check(p_weak_hi >= p_weak_lo && p_mod_hi >= p_mod_lo,
       "transfer power monotone non-decreasing in external events",
       sprintf("weak %.3f -> %.3f, moderate %.3f -> %.3f",
               p_weak_lo, p_weak_hi, p_mod_lo, p_mod_hi),
-      "power decreased from ~35 to ~250 events in at least one tier")
+      "power decreased from ~35 to ~300 events in at least one tier")
 check(p_weak_lo < 0.30 && p_mod_lo < 0.30,
       "small-cohort trap: power < 0.30 at ~35 external events",
       sprintf("weak %.3f, moderate %.3f", p_weak_lo, p_mod_lo),

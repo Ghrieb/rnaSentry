@@ -129,19 +129,28 @@ described in prose. Each fires only on a specific, test-pinned condition.
 - R CMD check tarball: 0 ERROR (00.2 pre-fix; re-confirmed 0 ERROR after the
   sign-convention fix — 05/06/07)
 - BiocCheck source + tarball: 1 ERROR (support-site email, environmental),
-  1 WARNING (`set.seed`, justified), 12 NOTES; GitClone 0 ERROR / 1 WARNING
-  (CITATION doi) (00.3, 00.5)
+  1 WARNING (`set.seed`, justified), 13 NOTES; GitClone 0 ERROR / 1 WARNING
+  (CITATION doi) (00.3, 00.5; re-run 2026-08-04 as `logs/13_bioccheck.txt` —
+  1 ERROR / 1 WARNING / 13 NOTES, all explained in `logs/notes_documented.md`)
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
   2026-08-04 guardrail + docs round; 09 and 10 after the `load_counts()` +
   enforceable-lock round — clean baseline 1 WARNING / 1 NOTE, both
-  environmental)
+  environmental; 12 after the CV-optimism reframe doc round; 13 after the
+  Phase-3 case-study/power round — still 0 ERROR / 1 WARNING / 1 NOTE)
 - stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
-  "poor generalization" / "winner's curse" phrasing — 19 hits (58 files
-  scanned), all inside `validation/` (the intentional correction narrative),
-  0 in code, `@examples`, the vignette, the report template, or the man pages
-  (PASS, exit 0)
+  "poor generalization" / "winner's curse" phrasing — 20 hits (157 files
+  scanned, current round), all inside `validation/` (the intentional
+  correction narrative), 0 in code, `@examples`, the vignette, the report
+  template, or the man pages (PASS, exit 0)
+- Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
+  suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
+  power analysis; `logs/13_simulation.txt`); three offline case-study
+  vignettes + bundled `inst/extdata/gse20685_case_study.rds`
+  (`repro_gse20685.R`, Gate 5c); `logs/13_as_cran.txt` clean baseline; the
+  "TCGA-BRCA GSE20685" mislabel fixed to GSE20685 (Li et al., 2010;
+  Affymetrix GPL570)
 
 ## Priorities
 

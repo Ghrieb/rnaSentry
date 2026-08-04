@@ -32,7 +32,7 @@ Expected: `R CMD check --as-cran` → 0 ERROR, 1 WARNING (`qpdf`), 1 NOTE
 also verifies the compiled vignette (`inst/doc`) and `browseVignettes`.
 BiocCheck: 1 environmental ERROR (support-site email 404 — register the
 maintainer email on https://support.bioconductor.org), 1 justified WARNING
-(`set.seed` in the documented `seed` argument), 12 advisory NOTES. Every item
+(`set.seed` in the documented `seed` argument), 13 advisory NOTES. Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
@@ -94,7 +94,8 @@ and found 19 hits, all still inside `validation/` (the intentional
 before/after correction narrative), exit 0. After the `load_counts()` +
 enforceable-lock round it scans 58 files (19 hits, same narrative), exit 0.
 After the CV-optimism reframe round it scans 60 files (19 hits, same
-narrative), exit 0.
+narrative), exit 0. After the Phase-3 case-study/power round (2026-08-04) it
+scans **157 files (20 hits, same narrative), exit 0**.
 
 ## Gate 3 — statistical parity
 

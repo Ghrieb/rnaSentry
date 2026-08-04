@@ -92,7 +92,9 @@ is noted; we keep a correct, honest CITATION.
 `BiocCheck(".")` writes a `rnaSentry.BiocCheck/` stamp directory into the
 package directory; `BiocCheckGitClone()` then reports it as an untracked
 "system file". The gate therefore deletes the stamp between the two checks
-and runs the GitClone check on the clean tree. The stamp is git-ignored.
+and runs the GitClone check on the clean tree. The stamp is git-ignored; as
+of 2026-08-04 it is also excluded from the tarball via `.Rbuildignore`
+(`^rnaSentry\.BiocCheck$`), so it can no longer leak into `R CMD build`.
 
 ## R CMD check --as-cran (tarball) — remaining items
 
