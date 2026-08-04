@@ -1,0 +1,21 @@
+# rnaSentry 0.99.0
+
+- Initial pre-submission version for Bioconductor review.
+- Added `qc_explore()`: sample-identity and quality-control auditing on a
+  SummarizedExperiment.
+- Added `sex_check()`: reported-vs-inferred biological sex verification via
+  XIST / Y-chromosome marker expression.
+- Fixed a concordance sign-convention bug in `build_signature()` and
+  `validate_external()`: both used the `survival::concordance()` default
+  (`reverse = FALSE`, "larger predictor => longer survival") and therefore
+  reported `1 - Harrell's C` for Cox risk scores. Both now pass
+  `reverse = TRUE` (a higher risk score is concordant with an earlier event).
+- Added direction-sensitive regression tests so the convention cannot silently
+  flip again: the held-out CV mean must exceed 0.5 on a signal-bearing fixture,
+  external validation concordance must exceed 0.5 on a cohort whose survival is
+  driven by the signature score, and a `concordance(Surv ~ x)` +
+  `concordance(Surv ~ x, reverse = TRUE)` = 1 invariant is asserted.
+- Added real-data face-validity evidence on GSE20685 (breast cancer, n = 327):
+  the selected 20-gene signature splits risk groups (log-rank p = 3.8e-17),
+  recovers expected MKI67 / ESR1 hazard-ratio directions, and reaches a held-out
+  CV concordance of 0.783 (random-gene control 0.582).

@@ -84,7 +84,7 @@ tool used only for PDF size-reduction checks; Bioconductor's build machines
 have it. No action required from the package.
 
 ### 2 NOTEs — environmental
-- **Top-level files: `README.md`/`NEWS.md` cannot be checked without
+- **Top-level files: `README.md`/`NEWS` cannot be checked without
   `pandoc`**: the check's own pandoc discovery did not honor the
   `RSTUDIO_PANDOC` environment variable used elsewhere in the gate.
   Bioconductor build machines have pandoc installed; the vignette and this

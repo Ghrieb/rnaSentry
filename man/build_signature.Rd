@@ -116,7 +116,8 @@ survival metadata it:
     the training samples and the concordance index of the resulting risk
     score is evaluated on the held-out samples. The mean and standard
     deviation of the per-fold concordance are returned as
-    \code{cv_summary}.
+    \code{cv_summary}. Concordance is Harrell's C in the risk-score
+    convention: a higher risk score is concordant with an earlier event.
 }
 }
 \details{

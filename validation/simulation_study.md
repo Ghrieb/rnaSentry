@@ -4,7 +4,7 @@ Runnable: `Rscript validation/simulate_study.R` (loads the package from source,
 prints one `[PASS]`/`[FAIL]` line per falsifiable target, exits non-zero if any
 target fails). Logged at `validation/logs/03_simulation.txt`.
 
-Status on final code (commit `caedbbb` + `test-statistical_parity.R`):
+Status on final code (commit `629d8a6`):
 
 ```
 Simulations: 11 PASS, 0 FAIL of 11 targets

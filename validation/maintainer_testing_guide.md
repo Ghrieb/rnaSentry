@@ -34,8 +34,9 @@ maintainer email on https://support.bioconductor.org), 1 justified WARNING
 (`set.seed` in the documented `seed` argument), 12 advisory NOTES. Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
-`00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt` (post sign-convention
-fix).
+`00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`
+(post sign-convention fix; 06 was re-run after the `NEWS`/man-page updates and
+remains 0 ERROR / 1 WARNING / 1 NOTE).
 
 ## Gate 1 — full test suite
 
@@ -119,7 +120,7 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
-2. Gate 1 suite (117/386).
+2. Gate 1 suite (119/390).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. Commit logs with the change at a logical checkpoint.

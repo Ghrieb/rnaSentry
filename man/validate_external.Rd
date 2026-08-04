@@ -70,7 +70,8 @@ the cohort into \code{"low"} and \code{"high"} risk groups at the supplied
 \emph{discovery} cutpoint, and reports the external discriminant validity:
 a log-rank test between the groups, per-group median survival and event
 counts, and the concordance index of the continuous risk score against the
-external survival outcome.
+external survival outcome (Harrell's C in the risk-score convention: a
+higher risk score is concordant with an earlier event).
 }
 \details{
 The stage \emph{never} recomputes a within-cohort cutpoint. The
