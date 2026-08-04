@@ -1,6 +1,17 @@
 # rnaSentry 0.99.0
 
 - Initial pre-submission version for Bioconductor review.
+- Added `load_counts()`: a data-intake wrapper that validates a bulk RNA-seq
+  count matrix and sample metadata before the pipeline runs. It returns a
+  `SummarizedExperiment` and records an intake flag ledger (duplicate sample
+  identifiers, non-integer counts, all-zero or all-NA gene rows, Ensembl-style
+  gene identifiers, non-syntactic gene symbols) in the object's metadata so
+  every downstream stage and the rendered report can surface intake issues.
+- Added an enforceable reproducibility lock: `lock_signature()` records a
+  gene-set fingerprint in a session-level environment, and `run_rnaSentry()`
+  refuses to run while any locked signature exists. This guards against
+  silent re-selection of signature genes after survival analysis has been
+  performed. The lock is reversed with `lock_signature(sig, lock = FALSE)`.
 - Added `qc_explore()`: sample-identity and quality-control auditing on a
   SummarizedExperiment.
 - Added `sex_check()`: reported-vs-inferred biological sex verification via

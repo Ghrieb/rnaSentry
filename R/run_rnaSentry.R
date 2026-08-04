@@ -21,6 +21,15 @@
 #' (for example \code{\link{validate_external}} against an independent
 #' cohort, using the cutpoint recorded by the \code{km_curve} stage).
 #'
+#' @section Reproducibility lock:
+#' The run locks the discovered signature (see \code{\link{lock_signature}}),
+#' recording a session-level fingerprint. While any locked signature exists,
+#' \code{run_rnaSentry()} refuses to run again, preventing silent re-selection
+#' of signature genes after survival analysis. To run the pipeline a second
+#' time in the same session (for example on another cohort), release the lock
+#' first with \code{lock_signature(sig, lock = FALSE)} on the locked
+#' signature. Individual stages remain re-runnable while the lock is set.
+#'
 #' @param se A \code{SummarizedExperiment} with a count or normalized
 #'   expression assay and survival metadata.
 #' @param time_col Character. Column of \code{colData(se)} with follow-up

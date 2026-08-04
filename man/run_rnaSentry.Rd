@@ -91,6 +91,17 @@ The result's \code{stages} list can be passed directly to
 (for example \code{\link{validate_external}} against an independent
 cohort, using the cutpoint recorded by the \code{km_curve} stage).
 }
+\section{Reproducibility lock}{
+
+The run locks the discovered signature (see \code{\link{lock_signature}}),
+recording a session-level fingerprint. While any locked signature exists,
+\code{run_rnaSentry()} refuses to run again, preventing silent re-selection
+of signature genes after survival analysis. To run the pipeline a second
+time in the same session (for example on another cohort), release the lock
+first with \code{lock_signature(sig, lock = FALSE)} on the locked
+signature. Individual stages remain re-runnable while the lock is set.
+}
+
 \section{Assumptions and limitations}{
 
 The pipeline targets bulk RNA-seq with standard right-censored survival

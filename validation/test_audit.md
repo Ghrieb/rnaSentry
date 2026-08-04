@@ -1,6 +1,6 @@
 # rnaSentry test-suite audit
 
-Scope: the 14 `tests/testthat/` files (~400 expectations across 128 test
+Scope: the 15 `tests/testthat/` files (441 expectations across 142 test
 blocks per `devtools::test()`) reviewed for what they actually verify,
 against the documented guarantees in `man/`. This audit feeds (a) the Step-1
 adversarial pass and (b) the Step-2 statistical-parity tests.
@@ -14,12 +14,13 @@ adversarial pass and (b) the Step-2 statistical-parity tests.
 | test-design_audit.R | 44 | type/range guards, formula text, confounder-table schema + BH, lm-vs-factor test dispatch, single-level untested, fully-missing flag, redundant numeric drop, PC clamp, single-PC interaction skip, print |
 | test-validate_external.R | 39 | input guards, cutpoint never recomputed from external data, structure, log-rank finite, **concordance == survival::concordance**, strict missing-gene default, `drop_missing` opt-in + overlap frac, `possibly_log_scaled` flag on a pre-logged external cohort, lock state, print/plot |
 | test-km_curve.R | 30 | input guards, constant-score error, median/custom cutpoint, cutpoint range error, high-vs-low median order, lock state, print/plot |
+| test-load_counts.R | 23 | matrix/colData/ID guards, duplicate-sample critical flag + dedup, non-integer warning flag, empty-row warning flag, Ensembl/non-syntactic info flags, flag-ledger structure, SE round-trip |
 | test-survival_parametric.R | 26 | input guards, dist set, AIC table self-consistency (weights sum 1, delta>=0, sorted), km_fit, curves bounds, score == km score, indirect exp-vs-weibull AIC check, lock state, print/plot |
 | test-pca_audit.R | 41 | schema, assay preference, batch-associated PC flag, lm for numeric batch, single-level batch, null batch not flagged, guards, constant-gene filter, too-few-genes stop, BH parity, `possibly_log_scaled` flag on a pre-logged assay, print, ggplot |
 | test-sex_check.R | 13 | input/col guards, missing markers error, mismatch/OK/AMBIGUOUS scenarios, rank-score parity against the documented XIST-vs-Y rule |
-| test-lock_signature.R | 23 | type/arg guards, lock/unlock state transitions, audit entries, stage schema, round-trip, print |
+| test-lock_signature.R | 27 | type/arg guards, lock/unlock state transitions, audit entries, stage schema, round-trip, print, session-lock enforcement (`run_rnaSentry()` refuses to re-run while a lock is set; unlock permits re-run) |
 | test-qc_explore.R | 10 | type guard, structure, duplicate-sample flag, library-size outlier, non-integer counts, print |
-| test-run_rnaSentry.R | 13 | full pipeline + report render, skip-report, input guards |
+| test-run_rnaSentry.R | 13 | full pipeline + report render, skip-report, input guards, lock-refusal at the run level |
 | test-generate_report.R | 7 | named-list guard, output-dir guard, report renders non-empty, report HTML contains the Pipeline assumptions section |
 | test-adversarial_regressions.R | 36 | regression pins for REAL-BUG A/B/C and soft-warns below |
 | test-statistical_parity.R | 24 | independent-reference replays for parity targets 1-6b below |
@@ -37,7 +38,9 @@ adversarial pass and (b) the Step-2 statistical-parity tests.
 - **Reproducibility**: fixed seed => identical `cv_results`/`coefficients`
   (`test-build_signature.R:126-134`).
 - **Lock-state guardrails** run through km/cox/parametric/validate
-  (`test-km_curve.R:85-90`, `test-cox_model.R:84-89`, `test-validate_external.R:104-111`).
+  (`test-km_curve.R:85-90`, `test-cox_model.R:84-89`, `test-validate_external.R:104-111`),
+  and `run_rnaSentry()` refuses to re-run while any session lock exists
+  (`test-lock_signature.R` enforcement test).
 - **One true parity test already exists**: `validate_external$concordance`
   against `survival::concordance` (`test-validate_external.R:62-67`).
 
@@ -116,8 +119,9 @@ described in prose. Each fires only on a specific, test-pinned condition.
 
 ## Verification status (gate logs, see logs/)
 
-- tests: **128 blocks / 414 passed / 0 failed / 0 error / 32 warnings**
-  (2026-08-04, post guardrail + parity-7 additions). The 32 warnings are the
+- tests: **142 blocks / 441 passed / 0 failed / 0 error / 32 warnings**
+  (2026-08-04, after the `load_counts()` intake wrapper + enforceable-lock
+  round). The 32 warnings are the
   `events_per_parameter` guardrail firing on deliberately small synthetic
   fixtures in tests that exercise other behavior; each guardrail's own
   dedicated test asserts that firing. They are expected, honest noise, not
@@ -129,10 +133,12 @@ described in prose. Each fires only on a specific, test-pinned condition.
   (CITATION doi) (00.3, 00.5)
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
-  2026-08-04 guardrail + docs round)
+  2026-08-04 guardrail + docs round; 09 and 10 after the `load_counts()` +
+  enforceable-lock round — clean baseline 1 WARNING / 1 NOTE, both
+  environmental)
 - stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
-  "poor generalization" / "winner's curse" phrasing — 19 hits (52 files
+  "poor generalization" / "winner's curse" phrasing — 19 hits (58 files
   scanned), all inside `validation/` (the intentional correction narrative),
   0 in code, `@examples`, the vignette, the report template, or the man pages
   (PASS, exit 0)

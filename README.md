@@ -23,8 +23,12 @@ BiocManager::install("rnaSentry")
 library(rnaSentry)
 library(SummarizedExperiment)
 
-# se: a SummarizedExperiment with raw integer counts, gene-symbol rownames,
-# and colData columns "time" (follow-up) and "event" (0/1).
+# counts: a gene x sample integer matrix, gene symbols as rownames.
+# coldata: a data.frame of sample metadata (one row per sample).
+# load_counts() validates the intake and records an audit flag ledger.
+se <- load_counts(counts, coldata)
+
+# Run the discovery pipeline (time/event are survival columns in colData).
 run <- run_rnaSentry(se, time_col = "time", event_col = "event",
                      design_vars = c("batch", "age"))
 
@@ -36,6 +40,15 @@ val <- validate_external(run$stages$build_signature, external_se,
 See `vignette("rnaSentry")` for a worked walkthrough and
 `?run_rnaSentry`, `?build_signature`, `?validate_external` for details.
 
+## Reproducibility guardrail
+
+`run_rnaSentry()` is single-use per session: after it runs, the signature is
+locked and a re-run is refused until the lock is released with
+`lock_signature(sig, lock = FALSE)`. This prevents silent re-selection of
+signature genes after survival analysis, which would otherwise inflate
+reported concordance. Individual stages (for example `validate_external()`)
+remain re-runnable on the locked signature.
+
 ## Input requirements
 
 - **Bulk RNA-seq** expression, with **gene symbols** as rownames.
@@ -43,6 +56,10 @@ See `vignette("rnaSentry")` for a worked walkthrough and
   already named `logcounts`/`vst`.
 - **Standard right-censored survival metadata**: a numeric follow-up time
   column and a 0/1 event indicator.
+- Use `load_counts()` to validate the count matrix and metadata before the
+  pipeline runs; it records any intake issues (duplicate samples,
+  non-integer counts, all-zero gene rows, non-syntactic gene symbols) in the
+  object's flag ledger.
 
 ## When to use rnaSentry
 

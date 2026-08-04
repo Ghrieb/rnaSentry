@@ -37,9 +37,11 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
 `07_as_cran.txt` (post sign-convention fix; 06 re-run after the
 `NEWS`/man-page updates, 07 re-run after the cox_model concordance parity test —
-both 0 ERROR / 1 WARNING / 1 NOTE), `08_as_cran.txt` (2026-08-04, after the
-guardrail + README/vignette/report-assumptions round — 0 ERROR / 1 WARNING /
-1 NOTE, both environmental).
+  both 0 ERROR / 1 WARNING / 1 NOTE), `08_as_cran.txt` (2026-08-04, after the
+  guardrail + README/vignette/report-assumptions round — 0 ERROR / 1 WARNING /
+  1 NOTE, both environmental), `09_as_cran.txt` and `10_as_cran.txt`
+  (2026-08-04, after the `load_counts()` + enforceable-lock round — clean
+  baseline 0 ERROR / 1 WARNING / 1 NOTE, both environmental).
 
 ## Gate 1 — full test suite
 
@@ -48,7 +50,7 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **128 blocks / 414 passed / 0 failed / 0 error / 32 warnings**.
+Expected: **142 blocks / 441 passed / 0 failed / 0 error / 32 warnings**.
 The 32 warnings are the `events_per_parameter` guardrail firing on
 deliberately small synthetic fixtures used by tests that exercise other
 behavior; each guardrail has a dedicated test that asserts its own firing
@@ -78,7 +80,8 @@ before/after correction narrative); any hit elsewhere fails the gate (exit 1).
 First run (2026-08-04): 15 hits, all inside `validation/`, 0 elsewhere.
 After the 2026-08-04 guardrail/documentation round the sweep scanned 52 files
 and found 19 hits, all still inside `validation/` (the intentional
-before/after correction narrative), exit 0.
+before/after correction narrative), exit 0. After the `load_counts()` +
+enforceable-lock round it scans 58 files (19 hits, same narrative), exit 0.
 
 ## Gate 3 — statistical parity
 
@@ -112,6 +115,14 @@ with deliberately pre-logged, non-integer `counts` must fire
 with few events relative to `top_n` must fire `events_per_parameter` (and an
 adequately powered one must not). These live in `test-build_signature.R`,
 `test-validate_external.R`, and `test-pca_audit.R`.
+
+Gate 3 also covers the 2026-08-04 intake and lock features:
+`test-load_counts.R` asserts every intake flag (duplicate samples, non-integer
+counts, empty rows, Ensembl/non-syntactic IDs) fires only on its trigger and
+that the flag ledger survives into the returned object; `test-lock_signature.R`
+asserts that a locked signature makes a second `run_rnaSentry()` call refuse
+to run and that `lock_signature(sig, lock = FALSE)` restores the ability to
+re-run.
 
 ## Gate 4 — simulation study (11 falsifiable targets)
 
@@ -161,7 +172,7 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
-2. Gate 1 suite (128/414; 32 expected guardrail warnings on small fixtures).
+2. Gate 1 suite (142/441; 32 expected guardrail warnings on small fixtures).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
