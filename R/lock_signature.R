@@ -8,7 +8,7 @@
 #'
 #' @section Enforceable lock:
 #' Locking stores a gene-set fingerprint in a session-level environment.
-#' While this fingerprint is set, \code{build_signature()} will refuse to
+#' While this fingerprint is set, \code{run_rnaSentry()} will refuse to
 #' run, preventing silent re-selection of genes after survival analysis.
 #' The lock can be reversed by calling \code{lock_signature(sig, lock = FALSE)},
 #' but doing so after survival stages have been run is not recommended.

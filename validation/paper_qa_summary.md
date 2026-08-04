@@ -2,7 +2,7 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-04 (commit `e46babf`).
+Last updated 2026-08-04 (commit `b161f3a`).
 
 ## Method summary
 
@@ -23,7 +23,7 @@ Last updated 2026-08-04 (commit `e46babf`).
   supporting statistic and a plain-language rationale; validation stages are
   gated rather than silently degraded (flag ledger surfaced in the report).
 - Signature locking: `lock_signature()` records a session-level fingerprint
-  that prevents `build_signature()` from being called again until the
+  that prevents `run_rnaSentry()` from being called again until the
   signature is explicitly unlocked, guarding against silent gene-set
   re-selection after survival analysis.
 
@@ -59,7 +59,7 @@ decisions.
 
 ## Test suite (Gate 1)
 
-- **128 test blocks / 414 expectations / 0 failures / 0 errors** (32
+- **142 test blocks / 441 expectations / 0 failures / 0 errors** (32
   warnings, all expected: the `events_per_parameter` guardrail firing on
   deliberately small synthetic fixtures).
 - Layers:
@@ -98,10 +98,12 @@ decisions.
 
 ## R CMD check (Gate 5)
 
-- `R CMD check --as-cran` on fresh tarball: **0 ERROR / 1 WARNING / 1 NOTE**,
-  both environmental (`qpdf` missing; HTML `tidy` missing), no package issues.
-- Reproduced across five consecutive gates: `logs/05_as_cran.txt`,
-  `06_as_cran.txt`, `07_as_cran.txt`, `08_as_cran.txt` (plus earlier `00.*`).
+- `R CMD check --as-cran` on fresh tarball: **0 ERROR / 1 WARNING / 1-2 NOTEs**,
+  all environmental (`qpdf` missing; HTML `tidy` missing; occasionally
+  "unable to verify current time"), no package issues.
+- Reproduced across six consecutive gates: `logs/05_as_cran.txt`,
+  `06_as_cran.txt`, `07_as_cran.txt`, `08_as_cran.txt`, `09_as_cran.txt`,
+  `10_as_cran.txt` (plus earlier `00.*`).
 - BiocCheck equivalent run locally via `validation/docker_check.sh` when a
   Docker-capable machine is available (see `validation/cross_platform.md`).
 
