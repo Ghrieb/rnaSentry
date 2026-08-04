@@ -129,15 +129,21 @@ described in prose. Each fires only on a specific, test-pinned condition.
 - R CMD check tarball: 0 ERROR (00.2 pre-fix; re-confirmed 0 ERROR after the
   sign-convention fix — 05/06/07)
 - BiocCheck source + tarball: 1 ERROR (support-site email, environmental),
-  1 WARNING (`set.seed`, justified), 13 NOTES; GitClone 0 ERROR / 1 WARNING
-  (CITATION doi) (00.3, 00.5; re-run 2026-08-04 as `logs/13_bioccheck.txt` —
-  1 ERROR / 1 WARNING / 13 NOTES, all explained in `logs/notes_documented.md`)
+  1 WARNING (`set.seed`, justified), 12 NOTES at the 00.3/00.5 runs and
+  13 NOTES at the 2026-08-04 re-run (`logs/13_bioccheck.txt`, which adds the
+  `Avoid 1:` note from `load_counts.R`; re-confirmed at `logs/14_bioccheck.txt`
+  after the Batch-A round — also cleared the one-off "data files exceed 5MB"
+  warning via the extdata xz recompress); GitClone 0 ERROR / 1 WARNING
+  (CITATION doi) — all explained in `logs/notes_documented.md`
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
-  2026-08-04 guardrail + docs round; 09 and 10 after the `load_counts()` +
-  enforceable-lock round — clean baseline 1 WARNING / 1 NOTE, both
-  environmental; 12 after the CV-optimism reframe doc round; 13 after the
-  Phase-3 case-study/power round — still 0 ERROR / 1 WARNING / 1 NOTE)
+  2026-08-04 guardrail + docs round; 09 after the `load_counts()` +
+  enforceable-lock round — 1 WARNING / 2 NOTEs because of a one-off
+  `unable to verify current time` note; 10/11 back to 1 WARNING / 1 NOTE;
+  12 after the CV-optimism reframe doc round; 13 after the
+  Phase-3 case-study/power round; 14 after the Batch-A ship-blocking round
+  (LICENSE holder, report-template `results='asis'`, S4Vectors → Imports,
+  xz-recompressed extdata) — all clean 0 ERROR / 1 WARNING / 1 NOTE)
 - stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
   "poor generalization" / "winner's curse" phrasing — 20 hits (157 files

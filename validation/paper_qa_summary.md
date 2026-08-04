@@ -72,7 +72,8 @@ decisions.
   4. Guardrail tests (2026-08-04): `possibly_log_scaled` and
      `events_per_parameter` fire/no-fire cases; report renders assumptions
      section.
-- Run command (Windows/R 4.5.2): `Rscript run_tests_parity.R` with
+- Run command (Windows/R 4.5.2): `Rscript <temp>/run_tests_parity.R` (the
+  dev-only parity runner, same path as in `maintainer_testing_guide.md`) with
   `RSTUDIO_PANDOC` set. Log: `validation/logs/00.1_test.txt`.
 - Evidence: `validation/test_audit.md`, `validation/maintainer_testing_guide.md`.
 
@@ -99,7 +100,8 @@ decisions.
   mean).
 - Three new vignettes, all offline-safe (no network during build):
   `case-study-brca.Rmd` (pipeline on GSE20685 subset: CV C = 0.797 sd 0.027,
-  log-rank p = 2.99e-15, `design_audit` flags `subtype` and recommends
+  log-rank p = 2.99e-15, `design_audit` flags `subtype` — eta-squared
+  0.778 on the 3000-gene subset — and recommends
   `~ age + subtype`), `case-study-confounder-audit.Rmd` (synthetic batch/
   region redundancy: Cramer's V = 0.82, recommended `~ batch`),
   `case-study-small-cohort.Rmd` (n = 30 / 23 events: guardrail fires,
@@ -114,7 +116,7 @@ decisions.
   breast tumors, 83 deaths). Not TCGA-BRCA.
 - 20-gene signature splits risk groups with log-rank p = 3.8e-17.
 - Cross-validated concordance **0.783** vs random-gene control **0.582**
-  (8.3 SD above control mean).
+  (6.3 SD above control mean, using the logged CV sd 0.032).
 - Recovered expected biology: MKI67 high-risk / ESR1 high-risk hazard-ratio
   directions correct.
 - Evidence: `validation/face_validity_review.md`,
@@ -156,7 +158,12 @@ decisions.
 - `logs/13_as_cran.txt` (2026-08-04, Phase-3 case-study/power round with the
   three new vignettes and `inst/extdata/gse20685_case_study.rds`): **0 ERROR /
   1 WARNING / 1 NOTE**, both environmental (`qpdf` WARNING, `tidy` NOTE).
-- BiocCheck (`logs/13_bioccheck.txt`): 1 environmental ERROR (support-site
+- `logs/14_as_cran.txt` (2026-08-04, Batch-A ship-blocking round — LICENSE
+  holder, report-template `results='asis'`, S4Vectors → Imports,
+  xz-recompressed extdata): **0 ERROR / 1 WARNING / 1 NOTE**, both
+  environmental.
+- BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`):
+  1 environmental ERROR (support-site
   email 404 — register
   `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org),
   1 justified WARNING (`set.seed` in the documented `seed` arg), 13 advisory

@@ -16,7 +16,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | S1 | Every statistic the package computes matches an independent reference implementation | Statistical-parity suite (`tests/testthat/test-statistical_parity.R`): log-rank vs `survival::survdiff`; Cramér's V vs closed form; Cox HR/CI/p vs independent `coxph`; AIC/loglik vs `stats::AIC`; Schoenfeld vs `cox.zph`; held-out CV C vs replayed seeded folds; `C + C_rev = 1` invariant; `sex_check` score vs documented XIST-vs-Y rule (parity items 1–7 closed) | PASS (all parity tests green in Gate 1) |
 | S2 | Guardrails fire only when their trigger is present | Dedicated fire/no-fire tests for `possibly_log_scaled`, `events_per_parameter`, `duplicate_samples`, `non_integer_counts`, `empty_rows`, `ensembl_ids_detected`, `non_syntactic_ids`, `signature_locked`, and the run-level lock refusal | PASS (Gate 1) |
 | S3 | No winner's-curse inversion on null data | Simulation study: null-data CV concordance ≈ 0.5 (mean 0.576 full-pipeline on nulls, random-gene control 0.490 on simulated nulls), direction guarded by `reverse = TRUE` convention | PASS (Gate 4, 15/15 falsifiable targets incl. Sim 6) |
-| S4 | Real data discriminates beyond chance | GSE20685: held-out CV C = 0.783 vs random-gene control 0.582 (8.3 SD above control); log-rank p = 3.8e-17; MKI67 HR > 1, ESR1 HR < 1 (literature directions); `design_audit` flags subtype (eta² = 0.76) | PASS (Gate 5; extended live test below) |
+| S4 | Real data discriminates beyond chance | GSE20685: held-out CV C = 0.783 vs random-gene control 0.582 (6.3 SD above control, logged CV sd 0.032); log-rank p = 3.8e-17; MKI67 HR > 1, ESR1 HR < 1 (literature directions); `design_audit` flags subtype (eta² = 0.76) | PASS (Gate 5; extended live test below) |
 | S5 | External validation is honest | `validate_external()` never recomputes the cutpoint from external data (test-pinned); discovery cutpoint applied unchanged; external C reported on an independent cohort | PASS (Gate 5 + live GEO pair, Phase 3) |
 | S6 | Results are reproducible | Fixed seed ⇒ identical `cv_results`/`coefficients` (test-pinned); the enforceable lock prevents silent gene-set re-selection after survival analysis; `run_rnaSentry()` refuses a second run until `lock_signature(lock = FALSE)` | PASS (Gate 1) |
 | S7 | Degenerate inputs are rejected or flagged, never silently wrong | Adversarial pass: ~90 probes; REAL-BUG A/B/C + 4 soft-warns found and fixed, pinned by regression tests; NAs/Inf/zero-variance/single-sample/fold degeneracies covered | PASS (Gate 2, 2026-08-03) |
@@ -52,7 +52,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
   C = 0.608 / 0.654; transfer power rises with external events (weak
   0.067 → 0.417; moderate 0.275 → 0.842 over ~35 → ~300 events); monotone in
   events; **< 0.30 at ~35 events**, **≥ 0.80 at ~300 events** for the
-  moderate tier. **PASS (3/3 new targets, 15/15 suite).**
+  moderate tier. **PASS (4/4 new targets, 15/15 suite).**
 - Three offline-safe case-study vignettes build locally:
   `case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`
   (BRCA subset: CV C = 0.797 sd 0.027; log-rank p = 2.99e-15; `subtype`
@@ -66,8 +66,8 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | # | Rule | Current status |
 |---|---|---|
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
-| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR / 1 WARNING / 1 NOTE (logs 05–13) |
-| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES; GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
+| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–14; 1 WARNING (qpdf) / 1 NOTE (tidy) at 05–08, 10–13, and 14 (Batch-A round); log 09 was 1 WARNING / 2 NOTEs (one-off `unable to verify current time` note) |
+| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES (12 at `00.3`/`00.5`; 13 after `load_counts.R`, `13_bioccheck.txt` adds the `Avoid 1:` note; re-confirmed at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB" warning via the extdata xz recompress); GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
 | B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — pending (Docker/rhub/win-builder); local Windows/R 4.5.2 green; see `cross_platform.md` |
 | B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |

@@ -32,7 +32,10 @@ Expected: `R CMD check --as-cran` → 0 ERROR, 1 WARNING (`qpdf`), 1 NOTE
 also verifies the compiled vignette (`inst/doc`) and `browseVignettes`.
 BiocCheck: 1 environmental ERROR (support-site email 404 — register the
 maintainer email on https://support.bioconductor.org), 1 justified WARNING
-(`set.seed` in the documented `seed` argument), 13 advisory NOTES. Every item
+(`set.seed` in the documented `seed` argument), 13 advisory NOTES (12 at the
+`00.3`/`00.5` runs; 13 at `13_bioccheck.txt`, after `load_counts.R`; re-confirmed
+at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB"
+warning after the extdata recompress). Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
@@ -40,14 +43,18 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `NEWS`/man-page updates, 07 re-run after the cox_model concordance parity test —
   both 0 ERROR / 1 WARNING / 1 NOTE),   `08_as_cran.txt` (2026-08-04, after the
   guardrail + README/vignette/report-assumptions round — 0 ERROR / 1 WARNING /
-  1 NOTE, both environmental), `09_as_cran.txt` and `10_as_cran.txt`
-  (2026-08-04, after the `load_counts()` + enforceable-lock round — clean
-  baseline 0 ERROR / 1 WARNING / 1 NOTE, both environmental),
-  `11_as_cran.txt` is absent by design (log `11_live_geo.txt` is the Phase-3
+  1 NOTE, both environmental), `09_as_cran.txt` (2026-08-04, after the
+  `load_counts()` + enforceable-lock round — 0 ERROR / 1 WARNING / 2 NOTEs
+  because of a one-off `unable to verify current time` note),
+  `10_as_cran.txt` and `11_as_cran.txt` (2026-08-04 — back to 0 ERROR /
+  1 WARNING / 1 NOTE, both environmental; log `11_live_geo.txt` is the Phase-3
   live GEO run, see Gate 5b), and `12_as_cran.txt` (2026-08-04, after the
   CV-optimism reframe doc round — clean baseline again), and
   `13_as_cran.txt` (2026-08-04, Phase-3 case-study/power round: three new
   vignettes + `inst/extdata/gse20685_case_study.rds` — 0 ERROR / 1 WARNING /
+  1 NOTE, both environmental), and `14_as_cran.txt` (2026-08-04, Batch-A
+  ship-blocking round: LICENSE holder, report-template `results='asis'`,
+  S4Vectors → Imports, xz-recompressed extdata — 0 ERROR / 1 WARNING /
   1 NOTE, both environmental).
   Note: prior gates run `R CMD check --as-cran` with
   `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
@@ -71,7 +78,7 @@ Log: `logs/00.1_test.txt`.
 
 ## Gate 2 — adversarial review
 
-The `test-audit.md` document lists every check that failed or passed only after
+The `test_audit.md` document lists every check that failed or passed only after
 deliberate fixes (seeds, fold stratification, edge cases like `n_pcs == 1`,
 non-syntactic gene symbols). After any change to `R/*.R`, re-run Gate 1 and
 `R CMD check --as-cran` before proceeding.

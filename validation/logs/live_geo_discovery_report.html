@@ -359,7 +359,8 @@ display: none;
 
 <div id="pipeline-summary" class="section level2">
 <h2>Pipeline summary</h2>
-<pre><code>## Stages run: design_audit, pca_audit, build_signature, km_curve, cox_model, survival_parametric.</code></pre>
+<p>Stages run: design_audit, pca_audit, build_signature, km_curve,
+cox_model, survival_parametric.</p>
 </div>
 <div id="pipeline-assumptions-and-scope" class="section level2">
 <h2>Pipeline assumptions and scope</h2>
@@ -433,72 +434,57 @@ median survival estimates may be unstable.</td>
 </div>
 <div id="stage-results" class="section level2">
 <h2>Stage results</h2>
-<pre><code>## 
-## 
-## ### design_audit 
-## 
-## rnaSentry design audit: 4 candidate variable(s), surrogate PC1.
-## Recommended design formula: ~ stage + age + gender + smoking
-## 3 variable(s) flagged as potential confounders.
-## Interaction LRT run; 1 variable(s) with significant surrogate interaction.
-## No issues flagged.
-## 
-## 
-## ### pca_audit 
-## 
-## rnaSentry PCA audit: 226 samples, 21357 genes analyzed (assay: logcounts)
-## PC1 explains 8.2% of variance.
-## No issues flagged.
-## 
-## 
-## ### build_signature 
-## 
-## rnaSentry signature: 7 gene(s), outcome &#39;overall_survival&#39;.
-## Selection: top_n (7 gene(s)). CV concordance: mean 0.862, sd 0.056.
-## Locked.
-## 1 issue(s) flagged:
-##   [info] signature_locked: Signature locked against downstream mutation.
-## 
-## 
-## ### km_curve 
-## 
-## rnaSentry KM analysis: 7-gene signature, 226 samples.
-## Risk groups: low n = 113 (2 events), high n = 113 (33 events).
-## Cutpoint -0.0678 (median).
-## Median survival: low NA, high NA.
-## Log-rank p = 1.4717e-08.
-## Signature locked.
-## 1 issue(s) flagged:
-##   [warning] sparse_events: Risk group event counts are low (low: 2, high: 33); median survival estimates may be unstable.
-## 
-## 
-## ### cox_model 
-## 
-## rnaSentry Cox model: 7 gene(s) + 0 covariate term(s), 35 events.
-## Concordance: 0.873. Proportional hazards: OK.
-## Signature genes (HR [95% CI], BH adj. p):
-##   TRAPPC3L       0.81 [0.63, 1.02]  p = 0.076044  adj.p = 0.088719
-##   IKZF5          0.76 [0.60, 0.97]  p = 0.029628  adj.p = 0.041479
-##   PTH2R          1.91 [1.39, 2.63]  p = 7.3006e-05  adj.p = 0.00051104
-##   KLHL36         0.73 [0.55, 0.96]  p = 0.02494  adj.p = 0.041479
-##   HMOX1          1.38 [0.93, 2.06]  p = 0.11105  adj.p = 0.11105
-##   ZCRB1          1.74 [1.17, 2.60]  p = 0.0066476  adj.p = 0.015511
-##   ADAM10         1.73 [1.22, 2.46]  p = 0.0021691  adj.p = 0.0075919
-## Signature locked.
-## 
-## 
-## ### survival_parametric 
-## 
-## rnaSentry parametric models: 7-gene signature, 226 samples.
-## AIC comparison:
-##   weibull      AIC   641.29  delta   0.00  weight 0.540 *
-##   loglogistic  AIC   642.60  delta   1.31  weight 0.281
-##   lognormal    AIC   643.58  delta   2.29  weight 0.172
-##   exponential  AIC   649.68  delta   8.38  weight 0.008
-## Best model: weibull.
-## Signature locked.
-## 1 issue(s) flagged:
-##   [info] aic_models_close: The two best-fitting models differ in AIC by less than 2; their evidence is nearly equivalent.</code></pre>
+<div id="design_audit" class="section level3">
+<h3>design_audit</h3>
+<p>rnaSentry design audit: 4 candidate variable(s), surrogate PC1.
+Recommended design formula: ~ stage + age + gender + smoking 3
+variable(s) flagged as potential confounders. Interaction LRT run; 1
+variable(s) with significant surrogate interaction. No issues
+flagged.</p>
+</div>
+<div id="pca_audit" class="section level3">
+<h3>pca_audit</h3>
+<p>rnaSentry PCA audit: 226 samples, 21357 genes analyzed (assay:
+logcounts) PC1 explains 8.2% of variance. No issues flagged.</p>
+</div>
+<div id="build_signature" class="section level3">
+<h3>build_signature</h3>
+<p>rnaSentry signature: 7 gene(s), outcome ‘overall_survival’.
+Selection: top_n (7 gene(s)). CV concordance: mean 0.862, sd 0.056.
+Locked. 1 issue(s) flagged: [info] signature_locked: Signature locked
+against downstream mutation.</p>
+</div>
+<div id="km_curve" class="section level3">
+<h3>km_curve</h3>
+<p>rnaSentry KM analysis: 7-gene signature, 226 samples. Risk groups:
+low n = 113 (2 events), high n = 113 (33 events). Cutpoint -0.0678
+(median). Median survival: low NA, high NA. Log-rank p = 1.4717e-08.
+Signature locked. 1 issue(s) flagged: [warning] sparse_events: Risk
+group event counts are low (low: 2, high: 33); median survival estimates
+may be unstable.</p>
+</div>
+<div id="cox_model" class="section level3">
+<h3>cox_model</h3>
+<p>rnaSentry Cox model: 7 gene(s) + 0 covariate term(s), 35 events.
+Concordance: 0.873. Proportional hazards: OK. Signature genes (HR [95%
+CI], BH adj. p): TRAPPC3L 0.81 [0.63, 1.02] p = 0.076044 adj.p =
+0.088719 IKZF5 0.76 [0.60, 0.97] p = 0.029628 adj.p = 0.041479 PTH2R
+1.91 [1.39, 2.63] p = 7.3006e-05 adj.p = 0.00051104 KLHL36 0.73 [0.55,
+0.96] p = 0.02494 adj.p = 0.041479 HMOX1 1.38 [0.93, 2.06] p = 0.11105
+adj.p = 0.11105 ZCRB1 1.74 [1.17, 2.60] p = 0.0066476 adj.p = 0.015511
+ADAM10 1.73 [1.22, 2.46] p = 0.0021691 adj.p = 0.0075919 Signature
+locked.</p>
+</div>
+<div id="survival_parametric" class="section level3">
+<h3>survival_parametric</h3>
+<p>rnaSentry parametric models: 7-gene signature, 226 samples. AIC
+comparison: weibull AIC 641.29 delta 0.00 weight 0.540 * loglogistic AIC
+642.60 delta 1.31 weight 0.281 lognormal AIC 643.58 delta 2.29 weight
+0.172 exponential AIC 649.68 delta 8.38 weight 0.008 Best model:
+weibull. Signature locked. 1 issue(s) flagged: [info] aic_models_close:
+The two best-fitting models differ in AIC by less than 2; their evidence
+is nearly equivalent.</p>
+</div>
 </div>
 
 
