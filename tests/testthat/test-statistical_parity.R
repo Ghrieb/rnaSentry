@@ -100,6 +100,31 @@ test_that("cox_model Schoenfeld table matches survival::cox.zph", {
   expect_equal(cm$zph_summary$term, term_ref)
 })
 
+test_that("cox_model concordance is the risk-score direction (independently recomputed)", {
+  # cox_model() takes its concordance from summary(fit)$concordance, i.e. the
+  # coxph method's own C. Verify that value independently against
+  # survival::concordance() on the fitted linear predictor with reverse = TRUE
+  # (higher linear predictor = shorter survival), so a future direction flip in
+  # the model construction cannot pass silently.
+  se <- make_survival_se()
+  sig <- build_signature(se, "time", "event", top_n = 10, repeats = 2,
+                         folds = 3, seed = 7)
+  cm <- cox_model(sig, se, confounders = "age")
+  lp <- as.numeric(stats::predict(cm$fit, type = "lp"))
+  ref <- survival::concordance(
+    survival::Surv(SummarizedExperiment::colData(se)$time,
+                   SummarizedExperiment::colData(se)$event) ~ lp,
+    reverse = TRUE
+  )
+  expect_equal(cm$concordance, as.numeric(ref$concordance[1]),
+               tolerance = 1e-6)
+  # Direction agreement across stages: both cox_model's in-sample concordance
+  # and build_signature's held-out CV mean must beat 0.5 on the same
+  # signal-bearing fixture (a sign flip would send both well below 0.5).
+  expect_gt(cm$concordance, 0.5)
+  expect_gt(mean(sig$cv_results$c_index, na.rm = TRUE), 0.5)
+})
+
 test_that("survival_parametric AIC/loglik/npar match stats::AIC on the same fits", {
   se <- make_survival_se()
   sig <- build_signature(se, "time", "event", top_n = 10, repeats = 2,

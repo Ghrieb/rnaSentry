@@ -34,9 +34,10 @@ maintainer email on https://support.bioconductor.org), 1 justified WARNING
 (`set.seed` in the documented `seed` argument), 12 advisory NOTES. Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
-`00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`
-(post sign-convention fix; 06 was re-run after the `NEWS`/man-page updates and
-remains 0 ERROR / 1 WARNING / 1 NOTE).
+`00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
+`07_as_cran.txt` (post sign-convention fix; 06 re-run after the
+`NEWS`/man-page updates, 07 re-run after the cox_model concordance parity test —
+both 0 ERROR / 1 WARNING / 1 NOTE).
 
 ## Gate 1 — full test suite
 
@@ -45,7 +46,7 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **119 files / 390 passed / 0 failed / 0 error / 0 warning**.
+Expected: **120 files / 393 passed / 0 failed / 0 error / 0 warning**.
 The suite must be run via `devtools::test()` (loading environment differs from
 a plain `test_dir`). Log: `logs/00.1_test.txt`.
 
@@ -64,6 +65,9 @@ package with an independent reference implementation and asserts equality:
 - `km_curve` / `validate_external` log-rank ↔ `survival::survdiff`
 - `design_audit` Cramér's V ↔ `sqrt(chisq/(n*(min(r,c)-1)))`
 - `cox_model` HR / CI / p ↔ independent `survival::coxph` + `stats::confint`
+- `cox_model` concordance ↔ `survival::concordance(Surv ~ lp, reverse = TRUE)`
+  on the fitted linear predictor (independently recomputes the direction that
+  `summary(fit)$concordance` reports)
 - Schoenfeld rho / p ↔ `survival::cox.zph`
 - `survival_parametric` AIC / loglik / npar ↔ `stats::AIC` / `logLik`
 - `build_signature` fold concordance ↔ `survival::concordance` on replayed
@@ -104,8 +108,10 @@ four-point evidence:
 Also documents the out-of-sample result: held-out CV concordance of the
 selected signature is **0.783** (in-sample 0.840, random-gene control 0.582 on
 real data / 0.490 on simulated nulls). An earlier reading of 0.217 was the
-symptom of the sign-convention bug described under Gate 3, now fixed. See
-`face_validity_review.md`. Log: `logs/04_face_validity.txt`, report:
+symptom of the sign-convention bug described under Gate 3, now fixed. Known
+limitation: the discovery cohort has 83 events for a 20-gene signature (~4.2
+events/parameter, below the ~10 rule of thumb) — see the "Known limitation"
+note in `face_validity_review.md`. Log: `logs/04_face_validity.txt`, report:
 `logs/face_validity_report.html`.
 
 ## Gate 6 — cross-platform (not yet run on this machine)
@@ -120,7 +126,7 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
-2. Gate 1 suite (119/390).
+2. Gate 1 suite (120/393).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. Commit logs with the change at a logical checkpoint.

@@ -96,6 +96,19 @@ have caught the original error.
   helpers, pinned by a regression test; (2) the concordance sign-convention bug
   described above, pinned by direction-sensitive tests.
 
+## Known limitation: events per parameter in the discovery cohort
+
+GSE20685 has 83 deaths and the selected signature has 20 genes — about
+**4.2 events per model parameter**, below the ~10 events-per-parameter rule of
+thumb commonly cited for stable Cox-model estimation. The held-out CV
+concordance (0.783) far exceeds the random-gene control (0.582), and the
+risk-group split is highly significant (log-rank p = 3.8e-17), which together
+support genuine held-out signal; but the parameterization is intentionally
+small (`top_n = 20`), and the per-gene hazard ratios should be interpreted with
+this event count in mind. A larger discovery cohort — or a regularized /
+smaller signature — would tighten per-parameter stability. This is a
+face-validity gate, not a claim of clinical utility.
+
 ## Verdict
 
 The package processes a real breast-cancer cohort end-to-end, recovers the

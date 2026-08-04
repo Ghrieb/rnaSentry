@@ -410,6 +410,11 @@ build_signature <- function(se, time_col, event_col,
                                  sprintf("Constant risk score on fold %d of repeat %d.",
                                          f, r))
             } else {
+              # Risk score: larger = higher hazard = shorter survival, so the
+              # concordance must use reverse = TRUE (survival::concordance's
+              # default means "larger x => longer survival"). Regression guard:
+              # test-statistical_parity.R ("survival::concordance reverse
+              # convention satisfies C + C_rev = 1") fails if this is reverted.
               conc <- tryCatch(
                 suppressWarnings(
                   survival::concordance(

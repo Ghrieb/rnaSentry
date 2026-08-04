@@ -63,26 +63,26 @@ null-data simulation 0.424 → 0.576; control 0.510 → 0.490; `validate_externa
 0.160 → 0.840. The "winner's-curse below 0.5" narrative in the early
 face-validity review was an artifact of this bug and has been corrected.
 
-## Statistical-parity gaps (Step-2 targets)
+## Statistical-parity coverage (Step-2 targets)
 
-The suite verifies *shape and self-consistency* but not agreement with
-reference implementations for the statistics the package computes itself:
+`tests/testthat/test-statistical_parity.R` re-implements each statistic the
+package computes itself with an independent reference implementation. Status of
+the Step-2 targets:
 
-1. **Log-rank p** in `km_curve()` / `validate_external()`: only checked
-   finite/in [0,1]. No parity vs `survival::survdiff`.
-2. **Cramér's V** effect size in `design_audit()` confounder scan: only checked
-   present/flagged. No parity vs `sqrt(chisq / (n*(min(r,c)-1)))`.
-3. **Cox HR/CI** in `cox_model()`: coefficients compared to the signature's
-   own internal Cox fit, but never to an independent `survival::coxph`
-   (`exp(coef)`, `confint`).
-4. **Parametric AIC** in `survival_parametric()`: table is self-consistent but
-   not compared to `stats::AIC(survreg(...))` per distribution.
-5. **Schoenfeld PH diagnostics** in `cox_model()` `$zph_summary`: shape only,
-   no parity vs `survival::cox.zph`.
-6. **CV C-index** in `build_signature()` `cv_results`: bounded, not compared to
-   `survival::concordance` on the same held-out folds.
-7. **sex_check rank score**: scenario tests only; no parity vs the documented
-   XIST-vs-Y rank scoring rule.
+| # | Statistic | Independent reference | Status |
+|---|-----------|-----------------------|--------|
+| 1 | `km_curve`/`validate_external` log-rank p | `survival::survdiff` | closed |
+| 2 | `design_audit` Cramér's V | `sqrt(chisq/(n*(min(r,c)-1)))` | closed |
+| 3 | `cox_model` HR / CI / p | independent `survival::coxph` + `stats::confint` | closed |
+| 4 | `survival_parametric` AIC / loglik / npar | `stats::AIC` / `logLik` | closed |
+| 5 | `cox_model` Schoenfeld rho / p | `survival::cox.zph` | closed |
+| 6 | `build_signature` CV C-index | `survival::concordance` on replayed event-stratified folds (`reverse = TRUE`) | closed |
+| 6b | `cox_model` concordance direction | `survival::concordance(Surv ~ lp, reverse = TRUE)` on the fitted linear predictor | closed |
+| 7 | `sex_check` rank score | documented XIST-vs-Y scoring rule | **open** |
+
+Item 7 remains open: `sex_check` is verified by scenario tests (swap detection,
+AMBIGUOUS/MISSING handling) but its rank score has no parity assertion against
+the documented XIST-vs-Y rule.
 
 ## Edge-case / coverage gaps
 
@@ -103,13 +103,15 @@ reference implementations for the statistics the package computes itself:
 
 ## Verification status (gate logs, see logs/)
 
-- tests: 322 passed / 0 failed (00.1_test.txt, re-run on final code)
-- R CMD check tarball: OK 0/0/0 (00.2)
+- tests: **120 files / 393 passed / 0 failed** (00.1_test.txt, on commit
+  `629d8a6` + the parity additions that close targets 6b)
+- R CMD check tarball: 0 ERROR (00.2 pre-fix; re-confirmed 0 ERROR after the
+  sign-convention fix — 05/06/07)
 - BiocCheck source + tarball: 1 ERROR (support-site email, environmental),
   1 WARNING (`set.seed`, justified), 12 NOTES; GitClone 0 ERROR / 1 WARNING
   (CITATION doi) (00.3, 00.5)
-- `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 2 NOTES
-  (pandoc README/NEWS; examples >5s = package-load overhead) (00.6)
+- `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
+  environmental) (05/06/07, post sign-convention fix)
 
 ## Priorities
 
@@ -125,7 +127,7 @@ A fresh-context agent probed ~90 degenerate inputs across all public
 functions. 78+ probes were correctly rejected by existing guardrails or
 returned flagged output. The pass surfaced 3 bug families + 4 soft-warns,
 all fixed and pinned by tests in `tests/testthat/test-adversarial_regressions.R`
-(+30 expectations; suite now 352 passed / 0 failed).
+(+30 expectations; suite now 393 passed / 0 failed).
 
 ### Fixed: REAL-BUG A — `stats::sd(x) == 0` NA-crash
 `sd()` is NA for length-1 vectors or vectors containing `Inf`, and `if(NA)`

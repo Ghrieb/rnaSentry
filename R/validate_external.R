@@ -220,6 +220,10 @@ validate_external <- function(sig, external_se, time_col = NULL,
                                events_low, events_high))
   }
 
+  # Risk score: larger = higher hazard = shorter survival, so the concordance
+  # must use reverse = TRUE (survival::concordance's default means "larger x =>
+  # longer survival"). Regression guard: test-statistical_parity.R
+  # ("survival::concordance reverse convention satisfies C + C_rev = 1").
   conc <- tryCatch(
     suppressWarnings(
       survival::concordance(survival::Surv(time, event) ~ score,
