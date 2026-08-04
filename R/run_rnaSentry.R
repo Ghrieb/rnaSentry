@@ -95,6 +95,16 @@ run_rnaSentry <- function(se, time_col, event_col,
 
   stages <- list()
 
+  # Lock enforcement: if a locked signature already exists in this session,
+  # refuse to re-run the pipeline.  The user must unlock first or start fresh.
+  locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+  if (length(ls(locked_env)) > 0) {
+    stop("A locked signature already exists in this session. ",
+         "Call lock_signature(sig, lock = FALSE) on the locked signature ",
+         "before re-running the pipeline, or start a fresh R session.",
+         call. = FALSE)
+  }
+
   if (length(design_vars) > 0) {
     stages$design_audit <- design_audit(se, design_vars = design_vars)
   }

@@ -2,6 +2,12 @@
 # they exist to keep per-stage statistics (normality checks, effect sizes,
 # assay selection) in one place so every stage reports the same measures.
 
+# Session-level environment for lock enforcement. When lock_signature() locks
+# a signature, it stores a gene-set fingerprint here; build_signature() checks
+# this environment and refuses to proceed if a locked signature already exists,
+# preventing silent re-selection after survival analysis.
+.rnaSentry_locked_sigs <- new.env(parent = emptyenv())
+
 # Audit-flag ledger. Every stage reports issues through the same schema
 # (check, severity, detail, stage) so downstream consumers such as
 # generate_report() can assemble a uniform audit trail. The stage is carried

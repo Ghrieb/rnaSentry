@@ -6,6 +6,13 @@
 #' publication can then be protected. The function is copy-on-write: the
 #' input object is never modified and the updated signature is returned.
 #'
+#' @section Enforceable lock:
+#' Locking stores a gene-set fingerprint in a session-level environment.
+#' While this fingerprint is set, \code{build_signature()} will refuse to
+#' run, preventing silent re-selection of genes after survival analysis.
+#' The lock can be reversed by calling \code{lock_signature(sig, lock = FALSE)},
+#' but doing so after survival stages have been run is not recommended.
+#'
 #' @param sig An object of class \code{"rnaSentry_signature"}, as returned by
 #'   \code{\link{build_signature}}.
 #' @param lock Logical. \code{TRUE} (default) locks the signature,
@@ -46,6 +53,10 @@ lock_signature <- function(sig, lock = TRUE) {
     out$locked <- TRUE
     out$lock_time <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S", tz = "UTC"),
                             " UTC")
+    # Store gene-set fingerprint in session environment for lock enforcement
+    locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+    gene_hash <- paste(sort(out$genes), collapse = "|")
+    locked_env[[gene_hash]] <- TRUE
     out$flags <- .add_flag(fl, "signature_locked", "info",
                            "Signature locked against downstream mutation.",
                            stage = "lock_signature")
@@ -55,6 +66,11 @@ lock_signature <- function(sig, lock = TRUE) {
     }
     out$locked <- FALSE
     out$lock_time <- NULL
+    # Remove fingerprint from session environment
+    locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+    if (length(ls(locked_env)) > 0) {
+      rm(list = ls(locked_env), envir = locked_env)
+    }
     out$flags <- .add_flag(fl, "signature_unlocked", "info",
                            "Signature unlocked; downstream stages may be rerun.",
                            stage = "lock_signature")

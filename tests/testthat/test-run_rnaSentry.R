@@ -1,6 +1,17 @@
 library(SummarizedExperiment)
 
+# Clear lock-enforcement environment before each test in this file
+.clear_locks <- function() {
+  if (exists(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))) {
+    locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+    if (length(ls(locked_env)) > 0) {
+      rm(list = ls(locked_env), envir = locked_env)
+    }
+  }
+}
+
 test_that("run_rnaSentry runs the full pipeline and renders a report", {
+  .clear_locks()
   skip_if_not_installed("rmarkdown")
   skip_if_not_installed("knitr")
   se <- make_survival_se()
@@ -23,6 +34,7 @@ test_that("run_rnaSentry runs the full pipeline and renders a report", {
 })
 
 test_that("run_rnaSentry can skip the report and the design audit", {
+  .clear_locks()
   se <- make_survival_se()
   run <- run_rnaSentry(se, "time", "event", top_n = 10, repeats = 2,
                        folds = 3, seed = 7, render_report = FALSE)

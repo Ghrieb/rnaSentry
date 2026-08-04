@@ -1,5 +1,14 @@
 library(SummarizedExperiment)
 
+# Clear the lock-enforcement environment at the start of every test run so
+# that locks set by one test do not leak into subsequent tests.
+if (exists(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))) {
+  locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+  if (length(ls(locked_env)) > 0) {
+    rm(list = ls(locked_env), envir = locked_env)
+  }
+}
+
 # Shared synthetic fixtures for the rnaSentry test suite. Constructors build
 # small SummarizedExperiment objects inline, mirroring the style of the
 # existing test files, so pipeline tests stay fast and network-free.

@@ -67,3 +67,28 @@ test_that("print shows the lock state", {
   expect_output(print(sig), "Not locked")
   expect_output(print(lock_signature(sig)), "Locked")
 })
+
+test_that("lock enforcement prevents run_rnaSentry when locked", {
+  # Simulate the session-environment enforcement: lock a signature, then
+  # verify that run_rnaSentry() refuses to re-run until unlocked.
+  se <- make_survival_se()
+  sig <- build_signature(se, "time", "event", top_n = 3, repeats = 1,
+                         folds = 2, seed = 1)
+  locked <- lock_signature(sig)
+  expect_true(length(ls(
+    get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+  )) > 0)
+  expect_error(run_rnaSentry(se, time_col = "time", event_col = "event",
+                              top_n = 3, repeats = 1, folds = 2, seed = 1,
+                              render_report = FALSE),
+               "locked signature already exists")
+  # Unlock and verify pipeline works again
+  unlocked <- lock_signature(locked, lock = FALSE)
+  expect_equal(length(ls(
+    get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+  )), 0)
+  result <- run_rnaSentry(se, time_col = "time", event_col = "event",
+                           top_n = 3, repeats = 1, folds = 2, seed = 1,
+                           render_report = FALSE)
+  expect_true("stages" %in% names(result))
+})
