@@ -38,7 +38,7 @@
   preventing silent gene-set re-selection after survival analysis.
 - External validation never recomputes the cutpoint from external data; the
   discovery cutpoint is applied unchanged.
-- Validation dossier: statistical-parity suite (142 blocks / 441
+- Validation dossier: statistical-parity suite (143 blocks / 445
   expectations), adversarial pass with regression tests, simulation study,
   real-data face validity, and a live GEO cross-cohort gate (GSE31210 ->
   GSE50081), including the documented CV-optimism (selection-leakage) finding.

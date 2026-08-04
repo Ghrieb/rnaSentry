@@ -39,7 +39,7 @@
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... [11s] OK
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -53,17 +53,17 @@
 'qpdf' is needed for checks on size reduction of PDFs
 * checking installed files from 'inst/doc' ... OK
 * checking files in 'vignettes' ... OK
-* checking examples ... [20s] OK
+* checking examples ... [17s] OK
 Examples with CPU (user + system) or elapsed time > 5s
                 user system elapsed
-build_signature 7.03   0.43    7.68
+build_signature 5.78   0.27    6.14
 * checking for unstated dependencies in 'tests' ... OK
-* checking tests ... [60s] OK
-  Running 'testthat.R' [60s]
+* checking tests ... [48s] OK
+  Running 'testthat.R' [47s]
 * checking for unstated dependencies in vignettes ... OK
 * checking package vignettes ... OK
-* checking re-building of vignette outputs ... [87s] OK
-* checking PDF version of manual ... [10s] OK
+* checking re-building of vignette outputs ... [70s] OK
+* checking PDF version of manual ... OK
 * checking HTML version of manual ... NOTE
 Skipping checking HTML validation: no command 'tidy' found.
 Please obtain a recent version of HTML Tidy by downloading a binary

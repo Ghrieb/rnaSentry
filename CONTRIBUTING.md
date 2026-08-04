@@ -55,7 +55,7 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 | Gate | What it runs | How |
 |---|---|---|
 | 0 | Hygiene + check | `R CMD build`, `R CMD check --as-cran` on the tarball (expect 0 ERROR; the only WARNING/NOTE are the `qpdf`/`tidy` external tools), `BiocCheck` |
-| 1 | Full test suite | `Rscript <temp>/run_tests_parity.R` (devtools::test) — 142 blocks / 441 expectations / 0 fail / 0 error / 32 expected guardrail warnings |
+| 1 | Full test suite | `Rscript <temp>/run_tests_parity.R` (devtools::test) — 143 blocks / 445 expectations / 0 fail / 0 error / 32 expected guardrail warnings |
 | 2 | Adversarial review + stale-number sweep | `powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1` (0 hits outside `validation/`) |
 | 3 | Statistical parity | every statistic re-implemented independently and asserted equal (log-rank, Cramér's V, Cox HR/CI/p, Schoenfeld, AIC/loglik, fold CV C, `C + C_rev = 1`) |
 | 4 | Simulation study | `Rscript validation/simulate_study.R` — **15 falsifiable targets / 15 PASS** (Sims 1-5 + Sim 6 power analysis) |
@@ -79,7 +79,7 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 
 ## Full regression loop after any code change
 
-1. Gate 1 suite (142/441, 0 fail, 0 error).
+1. Gate 1 suite (143/445, 0 fail, 0 error).
 2. `R CMD build` + `R CMD check --as-cran` on the tarball (0 ERROR; `qpdf`/
    `tidy` WARNING/NOTE only).
 3. If statistics or tests changed: Gate 3 parity suite + Gate 4 simulation

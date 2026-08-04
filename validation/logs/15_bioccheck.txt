@@ -8,7 +8,7 @@
 → BiocCheckDir: C:/Users/Hani/Desktop/Academic File/rnaSentry_pkg/rnaSentry/rnaSentry.BiocCheck
 → BiocCheckVersion: 1.44.2
 → sourceDir: C:/Users/Hani/Desktop/Academic File/rnaSentry_pkg/rnaSentry
-→ installDir: C:\Users\Hani\AppData\Local\Temp\RtmpkVKgJI\file327c116f3c64
+→ installDir: C:\Users\Hani\AppData\Local\Temp\RtmpgdsRIS\file3e5067be36ba
 → isTarBall: FALSE
 → platform: windows
 ── Running BiocCheck on rnaSentry ──────────────────────────────────────────────
