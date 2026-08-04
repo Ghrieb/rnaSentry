@@ -10,7 +10,8 @@
 #' \emph{discovery} cutpoint, and reports the external discriminant validity:
 #' a log-rank test between the groups, per-group median survival and event
 #' counts, and the concordance index of the continuous risk score against the
-#' external survival outcome.
+#' external survival outcome (Harrell's C in the risk-score convention: a
+#' higher risk score is concordant with an earlier event).
 #'
 #' The stage \emph{never} recomputes a within-cohort cutpoint. The
 #' \code{cutpoint} must be passed explicitly (for example the discovery-cohort
@@ -221,7 +222,8 @@ validate_external <- function(sig, external_se, time_col = NULL,
 
   conc <- tryCatch(
     suppressWarnings(
-      survival::concordance(survival::Surv(time, event) ~ score, data = d)
+      survival::concordance(survival::Surv(time, event) ~ score,
+                            data = d, reverse = TRUE)
     ),
     error = function(e) NULL
   )

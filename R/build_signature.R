@@ -22,7 +22,8 @@
 #'     the training samples and the concordance index of the resulting risk
 #'     score is evaluated on the held-out samples. The mean and standard
 #'     deviation of the per-fold concordance are returned as
-#'     \code{cv_summary}.
+#'     \code{cv_summary}. Concordance is Harrell's C in the risk-score
+#'     convention: a higher risk score is concordant with an earlier event.
 #' }
 #'
 #' The return value has class \code{"rnaSentry_signature"} and is the input
@@ -412,7 +413,8 @@ build_signature <- function(se, time_col, event_col,
               conc <- tryCatch(
                 suppressWarnings(
                   survival::concordance(
-                    survival::Surv(time_vec[test], event_vec[test]) ~ score_test
+                    survival::Surv(time_vec[test], event_vec[test]) ~ score_test,
+                    reverse = TRUE
                   )
                 ),
                 error = function(e) NULL

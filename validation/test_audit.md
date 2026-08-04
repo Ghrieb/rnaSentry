@@ -39,6 +39,30 @@ pass and (b) the Step-2 statistical-parity tests.
 - **One true parity test already exists**: `validate_external$concordance`
   against `survival::concordance` (`test-validate_external.R:62-67`).
 
+## Reviewer-caught defect: concordance sign convention (fixed)
+
+A real-data review of GSE20685 (CV C = 0.217, ~9 SD below chance) showed the
+`survival::concordance(Surv ~ x)` default (`reverse = FALSE`) means "larger x ⇒
+longer survival", so both risk-score call sites reported `1 − Harrell's C`:
+
+- `R/build_signature.R` (held-out CV concordance) — fixed with `reverse = TRUE`.
+- `R/validate_external.R` — same fix.
+- `R/cox_model.R` was already correct (uses the coxph method's own concordance).
+
+The existing parity tests could not catch this because they replayed the same
+inverted call. The blind spots are now closed with:
+- `reverse = TRUE` in both parity replays (`test-statistical_parity.R`,
+  `test-validate_external.R`).
+- Direction guards: CV mean > 0.5 on a signal-bearing fixture; `validate_external`
+  concordance > 0.5 on a cohort whose survival is engineered to follow the
+  signature score.
+- A `C + C_rev = 1` invariant test in `test-statistical_parity.R`.
+
+Impact on previously reported numbers (all `1 − C`): GSE20685 CV 0.217 → 0.783;
+null-data simulation 0.424 → 0.576; control 0.510 → 0.490; `validate_external`
+0.160 → 0.840. The "winner's-curse below 0.5" narrative in the early
+face-validity review was an artifact of this bug and has been corrected.
+
 ## Statistical-parity gaps (Step-2 targets)
 
 The suite verifies *shape and self-consistency* but not agreement with

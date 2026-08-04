@@ -34,7 +34,8 @@ maintainer email on https://support.bioconductor.org), 1 justified WARNING
 (`set.seed` in the documented `seed` argument), 12 advisory NOTES. Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
-`00.4_as_cran.txt`, `00.6_as_cran.txt`.
+`00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt` (post sign-convention
+fix).
 
 ## Gate 1 — full test suite
 
@@ -43,7 +44,7 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **117 files / 386 passed / 0 failed / 0 error / 0 warning**.
+Expected: **119 files / 390 passed / 0 failed / 0 error / 0 warning**.
 The suite must be run via `devtools::test()` (loading environment differs from
 a plain `test_dir`). Log: `logs/00.1_test.txt`.
 
@@ -65,7 +66,15 @@ package with an independent reference implementation and asserts equality:
 - Schoenfeld rho / p ↔ `survival::cox.zph`
 - `survival_parametric` AIC / loglik / npar ↔ `stats::AIC` / `logLik`
 - `build_signature` fold concordance ↔ `survival::concordance` on replayed
-  event-stratified seeded folds
+  event-stratified seeded folds, all with `reverse = TRUE` (the risk-score
+  convention). Direction guards: on a signal-bearing fixture the CV mean must
+  beat 0.5, and `validate_external` concordance must beat 0.5 on a cohort
+  whose survival is engineered to follow the signature score. A dedicated
+  invariant asserts `concordance(Surv ~ x) + concordance(Surv ~ x,
+  reverse = TRUE) = 1`. These tests were added after a reviewer caught a
+  sign-convention bug in `build_signature()` and `validate_external()` that
+  had reported `1 − Harrell's C` (see `face_validity_review.md` and
+  `test_audit.md`).
 
 ## Gate 4 — simulation study (11 falsifiable targets)
 
@@ -91,11 +100,12 @@ four-point evidence:
 3. `design_audit` flags subtype (eta² = 0.76) — biologically plausible;
 4. ≥ 1 limitation warning in the report (`proportional_hazards`).
 
-Also documents the honest-out-of-sample finding: held-out CV concordance of the
-selected signature is 0.217 with a random-gene control at 0.418 — selection-induced
-winner's curse, reported honestly by the pipeline, confirmed by the parity +
-simulation gates. See `face_validity_review.md`. Log: `logs/04_face_validity.txt`,
-report: `logs/face_validity_report.html`.
+Also documents the out-of-sample result: held-out CV concordance of the
+selected signature is **0.783** (in-sample 0.840, random-gene control 0.582 on
+real data / 0.490 on simulated nulls). An earlier reading of 0.217 was the
+symptom of the sign-convention bug described under Gate 3, now fixed. See
+`face_validity_review.md`. Log: `logs/04_face_validity.txt`, report:
+`logs/face_validity_report.html`.
 
 ## Gate 6 — cross-platform (not yet run on this machine)
 

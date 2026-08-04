@@ -160,7 +160,7 @@ test_that("build_signature fold concordance matches concordance on the same fold
     conc <- tryCatch(
       suppressWarnings(
         survival::concordance(survival::Surv(time_vec[test], event_vec[test]) ~
-                                score_test)
+                                score_test, reverse = TRUE)
       ),
       error = function(e) NULL
     )
@@ -170,4 +170,22 @@ test_that("build_signature fold concordance matches concordance on the same fold
 
   expect_equal(sig$cv_results$c_index, ref)
   expect_equal(sig$cv_results$fold, seq_len(folds))
+  # Direction guard: the fixture plants higher expression -> shorter survival,
+  # so a correctly-oriented risk score must beat 0.5 on held-out folds.
+  # (A sign-flipped concordance convention would push this well below 0.5.)
+  expect_gt(mean(sig$cv_results$c_index, na.rm = TRUE), 0.5)
+})
+
+test_that("survival::concordance reverse convention satisfies C + C_rev = 1", {
+  # Guards the assumption behind the risk-score convention used in
+  # build_signature() and validate_external(): reversing the association of a
+  # numeric predictor must give a concordance exactly complementary to 1.
+  set.seed(9)
+  t <- round(stats::rexp(40, rate = 0.05), 1)
+  e <- stats::rbinom(40, 1, 0.7)
+  x <- stats::rnorm(40)
+  y <- survival::Surv(t, e)
+  c1 <- as.numeric(survival::concordance(y ~ x)$concordance[1])
+  c2 <- as.numeric(survival::concordance(y ~ x, reverse = TRUE)$concordance[1])
+  expect_equal(c1 + c2, 1, tolerance = 1e-9)
 })

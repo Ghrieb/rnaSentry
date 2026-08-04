@@ -37,9 +37,9 @@ pattern for seed-parameterized functions and is exercised by the test suite
 - **No 'fnd' role found in Authors@R**: the work is not grant-funded; the
   `fnd` role does not apply.
 - **Avoid 'suppressWarnings'/'*Messages' if possible (7)**: two locations
-  flagged — `R/build_signature.R:269` wraps a per-gene `coxph` fit during
+  flagged — `R/build_signature.R:277` wraps a per-gene `coxph` fit during
   univariate screening (thousands of fits; convergence warnings are expected
-  and handled), and `R/validate_external.R:223` wraps `survival::concordance`.
+  and handled), and `R/validate_external.R:224` wraps `survival::concordance`.
   Both are deliberate, narrowly-scoped suppression around a single robust
   statistic. Justified.
 - **Function length > 50 lines (10 functions)**: long functions implement

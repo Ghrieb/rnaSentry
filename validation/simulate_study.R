@@ -113,7 +113,7 @@ sig_null <- build_signature(se_null, "time", "event", top_n = 5,
 ci_mean <- sig_null$cv_summary[["mean"]]
 check(ci_mean < 0.6,
       "build_signature on null data reports no spurious signal",
-      sprintf("mean C-index = %.3f (< 0.6; downward selection bias documented)", ci_mean),
+      sprintf("mean C-index = %.3f (< 0.6; null data never yield strong signal)", ci_mean),
       sprintf("mean C-index = %.3f >= 0.6: spurious signal", ci_mean))
 # Calibration control: identical CV protocol with RANDOM (unselected) genes.
 # The null expectation for a well-calibrated concordance estimator is 0.5.
@@ -140,7 +140,8 @@ for (r in seq_len(5)) {
     score <- as.vector(t(as.matrix(mat3[names(b), test, drop = FALSE])) %*% b)
     cc <- tryCatch(
       suppressWarnings(
-        survival::concordance(survival::Surv(time3[test], ev3[test]) ~ score)
+        survival::concordance(survival::Surv(time3[test], ev3[test]) ~ score,
+                              reverse = TRUE)
       ),
       error = function(e) NULL)
     ref_cis[k] <- if (is.null(cc)) NA_real_ else as.numeric(cc$concordance[1])

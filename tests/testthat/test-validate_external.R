@@ -61,9 +61,38 @@ test_that("validate_external returns the documented structure", {
   expect_true(is.finite(val$concordance) || is.na(val$concordance))
   conc <- survival::concordance(
     survival::Surv(SummarizedExperiment::colData(ext)$time,
-                   SummarizedExperiment::colData(ext)$event) ~ val$score
+                   SummarizedExperiment::colData(ext)$event) ~ val$score,
+    reverse = TRUE
   )
   expect_equal(val$concordance, as.numeric(conc$concordance[1]))
+})
+
+test_that("validate_external concordance uses the risk-score direction", {
+  # External survival is engineered to be driven by the signature score
+  # itself (in the same log2 space the package scores), so a correctly
+  # oriented concordance must beat 0.5; a sign-flipped convention would
+  # invert it to well below 0.5.
+  se <- make_survival_se()
+  sig <- build_signature(se, "time", "event", top_n = 10, repeats = 2,
+                         folds = 3, seed = 7)
+  set.seed(505)
+  n_ext <- 80
+  genes_ext <- c(sig$genes, paste0("extra_gene", seq_len(40)))
+  counts <- matrix(stats::rpois(length(genes_ext) * n_ext, lambda = 400),
+                   nrow = length(genes_ext), ncol = n_ext,
+                   dimnames = list(genes_ext, paste0("E", seq_len(n_ext))))
+  score_true <- as.vector(sig$coefficients %*% log2(counts[sig$genes, ] + 1))
+  event_time <- stats::rexp(n_ext, rate = 0.05 * exp(0.8 * scale(score_true)[, 1]))
+  censor_time <- stats::rexp(n_ext, rate = 0.03)
+  time <- pmin(event_time, censor_time)
+  event <- as.integer(event_time < censor_time)
+  coldata <- S4Vectors::DataFrame(time = time, event = event,
+                                  row.names = colnames(counts))
+  ext <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = counts), colData = coldata)
+  val <- validate_external(sig, ext, cutpoint = stats::median(score_true))
+  expect_true(is.finite(val$concordance))
+  expect_gt(val$concordance, 0.5)
 })
 
 test_that("validate_external errors strictly on missing genes by default", {

@@ -71,18 +71,17 @@ exponential independent of expression (true null). Two checks:
    expectation of 0.5 within ±0.05. This isolates the CV machinery from the
    feature-selection step.
 
-**Result:** `[PASS]` mean C = 0.424 for the full `build_signature()` pipeline;
-`[PASS]` control mean C = 0.510.
+**Result:** `[PASS]` mean C = 0.576 for the full `build_signature()` pipeline;
+`[PASS]` control mean C = 0.490.
 
-> **Documented finding:** under the null, honest held-out CV after selecting the
-> most-significant genes is biased *below* 0.5 (here ≈ 0.42). This is the known
-> feature-selection "winner's curse": genes are picked on the full cohort, so
-> their chance associations are dominated by the training portion of each fold
-> and tend to reverse on held-out samples. The random-gene control (0.510)
-> confirms the concordance machinery itself is well-calibrated; the original
-> plan target of "C-index 0.5 ± 0.1 for null `build_signature()`" was therefore
-> adapted into target (1) plus the control, which is the statistically honest
-> decomposition.
+> **Documented finding:** under the null, the full pipeline reports a mean
+> held-out C-index of 0.576 — a mild upward optimism from feature selection on
+> the full cohort (the classic "winner's curse"), comfortably below the 0.6
+> "no spurious signal" target. The random-gene control (0.490) confirms the CV
+> machinery itself is calibrated around the 0.5 null. Both checks run with
+> `reverse = TRUE` (the risk-score concordance convention); earlier runs with
+> the default `reverse = FALSE` read 0.424 / 0.510, an artifact of the inverted
+> convention that was fixed in `build_signature()` and `validate_external()`.
 
 ## Sim 4 — `cox_model` flags a time-varying hazard (PH violation)
 

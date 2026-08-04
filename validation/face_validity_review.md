@@ -21,8 +21,9 @@ pipeline, evidence extraction) and full log are in
 
 `run_rnaSentry(se, "time", "event", outcome_col = "overall_survival",
 design_vars = c("age", "subtype"), top_n = 20, repeats = 3, folds = 3,
-seed = 42, render_report = TRUE)` completed end-to-end in ~3.8 min and wrote
-`face_validity_report.html`.
+seed = 42, render_report = TRUE)` completed end-to-end and wrote
+`face_validity_report.html`. The signature is reproducible: same 20 genes under
+the same seed before and after the concordance fix below.
 
 ## Four-point face-validity checklist
 
@@ -35,46 +36,70 @@ seed = 42, render_report = TRUE)` completed end-to-end in ~3.8 min and wrote
 
 All four face-validity criteria pass on real data.
 
-## Honest-out-of-sample finding (documented, not a bug)
+## Out-of-sample concordance (sign-convention bug found and fixed)
 
-- The selected 20-gene signature reports **CV concordance 0.217 (sd 0.032)** on
-  held-out folds — far below 0.5 — while the in-sample `km_curve` split is
-  highly significant (p = 3.8e-17).
-- A **random-gene control** running the identical CV protocol with unselected
-  genes on the same cohort gives mean C = **0.418** (simulated null data give
-  the same control at 0.510; see `simulation_study.md`).
-- Interpretation: aggressive top-N selection on ~23.5k genes with 83 events
-  induces the documented winner's-curse bias in honest held-out CV. The pipeline
-  **reports this honestly** rather than over-claiming generalizability; the gap
-  between the selected signature (0.217) and the unselected control (0.418) is
-  selection-induced, and the parity tests + simulation study confirm the CV
-  machinery itself is computed correctly. This is an expected property of
-  strong feature selection and is exactly the kind of limitation a validation
-  report should surface.
+An early run reported **CV concordance 0.217 (sd 0.032)** and the review
+initially rationalized it as extreme selection-induced winner's curse. A
+methodological review challenged that: a C-index ~9 SD below chance with a
+tight sd is not noise, `1 − 0.217 = 0.783` is exactly the biologically expected
+value, and the parity tests could not catch a sign error because they replayed
+the same call.
+
+Diagnosis (recorded in `validation/logs/04_face_validity.txt`):
+`survival::concordance(Surv ~ x)` defaults to **"larger x ⇒ longer survival"**
+(reverse = FALSE). A Cox risk score (larger = higher hazard = shorter survival)
+must be passed with `reverse = TRUE`. Both risk-score call sites in the package
+used the default, so they reported `1 − Harrell's C`:
+
+| Quantity | Reported (bug) | Correct |
+|----------|----------------|---------|
+| CV concordance, GSE20685 | 0.217 | **0.783** (sd 0.032) |
+| representative fold (r1,f1) | 0.190 | 0.810 |
+| in-sample full-model concordance | — | 0.840 |
+| random-gene control (real data) | 0.418 | 0.582 |
+
+The identity `C(default) + C(reverse=TRUE) = 1` held exactly on every fold, and
+the held-out CV (0.783) sits below the in-sample value (0.840) by a modest,
+healthy amount — a strong and directionally correct out-of-sample result, not
+a 0.22 collapse. The same bug affected `validate_external()` (its reported
+0.160 was really 0.840); `cox_model()` was already correct (it uses the coxph
+method's own concordance). Both call sites now pass `reverse = TRUE`, and new
+direction-sensitive regression tests (CV mean > 0.5 on a signal-bearing
+fixture; `validate_external` concordance > 0.5 on a cohort whose survival is
+engineered to follow the signature score; the `C + C_rev = 1` invariant) would
+have caught the original error.
+
+## Interpretation of the corrected numbers
+
+- The selected 20-gene signature has honest held-out discrimination of
+  **0.783** on GSE20685.
+- The random-gene control under the same protocol reads **0.582** on real data
+  (random real genes carry weak signal via shared biology / abundance
+  structure); on simulated null data the same control reads **0.490** (the
+  calibration reference). The signature's 0.783 is far above both → genuine
+  held-out risk signal.
+- No winner's-curse inversion is present; the earlier "poor generalization"
+  reading of 0.217 was an artifact of the inverted concordance convention.
 
 ## Additional observations
 
-- **Tied survival times:** follow-up is recorded at 0.1-year precision, so the
-  real-data concordance estimates carry heavy ties (relevant to the random-gene
-  control reading 0.418 rather than 0.500; on continuous simulated times the
-  same control reads 0.510).
+- **Tied survival times:** follow-up is recorded at 0.1-year precision, so
+  concordance estimates on this cohort carry ties; this affects variance but
+  not the direction of the statistic.
 - **Annotation artifacts:** probe symbols containing ` /// ` (multi-gene
   mappings, e.g. `LOC101928198 /// MFAP3L`) were kept verbatim; the package
   handled them correctly (non-syntactic-name support exercised on real data),
   and a production preprocessing step should split them.
-- **Real-data bug found & fixed:** the first real-data run exposed two related
-  defects that synthetic tests could not: (1) `data.frame()`/`as.data.frame()`
-  mangle gene symbols such as `RP11-28F1.2` or `1-Mar`, so coefficient names no
-  longer matched assay rownames (`mat[genes, ]` subscript out of bounds); and
-  (2) `reformulate()` does not backquote non-syntactic symbols, so the stored
-  Cox formula failed to parse. Both are fixed (`check.names = FALSE` on
-  expression-column data frames, `.strip_backticks()`/`.backquote_names()`
-  helpers) and pinned by a regression test
-  (`test-adversarial_regressions.R` "non-syntactic gene symbols").
+- **Real-data bugs found & fixed:** (1) non-syntactic gene symbols
+  (`RP11-28F1.2`, `1-Mar`) broke data-frame construction and formula parsing —
+  fixed with `check.names = FALSE` and `.strip_backticks()`/`.backquote_names()`
+  helpers, pinned by a regression test; (2) the concordance sign-convention bug
+  described above, pinned by direction-sensitive tests.
 
 ## Verdict
 
 The package processes a real breast-cancer cohort end-to-end, recovers the
 expected survival-signature behavior (risk groups separate, ESR1 protective,
-MKI67 adverse), flags plausible confounders, and surfaces its own limitations
-in the report. Submission gate: **PASS** for real-data face validity.
+MKI67 adverse), flags plausible confounders, surfaces its own limitations in
+the report, and now reports a directionally correct, strong held-out
+concordance (0.783). Submission gate: **PASS** for real-data face validity.
