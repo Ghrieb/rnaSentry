@@ -20,6 +20,7 @@ multi-statement R into a temp script under
 ```powershell
 $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\tools"
 R CMD build rnaSentry
+$env:_R_CHECK_CRAN_INCOMING_ = "false"   # no reliable CRAN connectivity on this machine
 R CMD check rnaSentry_0.99.0.tar.gz --as-cran --output=.\chk
 Rscript -e "BiocCheck::BiocCheck('.')"
 Rscript -e "BiocCheck::BiocCheckGitClone()"   # run on a tree with the
@@ -37,11 +38,18 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
 `07_as_cran.txt` (post sign-convention fix; 06 re-run after the
 `NEWS`/man-page updates, 07 re-run after the cox_model concordance parity test —
-  both 0 ERROR / 1 WARNING / 1 NOTE), `08_as_cran.txt` (2026-08-04, after the
+  both 0 ERROR / 1 WARNING / 1 NOTE),   `08_as_cran.txt` (2026-08-04, after the
   guardrail + README/vignette/report-assumptions round — 0 ERROR / 1 WARNING /
   1 NOTE, both environmental), `09_as_cran.txt` and `10_as_cran.txt`
   (2026-08-04, after the `load_counts()` + enforceable-lock round — clean
-  baseline 0 ERROR / 1 WARNING / 1 NOTE, both environmental).
+  baseline 0 ERROR / 1 WARNING / 1 NOTE, both environmental),
+  `11_as_cran.txt` is absent by design (log `11_live_geo.txt` is the Phase-3
+  live GEO run, see Gate 5b), and `12_as_cran.txt` (2026-08-04, after the
+  CV-optimism reframe doc round — clean baseline again).
+  Note: prior gates run `R CMD check --as-cran` with
+  `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
+  connectivity; the remote/incoming block is skipped, so no examples-timing
+  or pandoc NOTEs appear — the documented baseline is 1 WARNING / 1 NOTE).
 
 ## Gate 1 — full test suite
 
@@ -82,6 +90,8 @@ After the 2026-08-04 guardrail/documentation round the sweep scanned 52 files
 and found 19 hits, all still inside `validation/` (the intentional
 before/after correction narrative), exit 0. After the `load_counts()` +
 enforceable-lock round it scans 58 files (19 hits, same narrative), exit 0.
+After the CV-optimism reframe round it scans 60 files (19 hits, same
+narrative), exit 0.
 
 ## Gate 3 — statistical parity
 
@@ -159,6 +169,40 @@ note in `face_validity_review.md`. As of 2026-08-04 `build_signature()`
 so a re-run of the repro flags `events_per_parameter` and the report audit
 trail surfaces it. Log: `logs/04_face_validity.txt`, report:
 `logs/face_validity_report.html`.
+
+## Gate 5b — live GEO cross-cohort test (Phase 3)
+
+`validation/repro_live_geo.R` downloads (or reads from the local cache under
+`validation/cache/`) two independent GEO LUAD cohorts, GSE31210 (discovery,
+226 tumors, 35 deaths) and GSE50081 (external validation, 128
+adenocarcinomas, 52 deaths), then runs the full pipeline on the discovery
+cohort and re-scores the external cohort against the discovery cutpoint.
+
+Two cross-cohort pitfalls are solved deterministically in the script:
+
+1. **Scale mismatch.** GSE31210's deposited series matrix is RMA-*linear*
+   (median ≈ 99) despite the paper's "log2" wording; GSE50081 is log2 RMA.
+   The script log2-transforms at the probe level when the median exceeds 20
+   so both cohorts are on the same scale.
+2. **Batch drift vs. the discovery-median cutpoint.** Raw-score transfer
+   leaves the external cohort 3–6 discovery-SD below the cutpoint (empty risk
+   group). Per-gene **z-scoring within each cohort** makes the cutpoint
+   scale-free; probes collapse to the **mean over all probes per gene**
+   (a per-cohort best-probe rule picked different probes per cohort and was
+   rejected).
+
+Expected output and the gate results (2026-08-04): discovery CV C = 0.862 vs
+permutation-null 0.836 (calibrated PASS), external C = 0.540 / log-rank
+p = 0.266 (**scientific transfer not demonstrated — honest negative**),
+mechanical gates all PASS. The run also documents **selection leakage**: gene
+selection happens on the full cohort before the CV split, so the CV
+concordance is screening-internal and even survival-permuted data yields a
+high null (≈0.8) on this ~21k-gene panel; the package's gates calibrate
+against it and `validate_external()` is the only fully out-of-sample
+estimate. Log: `validation/logs/11_live_geo.txt`, report:
+`validation/logs/live_geo_discovery_report.html`. Result write-up:
+`face_validity_review.md` (live GEO section),
+`submission_success_criteria.md` (Section A gate).
 
 ## Gate 6 — cross-platform (not yet run on this machine)
 

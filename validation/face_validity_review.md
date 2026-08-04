@@ -116,3 +116,77 @@ expected survival-signature behavior (risk groups separate, ESR1 protective,
 MKI67 adverse), flags plausible confounders, surfaces its own limitations in
 the report, and now reports a directionally correct, strong held-out
 concordance (0.783). Submission gate: **PASS** for real-data face validity.
+
+---
+
+# Live GEO test: GSE31210 → GSE50081 (LUAD), honest-negative result
+
+Second independent real-data gate. Reproduction script
+`validation/repro_live_geo.R`; full log `validation/logs/11_live_geo.txt`;
+rendered discovery report `validation/logs/live_geo_discovery_report.html`.
+
+## Design
+
+- **Discovery** GSE31210 (LUAD, GPL570): 226 primary tumors, 35 deaths, OS in
+  days. The deposited series matrix is RMA-*linear* (median ≈ 99, max ≈ 54k)
+  despite the paper's "log2" wording, so it is log2-transformed at the probe
+  level to match GSE50081's log2 RMA.
+- **Validation** GSE50081 (LUAD): 128 adenocarcinomas, 52 deaths, OS in years.
+- Probe→gene collapse by **averaging all probes per gene** (deterministic and
+  cohort-independent; a per-cohort best-probe rule was found to select
+  different probes per cohort and bias cross-cohort scoring).
+- Per-gene **z-score within each cohort** so the discovery-median cutpoint is
+  scale-free across batches (raw/log2 scoring left the external cohort 3–6
+  discovery-SD below the cutpoint; the discovery-median split then fails
+  outright, which `validate_external()` correctly refuses).
+- `run_rnaSentry(top_n = 7, repeats = 5, folds = 5, seed = 20260804,
+  design_vars = stage/age/gender/smoking)`; permutation null with 3 permuted
+  builds.
+
+## Results
+
+| Quantity | Value |
+|----------|-------|
+| Signature | TRAPPC3L, IKZF5, PTH2R, KLHL36, HMOX1, ZCRB1, ADAM10 |
+| CV concordance (screening-internal) | 0.862 |
+| Permutation-null CV (matched-optimism baseline) | 0.836 (sd 0.007) |
+| Delta vs null | +0.026 |
+| External validation concordance | 0.540 |
+| External log-rank p | 0.266 (n.s.) |
+| Events per signature gene | 5.0 (guardrail not tripped) |
+
+## Acceptance-gate outcome (see log)
+
+- **Mechanical gates — all PASS**: `load_counts()` flag ledger; pipeline +
+  rendered report; session lock refused a second run; unlock released the
+  lock; events/gene guardrail satisfied.
+- **Calibrated gate — PASS**: CV C (0.862) exceeds the matched permutation
+  null (0.836).
+- **Scientific transfer — NOT demonstrated**: external C = 0.540, log-rank
+  p = 0.266. The signature does not significantly stratify the independent
+  cohort on this low-power dataset (35 discovery events).
+
+## CV-optimism finding (selection leakage)
+
+The pipeline selects genes on the full cohort *before* the CV split, so the
+reported concordance is **screening-internal**: even survival-permuted data
+yields a high null CV (0.77–0.84 across seeds/cohorts, i.e. ≈0.8 on this
+~21k-gene panel) instead of the 0.5 a fully out-of-sample estimate would give.
+This is winner's-curse optimism from 21k univariate tests × 35 events. The
+package's gates handle it correctly by calibrating against the permutation
+null, and the only fully independent estimate is `validate_external()`. The
+package docs (Rd, README, vignette) now state this explicitly.
+
+Note the distinction from the GSE20685 gate, which used a *random-gene*
+control (0.582 on real data): that control keeps real survival but removes
+selection. The permutation null instead keeps selection and removes signal —
+it is the stricter, matched-optimism calibration used here.
+
+## Verdict
+
+The tool's mechanics, intake checks, lock, report rendering, and honest
+guardrails all performed as designed on independent real GEO data. The
+scientific result is an honest **negative** (a power finding at 35 events, not
+a tool failure), and the demo documents a limitation of the screening-internal
+CV metric that reviewers should be told about. This is the correct outcome for
+the live GEO gate: **mechanics PASS, scientific transfer not demonstrated**.

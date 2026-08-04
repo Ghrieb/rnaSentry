@@ -49,6 +49,17 @@ signature genes after survival analysis, which would otherwise inflate
 reported concordance. Individual stages (for example `validate_external()`)
 remain re-runnable on the locked signature.
 
+## Reading the CV concordance
+
+The concordance reported by `build_signature()` is a **screening-internal**
+metric: genes are selected on the full cohort *before* the CV split, so the
+CV fold is not fully untouched by selection. On a large candidate panel the
+value is *optimistic* — even survival-permuted data yields a high null
+concordance (≈0.8 on ~21k genes) rather than 0.5. Always interpret it
+**relative to a matched null** (a permutation-null or random-gene control),
+and treat `validate_external()` on an independent cohort as the only fully
+out-of-sample estimate.
+
 ## Input requirements
 
 - **Bulk RNA-seq** expression, with **gene symbols** as rownames.

@@ -26,6 +26,19 @@
 #'     convention: a higher risk score is concordant with an earlier event.
 #' }
 #'
+#' \strong{Reading the cross-validated concordance (important).} The univariate
+#' screening that selects the signature runs on the full cohort \emph{before}
+#' the cross-validation split, so the CV fold is \emph{not} fully untouched by
+#' the selection step. On large candidate panels the resulting concordance is
+#' therefore \emph{optimistic} (screening-internal): even data with permuted
+#' survival yields a non-trivial null concordance (e.g. \code{~0.8} on a
+#' ~21k-gene panel, driven by winner's-curse selection), far above the 0.5 a
+#' fully out-of-sample estimate would give. Treat \code{cv_summary} as a
+#' screening-internal stability metric and interpret it \emph{relative} to a
+#' matched null — a permutation-null or random-gene control — rather than
+#' against 0.5 in absolute terms. The only fully independent out-of-sample
+#' estimate is \code{\link{validate_external}()} on a separate cohort.
+#'
 #' The return value has class \code{"rnaSentry_signature"} and is the input
 #' expected by the survival modeling and validation stages
 #' (\code{km_curve()}, \code{cox_model()}, \code{survival_parametric()},

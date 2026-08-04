@@ -2,7 +2,7 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-04 (commit `b161f3a`).
+Last updated 2026-08-04 (Phase-3 live GEO gate).
 
 ## Method summary
 
@@ -96,6 +96,29 @@ decisions.
 - Evidence: `validation/face_validity_review.md`,
   `validation/logs/04_face_validity.txt`, `validation/logs/face_validity_report.html`.
 
+## Live GEO cross-cohort test (Gate 5b, Phase 3)
+
+- Discovery GSE31210 (LUAD, n = 226, 35 deaths) → external GSE50081 (LUAD,
+  n = 128, 52 deaths). Series matrices cached under `validation/cache/`; repro
+  script `validation/repro_live_geo.R`, log `validation/logs/11_live_geo.txt`,
+  rendered discovery report `validation/logs/live_geo_discovery_report.html`.
+- Cross-cohort scoring required per-gene **z-scoring within each cohort**
+  (raw/log2 scales differ across batches and the discovery-median cutpoint
+  then leaves the external cohort with an empty risk group); probes collapsed
+  to the **mean over all probes per gene** (a per-cohort best-probe rule
+  selected different probes per cohort and biased the transfer).
+- Result: discovery CV C = **0.862** vs a matched **permutation-null** of
+  **0.836** (delta +0.026); external validation C = **0.540**, log-rank
+  **p = 0.266**. Mechanical gates all PASS; scientific transfer **not
+  demonstrated** on this low-power discovery (35 events) — reported as an
+  honest negative.
+- CV-optimism finding: gene selection on the full cohort before the CV split
+  makes the CV concordance **screening-internal** — even survival-permuted
+  data yields null CV C ≈ 0.8 (not 0.5) on this ~21k-gene panel. The tool's
+  gates calibrate against that null, and the only fully out-of-sample
+  estimate is `validate_external()`. Package docs (Rd / README / vignette)
+  state this explicitly.
+
 ## R CMD check (Gate 5)
 
 - `R CMD check --as-cran` on fresh tarball: **0 ERROR / 1 WARNING / 1-2 NOTEs**,
@@ -103,7 +126,9 @@ decisions.
   "unable to verify current time"), no package issues.
 - Reproduced across six consecutive gates: `logs/05_as_cran.txt`,
   `06_as_cran.txt`, `07_as_cran.txt`, `08_as_cran.txt`, `09_as_cran.txt`,
-  `10_as_cran.txt` (plus earlier `00.*`).
+  `10_as_cran.txt` (plus earlier `00.*`), and `12_as_cran.txt` (2026-08-04,
+  post CV-reframe doc round — 0 ERROR / 1 WARNING / 1 NOTE, both
+  environmental).
 - BiocCheck equivalent run locally via `validation/docker_check.sh` when a
   Docker-capable machine is available (see `validation/cross_platform.md`).
 

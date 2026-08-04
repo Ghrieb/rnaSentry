@@ -210,6 +210,13 @@ val
   cross-validated concordance and hazard ratios are unstable.
   `build_signature()` warns (`events_per_parameter`); a flagged signature
   should be treated as hypothesis-generating, not confirmatory.
+- **The CV concordance is screening-internal.** Gene selection runs on the
+  full cohort before the CV split, so `build_signature()`'s concordance is
+  optimistic: on a large panel even survival-permuted data yields a high
+  null (≈0.8 on ~21k genes) rather than 0.5. Read it relative to a matched
+  null (permutation or random-gene control), and rely on
+  `validate_external()` on an independent cohort as the fully out-of-sample
+  estimate.
 - **Right input scale.** Raw counts are log2-transformed internally. If you
   store already-logged data under a name like `counts`, it will be
   double-logged; the pipeline warns (`possibly_log_scaled`). Store
