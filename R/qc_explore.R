@@ -29,7 +29,7 @@
 #'     \item{library_size_outliers}{Character vector of sample IDs flagged
 #'       as library-size outliers.}
 #'     \item{flags}{A data.frame summarizing every issue raised, with
-#'       columns \code{check}, \code{severity}, and \code{detail}.}
+#'       columns \code{check}, \code{severity}, \code{detail} and \code{stage}.}
 #'   }
 #'
 #' @examples

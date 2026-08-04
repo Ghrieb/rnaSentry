@@ -74,7 +74,7 @@ An object of class \code{"rnaSentry_design"} (a list) with
     \item{alpha, interaction_alpha, redundant_effect_size}{The thresholds
       used.}
     \item{flags}{Data.frame summarizing every issue raised, with columns
-      \code{check}, \code{severity} and \code{detail}.}
+      \code{check}, \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{

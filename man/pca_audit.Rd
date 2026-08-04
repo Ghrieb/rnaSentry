@@ -52,7 +52,7 @@ An object of class \code{"rnaSentry_pca"} (a list) with elements:
       \code{flagged}), or \code{NULL} when \code{batch_col} is not
       supplied.}
     \item{flags}{A data.frame summarizing every issue raised, with columns
-      \code{check}, \code{severity}, and \code{detail}.}
+      \code{check}, \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{

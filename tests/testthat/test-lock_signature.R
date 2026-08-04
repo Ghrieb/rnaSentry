@@ -1,5 +1,19 @@
 library(SummarizedExperiment)
 
+# Clear lock-enforcement environment. Fixture-based lock tests and successful
+# run_rnaSentry() calls leave fingerprints in the session environment, so any
+# test that asserts on env state (or re-runs the pipeline) must start from a
+# clean slate.
+.clear_locks <- function() {
+  if (exists(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))) {
+    locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
+    if (length(ls(locked_env)) > 0) {
+      rm(list = ls(locked_env), envir = locked_env)
+    }
+  }
+}
+.clear_locks()
+
 test_that("lock_signature rejects non-signature input", {
   expect_error(lock_signature(list(genes = "x")), "rnaSentry_signature")
   expect_error(lock_signature(1), "rnaSentry_signature")
@@ -21,6 +35,8 @@ test_that("locking a signature sets state and records an audit entry", {
   expect_true(any(locked$flags$check == "signature_locked"))
   expect_false(isTRUE(sig$locked))
   expect_null(sig$lock_time)
+  # Cleanup: release the fingerprint this test created.
+  lock_signature(locked, lock = FALSE)
 })
 
 test_that("locking an already locked signature errors", {
@@ -51,6 +67,8 @@ test_that("lock and unlock round-trip", {
   expect_true(isTRUE(l2$locked))
   expect_true(all(c("signature_locked", "signature_unlocked",
                     "signature_locked") %in% l2$flags$check))
+  # Cleanup: release the fingerprint this test created.
+  lock_signature(l2, lock = FALSE)
 })
 
 test_that("flags carry the stage schema for the audit ledger", {
@@ -60,15 +78,21 @@ test_that("flags carry the stage schema for the audit ledger", {
                     colnames(locked$flags)))
   expect_equal(locked$flags$stage[locked$flags$check == "signature_locked"],
                "lock_signature")
+  # Cleanup: release the fingerprint this test created.
+  lock_signature(locked, lock = FALSE)
 })
 
 test_that("print shows the lock state", {
   sig <- make_signature_for_testing()
   expect_output(print(sig), "Not locked")
-  expect_output(print(lock_signature(sig)), "Locked")
+  locked <- lock_signature(sig)
+  expect_output(print(locked), "Locked")
+  # Cleanup: release the fingerprint this test created.
+  lock_signature(locked, lock = FALSE)
 })
 
 test_that("lock enforcement prevents run_rnaSentry when locked", {
+  .clear_locks()
   # Simulate the session-environment enforcement: lock a signature, then
   # verify that run_rnaSentry() refuses to re-run until unlocked.
   se <- make_survival_se()
@@ -91,4 +115,24 @@ test_that("lock enforcement prevents run_rnaSentry when locked", {
                            top_n = 3, repeats = 1, folds = 2, seed = 1,
                            render_report = FALSE)
   expect_true("stages" %in% names(result))
+})
+
+test_that("unlocking one signature leaves other locked signatures protected", {
+  .clear_locks()
+  locked_env <- function() get(".rnaSentry_locked_sigs",
+                               envir = asNamespace("rnaSentry"))
+  se <- make_survival_se()
+  locked_a <- lock_signature(make_signature_for_testing(n_genes = 20))
+  locked_b <- lock_signature(make_signature_for_testing(n_genes = 21))
+  expect_equal(length(ls(locked_env())), 2)
+  # Unlocking B must not release A's fingerprint: the guardrail stays up.
+  lock_signature(locked_b, lock = FALSE)
+  expect_equal(length(ls(locked_env())), 1)
+  expect_error(run_rnaSentry(se, time_col = "time", event_col = "event",
+                              top_n = 3, repeats = 1, folds = 2, seed = 1,
+                              render_report = FALSE),
+               "locked signature already exists")
+  # Cleanup: unlock A so later tests start with an empty lock environment.
+  lock_signature(locked_a, lock = FALSE)
+  expect_equal(length(ls(locked_env())), 0)
 })

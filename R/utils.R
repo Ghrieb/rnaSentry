@@ -3,8 +3,8 @@
 # assay selection) in one place so every stage reports the same measures.
 
 # Session-level environment for lock enforcement. When lock_signature() locks
-# a signature, it stores a gene-set fingerprint here; build_signature() checks
-# this environment and refuses to proceed if a locked signature already exists,
+# a signature, it stores a gene-set fingerprint here; run_rnaSentry() checks
+# this environment and refuses to run while any locked signature exists,
 # preventing silent re-selection after survival analysis.
 .rnaSentry_locked_sigs <- new.env(parent = emptyenv())
 

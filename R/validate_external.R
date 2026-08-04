@@ -56,7 +56,10 @@
 #' data (raw counts or a correctly-named \code{logcounts} assay; pre-scaled
 #' data in a \code{counts}-named slot is flagged as
 #' \code{possibly_log_scaled}). Competing risks and other non-standard
-#' survival structures are not modeled.
+#' survival structures are not modeled. Unlike the discovery stage
+#' (\code{\link{build_signature}}, which requires at least two events), a
+#' one-event minimum applies here; the resulting instability is reported
+#' through the \code{sparse_events} guardrail.
 #'
 #' @return An object of class \code{"rnaSentry_external"} (a list) with
 #'   elements:
@@ -77,7 +80,8 @@
 #'     \item{sig_locked}{Whether the input signature was locked.}
 #'     \item{created}{Provenance timestamp.}
 #'     \item{flags}{Data.frame of issues raised (dropped genes, sparse
-#'       events).}
+#'       events, non-finite concordance), with columns \code{check},
+#'       \code{severity}, \code{detail} and \code{stage}.}
 #'   }
 #'
 #' @examples
@@ -249,6 +253,10 @@ validate_external <- function(sig, external_se, time_col = NULL,
   )
   concordance <- if (is.null(conc)) NA_real_ else
     as.numeric(conc$concordance[1])
+  if (!is.finite(concordance)) {
+    flags <- .add_flag(flags, "concordance_na", "warning",
+                       "External concordance could not be estimated (survival::concordance returned a non-finite value); interpret the external validation cautiously.")
+  }
 
   result <- list(
     genes_used = present,

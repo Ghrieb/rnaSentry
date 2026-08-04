@@ -41,7 +41,8 @@ An object of class \code{"rnaSentry_parametric"} (a list) with
     \item{sig_locked}{Whether the input signature was locked.}
     \item{created}{Provenance timestamp.}
     \item{flags}{Data.frame of issues raised (e.g. a model that failed to
-      fit, or near-tied AIC values).}
+      fit, or near-tied AIC values), with columns \code{check},
+      \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{

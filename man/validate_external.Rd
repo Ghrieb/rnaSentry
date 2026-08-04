@@ -58,7 +58,8 @@ An object of class \code{"rnaSentry_external"} (a list) with
     \item{sig_locked}{Whether the input signature was locked.}
     \item{created}{Provenance timestamp.}
     \item{flags}{Data.frame of issues raised (dropped genes, sparse
-      events).}
+      events, non-finite concordance), with columns \code{check},
+      \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{
@@ -100,7 +101,10 @@ right-censored survival and the same assay convention as the discovery
 data (raw counts or a correctly-named \code{logcounts} assay; pre-scaled
 data in a \code{counts}-named slot is flagged as
 \code{possibly_log_scaled}). Competing risks and other non-standard
-survival structures are not modeled.
+survival structures are not modeled. Unlike the discovery stage
+(\code{\link{build_signature}}, which requires at least two events), a
+one-event minimum applies here; the resulting instability is reported
+through the \code{sparse_events} guardrail.
 }
 
 \examples{

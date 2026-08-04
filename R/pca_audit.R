@@ -62,7 +62,7 @@ utils::globalVariables(".data")
 #'       \code{flagged}), or \code{NULL} when \code{batch_col} is not
 #'       supplied.}
 #'     \item{flags}{A data.frame summarizing every issue raised, with columns
-#'       \code{check}, \code{severity}, and \code{detail}.}
+#'       \code{check}, \code{severity}, \code{detail} and \code{stage}.}
 #'   }
 #'
 #' @examples

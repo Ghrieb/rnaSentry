@@ -59,7 +59,7 @@ decisions.
 
 ## Test suite (Gate 1)
 
-- **142 test blocks / 441 expectations / 0 failures / 0 errors** (32
+- **143 test blocks / 445 expectations / 0 failures / 0 errors** (32
   warnings, all expected: the `events_per_parameter` guardrail firing on
   deliberately small synthetic fixtures).
 - Layers:
@@ -162,7 +162,12 @@ decisions.
   holder, report-template `results='asis'`, S4Vectors → Imports,
   xz-recompressed extdata): **0 ERROR / 1 WARNING / 1 NOTE**, both
   environmental.
-- BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`):
+- `logs/15_as_cran.txt` (2026-08-04, Batch C design-hardening round — targeted
+  lock unlock, `min_events_per_parameter` forwarding, `concordance_na` flag,
+  flags `stage` column docs): **0 ERROR / 1 WARNING / 1 NOTE**, both
+  environmental.
+- BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`
+  and `logs/15_bioccheck.txt`):
   1 environmental ERROR (support-site
   email 404 — register
   `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org),

@@ -35,7 +35,8 @@ maintainer email on https://support.bioconductor.org), 1 justified WARNING
 (`set.seed` in the documented `seed` argument), 13 advisory NOTES (12 at the
 `00.3`/`00.5` runs; 13 at `13_bioccheck.txt`, after `load_counts.R`; re-confirmed
 at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB"
-warning after the extdata recompress). Every item
+warning after the extdata recompress, and at `15_bioccheck.txt` after the Batch C
+round). Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
@@ -55,7 +56,10 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
   1 NOTE, both environmental), and `14_as_cran.txt` (2026-08-04, Batch-A
   ship-blocking round: LICENSE holder, report-template `results='asis'`,
   S4Vectors → Imports, xz-recompressed extdata — 0 ERROR / 1 WARNING /
-  1 NOTE, both environmental).
+  1 NOTE, both environmental), and `15_as_cran.txt` (2026-08-04, Batch C
+  design-hardening round: targeted lock unlock, `min_events_per_parameter`
+  forwarding, `concordance_na` flag, flags `stage` column docs — 0 ERROR /
+  1 WARNING / 1 NOTE, both environmental).
   Note: prior gates run `R CMD check --as-cran` with
   `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
   connectivity; the remote/incoming block is skipped, so no examples-timing
@@ -68,7 +72,7 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **142 blocks / 441 passed / 0 failed / 0 error / 32 warnings**.
+Expected: **143 blocks / 445 passed / 0 failed / 0 error / 32 warnings**.
 The 32 warnings are the `events_per_parameter` guardrail firing on
 deliberately small synthetic fixtures used by tests that exercise other
 behavior; each guardrail has a dedicated test that asserts its own firing
@@ -248,7 +252,7 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
-2. Gate 1 suite (142/441; 32 expected guardrail warnings on small fixtures).
+2. Gate 1 suite (143/445; 32 expected guardrail warnings on small fixtures).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation
    (15/15).
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.

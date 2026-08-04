@@ -38,7 +38,8 @@ An object of class \code{"rnaSentry_km"} (a list) with elements:
     \item{sig_locked}{Whether the input signature was locked.}
     \item{created}{Provenance timestamp.}
     \item{flags}{Data.frame of issues raised (e.g. sparse events per
-      group).}
+      group), with columns \code{check}, \code{severity}, \code{detail} and
+      \code{stage}.}
   }
 }
 \description{

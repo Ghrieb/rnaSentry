@@ -66,8 +66,8 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | # | Rule | Current status |
 |---|---|---|
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
-| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–14; 1 WARNING (qpdf) / 1 NOTE (tidy) at 05–08, 10–13, and 14 (Batch-A round); log 09 was 1 WARNING / 2 NOTEs (one-off `unable to verify current time` note) |
-| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES (12 at `00.3`/`00.5`; 13 after `load_counts.R`, `13_bioccheck.txt` adds the `Avoid 1:` note; re-confirmed at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB" warning via the extdata xz recompress); GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
+| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; 1 WARNING (qpdf) / 1 NOTE (tidy) at 05–08, 10–13, and 14–15 (Batch-A and Batch-C rounds); log 09 was 1 WARNING / 2 NOTEs (one-off `unable to verify current time` note) |
+| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES (12 at `00.3`/`00.5`; 13 after `load_counts.R`, `13_bioccheck.txt` adds the `Avoid 1:` note; re-confirmed at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB" warning via the extdata xz recompress, and at `15_bioccheck.txt` after the Batch C round); GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
 | B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — pending (Docker/rhub/win-builder); local Windows/R 4.5.2 green; see `cross_platform.md` |
 | B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
@@ -80,7 +80,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 
 | Gate | What it runs | Expected | Artifact |
 |---|---|---|---|
-| Gate 1 | Full test suite | 142 blocks / 441 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt` |
+| Gate 1 | Full test suite | 143 blocks / 445 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt` |
 | Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; 20 hits inside (correction narrative), 157 files scanned | `test_audit.md`, `grep_stale_numbers.ps1` |
 | Gate 3 | Statistical parity | items 1–7 closed | `test-statistical_parity.R` |
 | Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt` |

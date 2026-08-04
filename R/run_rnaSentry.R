@@ -46,8 +46,8 @@
 #'   \code{design_terms}.
 #' @param batch_col Optional character. \code{colData(se)} column tested by
 #'   the \code{\link{pca_audit}} batch scan. Defaults to \code{NULL}.
-#' @param method,top_n,p_threshold,repeats,folds,seed,adjust_for_design Passed
-#'   to \code{\link{build_signature}}.
+#' @param method,top_n,p_threshold,repeats,folds,seed,adjust_for_design,
+#'   min_events_per_parameter Passed to \code{\link{build_signature}}.
 #' @param report_file Character. Output file name for the HTML report.
 #' @param report_dir Character. Directory (which must exist) to write the
 #'   report into.
@@ -88,6 +88,7 @@ run_rnaSentry <- function(se, time_col, event_col,
                           method = c("top_n", "p_value"), top_n = 20,
                           p_threshold = 0.05, repeats = 5, folds = 5,
                           seed = NULL, adjust_for_design = TRUE,
+                          min_events_per_parameter = 5,
                           report_file = "rnaSentry_report.html",
                           report_dir = ".", render_report = TRUE) {
   if (!methods::is(se, "SummarizedExperiment")) {
@@ -124,7 +125,8 @@ run_rnaSentry <- function(se, time_col, event_col,
                          design_terms = design_terms, method = method,
                          top_n = top_n, p_threshold = p_threshold,
                          repeats = repeats, folds = folds, seed = seed,
-                         adjust_for_design = adjust_for_design)
+                         adjust_for_design = adjust_for_design,
+                         min_events_per_parameter = min_events_per_parameter)
   sig_locked <- lock_signature(sig)
   stages$build_signature <- sig_locked
 

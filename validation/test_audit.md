@@ -1,6 +1,6 @@
 # rnaSentry test-suite audit
 
-Scope: the 15 `tests/testthat/` files (441 expectations across 142 test
+Scope: the 15 `tests/testthat/` files (445 expectations across 143 test
 blocks per `devtools::test()`) reviewed for what they actually verify,
 against the documented guarantees in `man/`. This audit feeds (a) the Step-1
 adversarial pass and (b) the Step-2 statistical-parity tests.
@@ -18,7 +18,7 @@ adversarial pass and (b) the Step-2 statistical-parity tests.
 | test-survival_parametric.R | 26 | input guards, dist set, AIC table self-consistency (weights sum 1, delta>=0, sorted), km_fit, curves bounds, score == km score, indirect exp-vs-weibull AIC check, lock state, print/plot |
 | test-pca_audit.R | 41 | schema, assay preference, batch-associated PC flag, lm for numeric batch, single-level batch, null batch not flagged, guards, constant-gene filter, too-few-genes stop, BH parity, `possibly_log_scaled` flag on a pre-logged assay, print, ggplot |
 | test-sex_check.R | 13 | input/col guards, missing markers error, mismatch/OK/AMBIGUOUS scenarios, rank-score parity against the documented XIST-vs-Y rule |
-| test-lock_signature.R | 27 | type/arg guards, lock/unlock state transitions, audit entries, stage schema, round-trip, print, session-lock enforcement (`run_rnaSentry()` refuses to re-run while a lock is set; unlock permits re-run) |
+| test-lock_signature.R | 31 | type/arg guards, lock/unlock state transitions, audit entries, stage schema, round-trip, print, session-lock enforcement (`run_rnaSentry()` refuses to re-run while a lock is set; unlock permits re-run), targeted unlock leaves other locked signatures protected |
 | test-qc_explore.R | 10 | type guard, structure, duplicate-sample flag, library-size outlier, non-integer counts, print |
 | test-run_rnaSentry.R | 13 | full pipeline + report render, skip-report, input guards, lock-refusal at the run level |
 | test-generate_report.R | 7 | named-list guard, output-dir guard, report renders non-empty, report HTML contains the Pipeline assumptions section |
@@ -119,9 +119,10 @@ described in prose. Each fires only on a specific, test-pinned condition.
 
 ## Verification status (gate logs, see logs/)
 
-- tests: **142 blocks / 441 passed / 0 failed / 0 error / 32 warnings**
+- tests: **143 blocks / 445 passed / 0 failed / 0 error / 32 warnings**
   (2026-08-04, after the `load_counts()` intake wrapper + enforceable-lock
-  round). The 32 warnings are the
+  round and the Batch C lock-targeted-unlock + concordance-flag round). The
+  32 warnings are the
   `events_per_parameter` guardrail firing on deliberately small synthetic
   fixtures in tests that exercise other behavior; each guardrail's own
   dedicated test asserts that firing. They are expected, honest noise, not
@@ -133,7 +134,8 @@ described in prose. Each fires only on a specific, test-pinned condition.
   13 NOTES at the 2026-08-04 re-run (`logs/13_bioccheck.txt`, which adds the
   `Avoid 1:` note from `load_counts.R`; re-confirmed at `logs/14_bioccheck.txt`
   after the Batch-A round — also cleared the one-off "data files exceed 5MB"
-  warning via the extdata xz recompress); GitClone 0 ERROR / 1 WARNING
+  warning via the extdata xz recompress; re-confirmed at `logs/15_bioccheck.txt`
+  after the Batch C round); GitClone 0 ERROR / 1 WARNING
   (CITATION doi) — all explained in `logs/notes_documented.md`
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
@@ -143,7 +145,9 @@ described in prose. Each fires only on a specific, test-pinned condition.
   12 after the CV-optimism reframe doc round; 13 after the
   Phase-3 case-study/power round; 14 after the Batch-A ship-blocking round
   (LICENSE holder, report-template `results='asis'`, S4Vectors → Imports,
-  xz-recompressed extdata) — all clean 0 ERROR / 1 WARNING / 1 NOTE)
+  xz-recompressed extdata); 15 after the Batch C round (targeted lock unlock,
+  `min_events_per_parameter` forwarding, `concordance_na` flag, flags `stage`
+  column docs) — all clean 0 ERROR / 1 WARNING / 1 NOTE)
 - stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
   "poor generalization" / "winner's curse" phrasing — 20 hits (157 files

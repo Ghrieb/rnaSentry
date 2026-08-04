@@ -19,6 +19,7 @@ run_rnaSentry(
   folds = 5,
   seed = NULL,
   adjust_for_design = TRUE,
+  min_events_per_parameter = 5,
   report_file = "rnaSentry_report.html",
   report_dir = ".",
   render_report = TRUE
@@ -48,7 +49,8 @@ by the \code{\link{design_audit}} confounder scan. Defaults to
 \item{batch_col}{Optional character. \code{colData(se)} column tested by
 the \code{\link{pca_audit}} batch scan. Defaults to \code{NULL}.}
 
-\item{method, top_n, p_threshold, repeats, folds, seed, adjust_for_design}{Passed
+\item{method, top_n, p_threshold, repeats, folds, seed, adjust_for_design,
+min_events_per_parameter}{Passed
 to \code{\link{build_signature}}.}
 
 \item{report_file}{Character. Output file name for the HTML report.}

@@ -66,10 +66,14 @@ lock_signature <- function(sig, lock = TRUE) {
     }
     out$locked <- FALSE
     out$lock_time <- NULL
-    # Remove fingerprint from session environment
+    # Remove only this signature's fingerprint from the session environment, so
+    # other locked signatures stay protected. Note: assigning NULL to an
+    # environment binding leaves a NULL-valued binding behind (ls() still lists
+    # it and run_rnaSentry() still blocks), so the binding must be rm()'d.
     locked_env <- get(".rnaSentry_locked_sigs", envir = asNamespace("rnaSentry"))
-    if (length(ls(locked_env)) > 0) {
-      rm(list = ls(locked_env), envir = locked_env)
+    key <- paste(sort(out$genes), collapse = "|")
+    if (exists(key, envir = locked_env, inherits = FALSE)) {
+      rm(list = key, envir = locked_env)
     }
     out$flags <- .add_flag(fl, "signature_unlocked", "info",
                            "Signature unlocked; downstream stages may be rerun.",

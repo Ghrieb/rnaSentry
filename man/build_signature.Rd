@@ -107,7 +107,7 @@ An object of class \code{"rnaSentry_signature"} (a list) with
     \item{created, lock_time}{Provenance timestamps.}
     \item{assay_used, n_screened, n_filtered}{Analysis details.}
     \item{flags}{Data.frame summarizing every issue raised, with columns
-      \code{check}, \code{severity} and \code{detail}.}
+      \code{check}, \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{
@@ -167,7 +167,12 @@ non-survival end points, and it never corrects batch or design effects.
 In underpowered cohorts (fewer than \code{min_events_per_parameter}
 events per signature gene) the returned concordance and hazard ratios are
 unstable and an \code{events_per_parameter} warning is raised; treat such
-results as hypothesis-generating rather than confirmatory.
+results as hypothesis-generating rather than confirmatory. The discovery
+stage additionally refuses cohorts with fewer than two events; the
+downstream survival stages (\code{\link{km_curve}},
+\code{\link{cox_model}}, \code{\link{survival_parametric}},
+\code{\link{validate_external}}) use a one-event minimum and instead
+surface instability through their \code{sparse_events} guardrail.
 }
 
 \examples{

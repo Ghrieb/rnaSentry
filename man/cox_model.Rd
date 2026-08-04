@@ -43,7 +43,8 @@ An object of class \code{"rnaSentry_cox_model"} (a list) with
     \item{sig_locked}{Whether the input signature was locked.}
     \item{created}{Provenance timestamp.}
     \item{flags}{Data.frame of issues raised (missing covariate values,
-      non-estimable genes, proportional-hazards violations).}
+      non-estimable genes, proportional-hazards violations), with columns
+      \code{check}, \code{severity}, \code{detail} and \code{stage}.}
   }
 }
 \description{
