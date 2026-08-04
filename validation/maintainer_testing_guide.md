@@ -57,6 +57,20 @@ deliberate fixes (seeds, fold stratification, edge cases like `n_pcs == 1`,
 non-syntactic gene symbols). After any change to `R/*.R`, re-run Gate 1 and
 `R CMD check --as-cran` before proceeding.
 
+Gate 2 also runs the **literal stale-number sweep** so that no superseded value
+or phrase survives a refactor by memory alone:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1
+```
+
+It scans `.R` (code and `@examples`), `.Rmd` (vignette and report template),
+`.md`, and `.Rd` (man pages) for the superseded numbers (`0.217`, `0.424`,
+`0.510`, `0.160`) and the old "poor generalization" / "winner's curse"
+phrasing. Hits are permitted only under `validation/` (the intentional
+before/after correction narrative); any hit elsewhere fails the gate (exit 1).
+First run (2026-08-04): 15 hits, all inside `validation/`, 0 elsewhere.
+
 ## Gate 3 — statistical parity
 
 `tests/testthat/test-statistical_parity.R` re-implements every statistic in the
@@ -129,4 +143,5 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 2. Gate 1 suite (120/393).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
-5. Commit logs with the change at a logical checkpoint.
+5. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
+6. Commit logs with the change at a logical checkpoint.

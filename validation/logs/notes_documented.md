@@ -14,8 +14,19 @@ BiocCheck queries `https://support.bioconductor.org` for the maintainer email
 (`ghriebabdelkarimhani@gmail.com`). The 404 means that email address is not
 registered on the Bioconductor Support Site (this run also intermittently
 timed out against that site).
-**Action for maintainer:** register the maintainer email on the Bioconductor
-Support Site before/at submission. This check is not a code defect.
+**Action for maintainer:** register `ghriebabdelkarimhani@gmail.com` on the
+Bioconductor Support Site before submission. Steps:
+1. Open https://support.bioconductor.org and click **Sign Up** (top right).
+2. Complete the form with the **same email address** used in `DESCRIPTION`
+   `Authors@R` `cre` (`ghriebabdelkarimhani@gmail.com`); choose a username and
+   password.
+3. Confirm the activation email from the support site.
+4. (Optional but recommended) complete the profile — name, ORCID, affiliation.
+5. Re-run `BiocCheck::BiocCheck(".")`; this ERROR should clear, and the
+   "maintainer subscribed to Bioc-Devel" note (which hits the same site)
+   resolves too. Record the clean run as `logs/08_bioccheck.txt` and update
+   the "Verification status" table in `test_audit.md`.
+This check is not a code defect.
 
 ### 1 WARNING — `set.seed` usage (justified)
 `Remove set.seed usage (found 1 times): R/build_signature.R (line 233)`

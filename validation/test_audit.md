@@ -112,6 +112,11 @@ the documented XIST-vs-Y rule.
   (CITATION doi) (00.3, 00.5)
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix)
+- stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
+  `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
+  "poor generalization" / "winner's curse" phrasing — 15 hits, all inside
+  `validation/` (the intentional correction narrative), 0 in code, `@examples`,
+  the vignette, the report template, or the man pages (PASS)
 
 ## Priorities
 
