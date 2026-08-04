@@ -94,7 +94,8 @@ se <- SummarizedExperiment::SummarizedExperiment(
 
 out <- "inst/extdata/gse20685_case_study.rds"
 dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
-saveRDS(se, out)
+# xz keeps the bundled file under BiocCheck's 5MB data-file guideline
+saveRDS(se, out, compress = "xz")
 cat(sprintf("wrote %s (%.1f MB)\n", out,
             file.info(out)$size / 1e6))
 cat("colData columns:", paste(colnames(colData(se)), collapse = ", "), "\n")
