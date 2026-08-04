@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Pipeline summary
 
-```{r summary}
+```{r summary, results="asis"}
 cat(sprintf("Stages run: %s.\n",
             paste(names(params$stages), collapse = ", ")))
 ```
@@ -45,7 +45,7 @@ parameter (`events_per_parameter`), sparse risk-group events
 
 ## Audit trail
 
-```{r audit}
+```{r audit, results="asis"}
 flag_tables <- lapply(names(params$stages), function(nm) {
   f <- params$stages[[nm]]$flags
   if (is.null(f) || !is.data.frame(f) || nrow(f) == 0) return(NULL)
@@ -63,7 +63,7 @@ if (length(flag_tables) > 0) {
 
 ## Stage results
 
-```{r stages}
+```{r stages, results="asis"}
 for (nm in names(params$stages)) {
   cat("\n\n###", nm, "\n\n")
   print(params$stages[[nm]])

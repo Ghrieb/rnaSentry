@@ -9,17 +9,17 @@ Reviewed 2026-08-04.
 
 ## Comparison table
 
-| | **rnaSentry** (0.99.0, submitting) | **asuri** (Bioc 3.23, v1.0.0) | **signifinder** (Bioc 3.19, v1.6.0) |
-|---|---|---|---|
-| Purpose | Discover a new prognostic signature from the user's cohort | Discover survival marker genes + risk score from the user's cohort | Apply 60+ published cancer signatures as single-sample scores |
-| Selection method | Univariate Cox screen + joint multivariate Cox fit; repeated stratified CV | Subsampling glmnet (Lasso) + univariate Cox | GSVA-based scoring of literature signatures |
-| Survival output | KM, log-rank, Cox PH, concordance, external validation | Risk score, KM stratification, ROC curves (ROCR) | Signature scores (+ survival association plots) |
-| Data scope | Bulk RNA-seq | Bulk (SummarizedExperiment) | Bulk + single-cell + spatial |
-| Guardrails / auditability | Central feature (flag ledger + HTML audit trail) | Statistical robustness via subsampling | None (scoring-focused) |
-| Dependencies | 5 Imports (minimal) | ~13 Imports (glmnet, siggenes, survcomp, ROCR) | Heavy (~30, TxDb/annotation/GSVA/ComplexHeatmap) |
-| License | MIT | LGPL-3 | AGPL-3 |
-| In Bioconductor since | — | BioC 3.23 (< 6 months) | BioC 3.16 (~2 years) |
-| Source | `https://github.com/Ghrieb/rnaSentry` | `https://github.com/jdelasrivas-lab/asuri` | `https://github.com/CaluraLab/signifinder` |
+| | **rnaSentry** (0.99.0, submitting) | **asuri** (Bioc 3.23, v1.0.0) | **signifinder** (Bioc 3.16, v1.6.0) | **SurvMarker** (2025) | **mRNAsi** (2018) |
+|---|---|---|---|---|---|
+| Purpose | Discover a new prognostic signature from the user's cohort | Discover survival marker genes + risk score from the user's cohort | Apply 60+ published cancer signatures as single-sample scores | Single-sample scoring of survival markers (PCA-weighted) | Pan-cancer mRNA stemness index (OCLR) |
+| Selection method | Univariate Cox screen + joint multivariate Cox fit; repeated stratified CV | Subsampling glmnet (Lasso) + univariate Cox | GSVA-based scoring of literature signatures | PCA-based weighted scoring | One-class logistic regression trained on a stem-cell reference |
+| Survival output | KM, log-rank, Cox PH, concordance, external validation | Risk score, KM stratification, ROC curves (ROCR) | Signature scores (+ survival-association plots) | Survival-marker risk scores | Stemness index (not a survival model) |
+| Data scope | Bulk RNA-seq | Bulk (SummarizedExperiment) | Bulk + single-cell + spatial | Bulk gene expression | Bulk / pan-cancer profiles |
+| Guardrails / auditability | Central feature (flag ledger + HTML audit trail) | Statistical robustness via subsampling | None (scoring-focused) | None | None |
+| Dependencies | 6 Imports (minimal) | ~13 Imports (glmnet, siggenes, survcomp, ROCR) | Heavy (~30, TxDb/annotation/GSVA/ComplexHeatmap) | n/a (paper) | n/a (paper + public index) |
+| License | MIT | LGPL-3 | AGPL-3 | n/a (paper) | n/a (paper) |
+| In Bioconductor since | — | BioC 3.23 (< 6 months) | BioC 3.16 (~2 years) | — (not a package) | — (not a package) |
+| Source | `https://github.com/Ghrieb/rnaSentry` | `https://github.com/jdelasrivas-lab/asuri` | `https://github.com/CaluraLab/signifinder` | Gammune & Gu 2025, DOI `10.64898/2025.12.31.697184` | Malta et al., *Cell* 2018;173:338-354.e15 |
 
 ## asuri
 
@@ -67,12 +67,42 @@ Reviewed 2026-08-04.
 - Cite: package page `https://bioconductor.org/packages/signifinder/`, DOI
   `10.18129/B9.bioc.signifinder`.
 
+## SurvMarker
+
+- Full name: SurvMarker — single-sample scoring of survival markers.
+- Method: computes sample-level risk scores by PCA-based weighted combination
+  of survival-associated marker genes; reported 2025 (Gammune & Gu).
+- Not a Bioconductor package; distributed as a paper + DOI.
+- Overlap with rnaSentry: minimal — it scores a pre-defined marker panel
+  (the same category as signifinder/mRNAsi) rather than discovering a new
+  signature from the user's cohort with an audit trail. It is a prior-art
+  anchor for the single-sample scoring approach itself, not a discovery tool.
+- How to position: cite alongside mRNAsi as evidence that single-sample
+  scoring is an established technique; rnaSentry's contribution is the
+  guarded, externally validated *discovery* pipeline, not scoring per se.
+- Cite: Gammune & Gu, 2025, DOI `10.64898/2025.12.31.697184`.
+
+## mRNAsi
+
+- Full name: mRNAsi — mRNA stemness index.
+- Method: one-class logistic regression (OCLR) trained on a pluripotent
+  stem-cell reference, applied to a tumor expression profile to yield a
+  0-1 stemness index per sample (Malta et al., *Cell* 2018).
+- Not a Bioconductor package; the trained model and per-tumor values are
+  public with the paper.
+- Overlap with rnaSentry: minimal — it is a pan-cancer stemness phenotype
+  score, not a prognostic signature from the user's cohort.
+- How to position: a prior-art anchor for single-sample index scoring; shows
+  the scoring idea predates the survival-marker tooling.
+- Cite: Malta T.M. et al., *Cell* 2018;173(2):338-354.e15.
+
 ## Positioning narrative for the paper
 
 - Distinct niche claimed: **signature discovery with an enforced audit trail
   and honest failure modes**. Neither asuri nor signifinder treats
   quality-control, confounder detection, and explicit gating/flags as a
-  first-class product feature.
+  first-class product feature; SurvMarker and mRNAsi are scoring methods, not
+  discovery pipelines.
 - Methodological honesty: our linear-score design (univariate screen + joint
   Cox + repeated stratified CV) is deliberately more interpretable than Lasso
   alternatives; stability is reported, and underpowered cohorts are flagged

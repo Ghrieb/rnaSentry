@@ -37,7 +37,7 @@ audit record and a falsifiable gate (see below).
    roxygen comments with `@return` documenting the result list, guardrail
    flags registered as `(check, severity, detail, stage)` in the flag ledger.
 3. No new hard dependencies: the package intentionally imports only
-   `SummarizedExperiment, survival, methods, stats, graphics`. If you must add
+   `SummarizedExperiment, S4Vectors, survival, methods, stats, graphics`. If you must add
    an Imports/Suggests entry, justify it in the PR.
 4. Write tests before or with the code (see below).
 5. Do **not** add comments to shipped code unless they document a statistical

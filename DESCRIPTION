@@ -21,6 +21,7 @@ LazyData: false
 RoxygenNote: 7.3.3
 Depends: R (>= 4.4.0)
 Imports:
+    S4Vectors,
     SummarizedExperiment,
     survival,
     methods,
@@ -31,7 +32,6 @@ Suggests:
     ggplot2,
     knitr,
     rmarkdown,
-    S4Vectors,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3

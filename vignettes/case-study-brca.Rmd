@@ -81,8 +81,7 @@ run$stages$build_signature <-
 
 The `events_per_parameter` warning is expected and matches the documented
 limitation: 83 deaths for a 20-gene signature is 4.2 events per parameter,
-below the guardrail of 5. The signature should be read as hypothesis-
-generating, and the cross-validated concordance and hazard ratios as
+below the guardrail of 5. The signature should be read as hypothesis-generating, and the cross-validated concordance and hazard ratios as
 unstable at this event count.
 
 The cross-validated concordance (mean C = 0.80) is a *screening-internal*

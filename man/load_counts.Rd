@@ -26,7 +26,7 @@ stages rely on gene-symbol rownames.}
 \value{
 A \code{SummarizedExperiment} with one assay named
   \code{assay_name}. Any issues found are recorded in a flag ledger
-  accessible via \code{S4Vectors::mcol(se)$flags} and surfaced via
+  accessible via \code{S4Vectors::metadata(se)$flags} and surfaced via
   \code{warning()}.
 }
 \description{
