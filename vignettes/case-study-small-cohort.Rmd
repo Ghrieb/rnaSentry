@@ -1,0 +1,93 @@
+---
+title: "Case study: why small cohorts fail silently"
+author: "Abdelkarim Hani Ghrieb"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Case study: small cohorts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Status note
+
+This is a synthetic-data walkthrough demonstrating how the
+`events_per_parameter` guardrail and fold-level reporting expose unstable
+signatures. It is a vignette, not a study.
+
+# Setup
+
+We build a 30-sample cohort with 23 events and a real (if weak) survival
+signal driven by five genes, then ask for a 5-gene signature. This is 4.6
+events per parameter -- below the guardrail of 5.
+
+```{r, warning = TRUE}
+library(rnaSentry)
+library(SummarizedExperiment)
+
+set.seed(30)
+n_sm <- 30
+counts <- matrix(rpois(60 * n_sm, lambda = 500), nrow = 60, ncol = n_sm,
+                 dimnames = list(paste0("gene", 1:60), paste0("S", 1:n_sm)))
+sig_expr <- colMeans(counts[1:5, , drop = FALSE])
+risk <- scale(sig_expr)[, 1] * 0.5
+event_time <- rexp(n_sm, rate = 0.05 * exp(0.9 * risk))
+censor_time <- rexp(n_sm, rate = 0.02)
+cd <- DataFrame(time = pmin(event_time, censor_time),
+                event = as.integer(event_time < censor_time),
+                row.names = colnames(counts))
+se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
+
+sig <- build_signature(se, "time", "event", top_n = 5,
+                       repeats = 5, folds = 5, seed = 30)
+```
+
+# The guardrail fires
+
+```{r}
+sig$flags
+```
+
+The `events_per_parameter` warning fires immediately, and is also recorded in
+the stage's flag ledger so it propagates into the rendered report.
+
+# The mean hides the spread
+
+```{r}
+sig$cv_summary
+```
+
+The mean cross-validated concordance is 0.74 -- which a careless reader would
+call "decent". Look at the fold-level table instead:
+
+```{r}
+sig$cv_results
+```
+
+The per-fold concordances range from **0.50 to 1.00** across repeats and
+folds. With only a handful of held-out samples per fold, single-fold C
+estimates are nearly coin flips, and the standard deviation (0.14) is
+enormous relative to the mean. A signature like this is unstable and should
+be treated as hypothesis-generating only.
+
+# Reading
+
+The takeaway is exactly the documented "small-cohort trap": with fewer than
+~5 events per signature gene, neither the concordance nor the hazard ratios
+are trustworthy, and a *mean* C-index hides the instability that the
+fold-level table exposes. This is why `build_signature()` reports the
+per-fold distribution, not just the mean, and why the guardrail warns rather
+than silently proceeding.
+
+# Session info
+
+```{r}
+sessionInfo()
+```

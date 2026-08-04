@@ -28,6 +28,12 @@ reported with the statistic that justified it.
 This vignette demonstrates the pipeline's first stage: quality control and
 biological-sex verification.
 
+Three bundled case studies show the pipeline on real and adversarial data and
+are meant to be read alongside this walkthrough:
+`vignette("case-study-brca")` (the full pipeline on a breast-cancer cohort),
+`vignette("case-study-confounder-audit")` (a planted batch confound), and
+`vignette("case-study-small-cohort")` (why small cohorts fail silently).
+
 # Installation
 
 ```{r, eval = FALSE}
@@ -190,6 +196,11 @@ val <- validate_external(run$stages$build_signature, external,
                          cutpoint = run$stages$km_curve$cutpoint)
 val
 ```
+
+A real discovery-to-external transfer on independent GEO cohorts — where
+transfer was *not* demonstrated and the reasons (low event count, CV-optimism)
+are quantified — is documented in the README's case study 4 (LUAD,
+GSE31210 -> GSE50081).
 
 # Assumptions and limitations
 

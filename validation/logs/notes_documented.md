@@ -1,6 +1,8 @@
 # rnaSentry — BiocCheck NOTES / WARNINGS documentation
 
-Date: 2026-08-03 | BiocCheck 1.44.2 (Bioc 3.21) | R 4.5.2 | Windows 11
+Date: 2026-08-04 | BiocCheck 1.44.2 (Bioc 3.21) | R 4.5.2 | Windows 11
+(gate log: `13_bioccheck.txt`, re-run after the Phase-3 case-study/power
+round)
 
 This document records every BiocCheck ERROR / WARNING / NOTE that the gate
 does not (or cannot) resolve, with a justification for each. This is the
@@ -24,36 +26,40 @@ Bioconductor Support Site before submission. Steps:
 4. (Optional but recommended) complete the profile — name, ORCID, affiliation.
 5. Re-run `BiocCheck::BiocCheck(".")`; this ERROR should clear, and the
    "maintainer subscribed to Bioc-Devel" note (which hits the same site)
-   resolves too. Record the clean run as `logs/08_bioccheck.txt` and update
-   the "Verification status" table in `test_audit.md`.
+   resolves too. Record the clean run as `logs/13_bioccheck.txt` (or next
+   gate log) and update the "Verification status" table in `test_audit.md`.
 This check is not a code defect.
 
 ### 1 WARNING — `set.seed` usage (justified)
-`Remove set.seed usage (found 1 times): R/build_signature.R (line 233)`
+`Remove set.seed usage (found 1 times): R/build_signature.R (line 279)`
 The call is `if (!is.null(seed)) set.seed(seed)` inside `build_signature()`:
 a public, documented `seed` argument (default `NULL`) that makes the
 repeated cross-validation reproducible. This is the standard, recommended
 pattern for seed-parameterized functions and is exercised by the test suite
 (identical results under identical seed). We intentionally keep it.
 
-### 12 NOTES — all advisory
+### 13 NOTES — all advisory
 - **Update R version dependency 4.4.0 -> 4.5.0**: rnaSentry requires R >= 4.4.0.
   Bioc 3.21 builds on R 4.5; the lower bound is a superset and is left
   intentionally permissive. No action.
-- **Consider adding automatically suggested biocViews: KEGG**: KEGG pathway
-  terms are not used by the package; current `biocViews` cover the actual
-  functionality. No action.
+- **Consider adding automatically suggested biocViews: SingleCell, KEGG**:
+  single-cell/spatial modeling and KEGG pathway terms are not used by the
+  package (both are explicitly out of scope); current `biocViews` cover the
+  actual functionality. No action.
 - **Consider adding maintainer's ORCID iD**: no ORCID was supplied by the
   maintainer. To be added when available.
 - **No 'fnd' role found in Authors@R**: the work is not grant-funded; the
   `fnd` role does not apply.
+- **Avoid `1:...`; use `seq_len()`/`seq_along()`**: the flagged patterns are
+  guarded index constructions in pipeline code; none is an empty-sequence
+  hazard. Accepted stylistic note.
 - **Avoid 'suppressWarnings'/'*Messages' if possible (7)**: two locations
-  flagged — `R/build_signature.R:277` wraps a per-gene `coxph` fit during
+  flagged — `R/build_signature.R:328` wraps a per-gene `coxph` fit during
   univariate screening (thousands of fits; convergence warnings are expected
-  and handled), and `R/validate_external.R:224` wraps `survival::concordance`.
+  and handled), and `R/validate_external.R:244` wraps `survival::concordance`.
   Both are deliberate, narrowly-scoped suppression around a single robust
   statistic. Justified.
-- **Function length > 50 lines (10 functions)**: long functions implement
+- **Function length > 50 lines (11 functions)**: long functions implement
   multi-step guarded pipelines (e.g., `build_signature`) with explicit
   per-step audit flags; splitting would scatter the audit logic. Accepted
   stylistic note.
@@ -64,10 +70,11 @@ pattern for seed-parameterized functions and is exercised by the test suite
   same end-to-end paths are covered by `tests/testthat/` (incl. report
   rendering) and by `validation/`. Converting to `\donttest` without
   embedding fixture construction would break `R CMD check`.
-- **dontrun/donttest usage (15% of man pages)**: see previous item; the two
-  examples use `\dontrun` deliberately.
-- **Consider shorter lines (2% > 80 chars)** and **multiples-of-4 indents
-  (40%)**: cosmetic; indentation is 2-space by house style. Accepted.
+- **dontrun/donttest usage (14% of man pages) / Use donttest instead of
+  dontrun**: see previous item; the two examples use `\dontrun` deliberately.
+- **Consider shorter lines (103 lines, 3% > 80 chars)** and
+  **multiples-of-4 indents (1479 lines, 36%)**: cosmetic; indentation is
+  2-space by house style. Accepted.
 - **Cannot determine whether maintainer is subscribed to Bioc-Devel**:
   network-only check against support site; see ERROR above.
 
@@ -94,14 +101,13 @@ and runs the GitClone check on the clean tree. The stamp is git-ignored.
 tool used only for PDF size-reduction checks; Bioconductor's build machines
 have it. No action required from the package.
 
-### 2 NOTEs — environmental
-- **Top-level files: `README.md`/`NEWS` cannot be checked without
-  `pandoc`**: the check's own pandoc discovery did not honor the
-  `RSTUDIO_PANDOC` environment variable used elsewhere in the gate.
-  Bioconductor build machines have pandoc installed; the vignette and this
-  gate build it successfully with `RSTUDIO_PANDOC` set. As of 2026-08-04 the
-  package ships a top-level `README.md` (install, quick start, "When to use /
-  When NOT to use", limitations) in addition to the plain-text `NEWS`.
+### 1 NOTE — environmental
+- **HTML version of manual: no command `tidy` found**: the HTML validator
+  `tidy` is not installed on this Windows machine. It is an optional external
+  tool; Bioconductor's build machines have it. No action required from the
+  package. (This is the sole remaining NOTE; the earlier top-level-files
+  pandoc note cleared once `RSTUDIO_PANDOC` was honored, and the package now
+  ships a single `NEWS.md`.)
 - **Examples with CPU/elapsed > 5s (build_signature, 7.4s user)**:
   investigated — the entire cost is `library(SummarizedExperiment)` in the
   fresh check session (measured 7.60s loading GenomicRanges, IRanges,

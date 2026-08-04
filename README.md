@@ -9,6 +9,14 @@ pipeline gates rather than silently degrades when its guardrails are not
 met. The package is designed to make a biomarker discovery workflow
 transparent, reproducible, and reviewable end to end.
 
+## Status
+
+This package and repository are the working artifacts of an in-progress
+manuscript and Bioconductor submission. Results are **illustrative and
+provisional** — not peer-reviewed — and may change before a preprint is
+published. Treat all case-study numbers as demonstrations, not clinical
+claims.
+
 ## Installation
 
 ```r
@@ -119,13 +127,98 @@ out-of-sample estimate.
 - **CPU-only and single-threaded.** Screening runs are sequential; memory,
   not parallelism, is the usual binding constraint on large cohorts.
 
+## Case studies
+
+Four analyses are bundled so the pipeline's behaviour can be inspected without
+pulling data from the network.
+
+### 1. Breast cancer signature discovery (GSE20685)
+
+A 3000-gene x 327-sample subset of GSE20685 (Li *et al.*, 2010; Affymetrix
+GPL570, 83 deaths) ships as `inst/extdata/gse20685_case_study.rds` and is
+walked through in `vignette("case-study-brca")`. On the bundled subset the
+pipeline finds a 20-gene signature with screening-internal CV C = 0.80
+(sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design
+audit flags `subtype` (eta-squared = 0.78) and recommends adjusting for it.
+The signature is provisional: at 83 events for 20 genes the
+`events_per_parameter` guardrail fires (4.2 < 5), so this demonstrates the
+pipeline, not a validated biomarker. There is no independent breast-cohort
+validation here; external validation is shown on an independent cohort in the
+LUAD narrative (case study 4).
+
+### 2. Confounder stress test
+
+`vignette("case-study-confounder-audit")` plants a batch effect and a
+redundant, near-collinear design variable (Cramer's V = 0.82).
+`design_audit()` flags both variables as associated with the expression
+surrogate and recommends the minimal design `~ batch`, dropping the redundant
+term instead of double-counting it in a model.
+
+### 3. The small-cohort guardrail
+
+`vignette("case-study-small-cohort")` shows why the `events_per_parameter`
+guardrail exists: on 30 samples / 23 events the mean CV C reads 0.74 while
+the per-fold values span **0.50-1.00**. A mean hides what the fold-level table
+exposes; the guardrail fires (`4.6 < 5`) rather than quietly reporting
+unstable numbers.
+
+### 4. LUAD honest negative (GSE31210 -> GSE50081)
+
+A full live-GEO reproduction of a discovery-to-external cross-cohort attempt:
+discovery in GSE31210 (LUAD, 35 deaths), external validation in GSE50081
+(n = 128, 52 deaths). Mechanics pass end to end, but external C = 0.540 with
+log-rank p = 0.266 — transfer was **not demonstrated**, reported as an honest
+negative rather than a tool failure. The companion finding is the
+**screening-internal CV optimism**: on this ~21k-gene panel even
+survival-permuted data yields a null CV C ~ 0.8 (not 0.5), so CV concordance
+must be read relative to a matched null and only `validate_external()` is
+fully out-of-sample (see "Reading the CV concordance"). The power analysis
+(`validation/simulate_study.R`, Sim 6) quantifies why a 35-event external
+cohort is structurally underpowered for weak real signatures: transfer power
+< 0.30 at ~35 events, and >= 0.80 only near ~300 events for a C ~ 0.65
+signature.
+
+## Positioning and prior art
+
+rnaSentry's niche is **signature discovery with an enforced audit trail and
+honest failure modes**: quality control, sample-identity checks, confounder
+detection, and explicit gating are first-class product features rather than
+side effects. Two Bioconductor neighbours are closest:
+
+- **asuri** (Bioc 3.23, `10.18129/B9.bioc.asuri`) — de novo survival-marker
+  discovery from a `SummarizedExperiment` via subsampling glmnet + univariate
+  Cox. The closest methodological analogue; rnaSentry differs by design in its
+  sparse, directly inspectable linear score (univariate screen + joint Cox +
+  repeated stratified CV), its concordance/external-validation focus, and its
+  flag-ledger audit layer.
+- **signifinder** (Bioc 3.16, `10.18129/B9.bioc.signifinder`) — applies 60+
+  published cancer signatures as single-sample scores (GSVA; single-cell and
+  spatial support). Complementary rather than competing: it answers "what do
+  known signatures say about this sample?" where rnaSentry answers "can a new
+  survival signature be learned from this cohort?". It can be used downstream
+  to benchmark a discovered signature.
+
+Two prior-art anchors for the single-sample scoring approach itself:
+**SurvMarker** (Gammune & Gu, 2025, DOI 10.64898/2025.12.31.697184) uses
+PCA-based weighted scoring, and the **mRNAsi** stemness index (Malta *et al.*,
+*Cell* 2018;173:338-354.e15) uses OCLR-based scoring. Full profiles and a
+comparison table live in `validation/related_tools.md`.
+
+## Contributing
+
+Contributions are welcome — see `CONTRIBUTING.md` for the reporting process,
+the developer workflow, and the gate suite that every change must pass.
+
 ## Documentation
 
-- Vignette: `browseVignettes("rnaSentry")`
+- Vignette: `browseVignettes("rnaSentry")` — `vignette("rnaSentry")` is the
+  main walkthrough; `vignette("case-study-brca")`,
+  `vignette("case-study-confounder-audit")`, and
+  `vignette("case-study-small-cohort")` are the bundled case studies.
 - Function reference: `help(package = "rnaSentry")`
 - Validation dossier (sign-convention fix, parity tests, audit table,
-  simulation, face validity, maintainer testing guide): see the
-  `validation/` directory of the source package.
+  simulation incl. the power analysis, face validity, maintainer testing
+  guide): see the `validation/` directory of the source package.
 
 ## Reporting issues
 

@@ -1,0 +1,111 @@
+---
+title: "Case study: the confounder audit on a batch-confounded cohort"
+author: "Abdelkarim Hani Ghrieb"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Case study: confounder audit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# Status note
+
+This is a synthetic-data walkthrough used to verify `design_audit()`
+behavior on a deliberately confounded cohort. It is a vignette, not a study.
+
+# Setup
+
+We build a cohort of 180 samples with two design variables that are almost
+interchangeable:
+
+- `region` is a 3-level factor derived by cutting a latent normal variable;
+- `batch` is a *noisy copy* of `region` (80% of samples keep their `region`
+  label; the rest are shuffled).
+
+We also plant a real batch effect in expression: six genes are multiplied by
+a batch-dependent factor. The surrogate expression PC is therefore driven by
+`batch`, and `batch`/`region` are nearly collinear.
+
+```{r}
+library(rnaSentry)
+library(SummarizedExperiment)
+
+set.seed(12)
+n <- 180
+latent <- rnorm(n)
+region <- factor(cut(latent, breaks = 3, labels = c("R1", "R2", "R3")))
+batch <- as.character(region)
+for (i in seq_len(n))
+    if (runif(1) < 0.2) batch[i] <- sample(c("R1", "R2", "R3"), 1)
+batch <- factor(batch)
+
+counts <- matrix(rpois(50 * n, lambda = 200), nrow = 50, ncol = n,
+                 dimnames = list(paste0("g", 1:50), paste0("S", 1:n)))
+for (b in 1:3) {
+    idx <- which(batch == levels(batch)[b])
+    counts[1:6, idx] <- counts[1:6, idx] * (1 + 0.6 * b)
+}
+
+cd <- DataFrame(batch = batch, region = region, row.names = colnames(counts))
+se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
+```
+
+# The audit
+
+```{r}
+da <- design_audit(se, design_vars = c("batch", "region"),
+                   redundant_effect_size = 0.5)
+```
+
+## Pairwise redundancy
+
+```{r}
+da$pairwise_table
+```
+
+`batch` and `region` are almost interchangeable (Cramer's V = 0.82), and the
+pair is flagged `redundant`. Including both in a model would double-count
+nearly the same information.
+
+## Confounder scan
+
+```{r}
+da$confounder_table
+```
+
+Both variables are flagged as associated with the expression surrogate
+`batch` with eta-squared 0.97, `region` with epsilon-squared 0.55 (it leaks
+the same signal through its overlap with `batch`).
+
+## Recovered design
+
+```{r}
+da$formula_text
+```
+
+The audit therefore recommends the minimal formula `~ batch`, dropping the
+redundant `region` term. This is the behavior verified by the test suite
+(`confounder-detection` and `design-audit` blocks): a redundant design term
+is reported, not silently kept.
+
+# Reading
+
+The lesson is that the recommended formula is only as good as the design
+variables you supply. `design_audit()` will not invent a missing confounder;
+it audits what it is given. Supply every variable that could plausibly
+confound expression (batch, plate, sex, subtype), then trust the recommended
+formula over an ad-hoc pick.
+
+# Session info
+
+```{r}
+sessionInfo()
+```

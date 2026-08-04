@@ -15,12 +15,14 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 |---|---|---|---|
 | S1 | Every statistic the package computes matches an independent reference implementation | Statistical-parity suite (`tests/testthat/test-statistical_parity.R`): log-rank vs `survival::survdiff`; Cramér's V vs closed form; Cox HR/CI/p vs independent `coxph`; AIC/loglik vs `stats::AIC`; Schoenfeld vs `cox.zph`; held-out CV C vs replayed seeded folds; `C + C_rev = 1` invariant; `sex_check` score vs documented XIST-vs-Y rule (parity items 1–7 closed) | PASS (all parity tests green in Gate 1) |
 | S2 | Guardrails fire only when their trigger is present | Dedicated fire/no-fire tests for `possibly_log_scaled`, `events_per_parameter`, `duplicate_samples`, `non_integer_counts`, `empty_rows`, `ensembl_ids_detected`, `non_syntactic_ids`, `signature_locked`, and the run-level lock refusal | PASS (Gate 1) |
-| S3 | No winner's-curse inversion on null data | Simulation study: null-data CV concordance ≈ 0.5 (mean 0.576 full-pipeline on nulls, random-gene control 0.490 on simulated nulls), direction guarded by `reverse = TRUE` convention | PASS (Gate 4, 11/11 falsifiable targets) |
+| S3 | No winner's-curse inversion on null data | Simulation study: null-data CV concordance ≈ 0.5 (mean 0.576 full-pipeline on nulls, random-gene control 0.490 on simulated nulls), direction guarded by `reverse = TRUE` convention | PASS (Gate 4, 15/15 falsifiable targets incl. Sim 6) |
 | S4 | Real data discriminates beyond chance | GSE20685: held-out CV C = 0.783 vs random-gene control 0.582 (8.3 SD above control); log-rank p = 3.8e-17; MKI67 HR > 1, ESR1 HR < 1 (literature directions); `design_audit` flags subtype (eta² = 0.76) | PASS (Gate 5; extended live test below) |
 | S5 | External validation is honest | `validate_external()` never recomputes the cutpoint from external data (test-pinned); discovery cutpoint applied unchanged; external C reported on an independent cohort | PASS (Gate 5 + live GEO pair, Phase 3) |
 | S6 | Results are reproducible | Fixed seed ⇒ identical `cv_results`/`coefficients` (test-pinned); the enforceable lock prevents silent gene-set re-selection after survival analysis; `run_rnaSentry()` refuses a second run until `lock_signature(lock = FALSE)` | PASS (Gate 1) |
 | S7 | Degenerate inputs are rejected or flagged, never silently wrong | Adversarial pass: ~90 probes; REAL-BUG A/B/C + 4 soft-warns found and fixed, pinned by regression tests; NAs/Inf/zero-variance/single-sample/fold degeneracies covered | PASS (Gate 2, 2026-08-03) |
 | S8 | The audit trail is complete | Every automated decision carries `(check, severity, detail, stage)`; report renders the full flag ledger and the pipeline-assumptions section | PASS (Gate 1 `test-generate_report.R`) |
+| S9 | Power/transfer behaviour is quantified and falsifiable | Sim 6: external-transfer power monotone in external events; < 0.30 at ~35 events (small-cohort trap); >= 0.80 at ~300 events for a C≈0.65 signature | PASS (Gate 4, 15/15 targets) |
+| S10 | Case-study narrative runs on real bundled data, offline | `inst/extdata/gse20685_case_study.rds` + three offline-safe vignettes (BRCA pipeline, confounder audit, small-cohort guardrail) | PASS (Phase-3 vignettes build locally) |
 
 **Phase-3 live acceptance gate (GSE31210 → GSE50081, LUAD)** — executed
 2026-08-04, log `validation/logs/11_live_geo.txt`:
@@ -44,6 +46,21 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
   this, and the package docs (Rd/README/vignette) now state it explicitly.
   `validate_external()` is the only fully out-of-sample estimate.
 
+**Phase-3 case-study + power gate** — executed 2026-08-04, logs
+`validation/logs/13_simulation.txt`:
+- Sim 6 (external-transfer power): two tiers calibrated to effective
+  C = 0.608 / 0.654; transfer power rises with external events (weak
+  0.067 → 0.417; moderate 0.275 → 0.842 over ~35 → ~300 events); monotone in
+  events; **< 0.30 at ~35 events**, **≥ 0.80 at ~300 events** for the
+  moderate tier. **PASS (3/3 new targets, 15/15 suite).**
+- Three offline-safe case-study vignettes build locally:
+  `case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`
+  (BRCA subset: CV C = 0.797 sd 0.027; log-rank p = 2.99e-15; `subtype`
+  flagged, recommended formula `~ age + subtype`).
+- README now carries the Status note, Case studies 1–4 (incl. the LUAD
+  honest-negative), Positioning and prior art, and Contributing sections;
+  `CONTRIBUTING.md` and `NEWS.md` added.
+
 ## B. Bioconductor rules — what the package must pass
 
 | # | Rule | Current status |
@@ -66,9 +83,10 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | Gate 1 | Full test suite | 142 blocks / 441 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt` |
 | Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; 19 hits inside (correction narrative), 60 files scanned | `test_audit.md`, `grep_stale_numbers.ps1` |
 | Gate 3 | Statistical parity | items 1–7 closed | `test-statistical_parity.R` |
-| Gate 4 | Simulation study | 11/11 falsifiable targets PASS | `simulation_study.md`, `logs/03_simulation.txt` |
+| Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt` |
 | Gate 5 | Real-data face validity | discrimination beyond chance, correct biology, honest external check | `face_validity_review.md`, `logs/04_face_validity.txt` |
 | Gate 5b | Live GEO pair (Phase 3) | see Section A acceptance gate | `repro_live_geo.R`, `logs/11_live_geo.txt` |
+| Gate 5c | Case-study vignettes + bundled data (Phase 3) | offline build; numbers match documented values | `repro_gse20685.R`, `inst/extdata/gse20685_case_study.rds`, `vignettes/case-study-*.Rmd` |
 | Gate 6 | Cross-platform | per-platform `Status:` lines | `cross_platform.md` |
 
 ## D. Definition of "ready to submit"

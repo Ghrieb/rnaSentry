@@ -2,7 +2,7 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-04 (Phase-3 live GEO gate).
+Last updated 2026-08-04 (Phase-3 case studies + power-analysis gate).
 
 ## Method summary
 
@@ -78,16 +78,40 @@ decisions.
 
 ## Simulation study (Gate 3)
 
-- **11 falsifiable targets, 11/11 PASS.**
+- **15 falsifiable targets, 15/15 PASS.** (Sims 1-5: 11 targets as before;
+  Sim 6 adds the external-transfer power analysis.)
 - Engineered-signal fixtures with known survival association; null-data
   simulations for type-I-error behaviour. Concordance on nulls ~0.49-0.51
   (no winner's-curse inversion; see sign-convention note).
+- Sim 6 (power): two signal tiers calibrated to effective C = 0.608 / 0.654
+  transfer power rises with external events (weak 0.067 -> 0.417; moderate
+  0.275 -> 0.842 over ~35 -> ~300 events); power < 0.30 at ~35 events
+  (small-cohort trap) and >= 0.80 at ~300 events for the moderate tier.
 - Evidence: `validation/simulation_study.md`, `validation/logs/03_simulation.txt`,
-  `validation/simulate_study.R`.
+  `validation/logs/13_simulation.txt`, `validation/simulate_study.R`.
+
+## Case-study vignettes and bundled data (Phase 3)
+
+- `inst/extdata/gse20685_case_study.rds`: 3000 x 327 subset (top-3000 most
+  variable genes) of GSE20685 with `time/event/age/subtype` metadata
+  (83 events), built by `validation/repro_gse20685.R` from the GEO series
+  matrix (`logcounts` = MAS5 log2 intensities; probe->gene collapse by largest
+  mean).
+- Three new vignettes, all offline-safe (no network during build):
+  `case-study-brca.Rmd` (pipeline on GSE20685 subset: CV C = 0.797 sd 0.027,
+  log-rank p = 2.99e-15, `design_audit` flags `subtype` and recommends
+  `~ age + subtype`), `case-study-confounder-audit.Rmd` (synthetic batch/
+  region redundancy: Cramer's V = 0.82, recommended `~ batch`),
+  `case-study-small-cohort.Rmd` (n = 30 / 23 events: guardrail fires,
+  fold-level C ranges 0.50-1.00 while the mean reads 0.743).
+- Gate 4's dataset label corrected: GSE20685 is **not** TCGA-BRCA (it is
+  Li et al., 2010, Affymetrix GPL570); the old "TCGA-BRCA GSE20685" wording
+  was removed from this file.
 
 ## Real-data face validity (Gate 4)
 
-- Dataset: TCGA-BRCA GSE20685 (bulk RNA-seq, survival).
+- Dataset: **GSE20685** (Li et al., 2010; Affymetrix GPL570, 327 primary
+  breast tumors, 83 deaths). Not TCGA-BRCA.
 - 20-gene signature splits risk groups with log-rank p = 3.8e-17.
 - Cross-validated concordance **0.783** vs random-gene control **0.582**
   (8.3 SD above control mean).
@@ -129,6 +153,14 @@ decisions.
   `10_as_cran.txt` (plus earlier `00.*`), and `12_as_cran.txt` (2026-08-04,
   post CV-reframe doc round — 0 ERROR / 1 WARNING / 1 NOTE, both
   environmental).
+- `logs/13_as_cran.txt` (2026-08-04, Phase-3 case-study/power round with the
+  three new vignettes and `inst/extdata/gse20685_case_study.rds`): **0 ERROR /
+  1 WARNING / 1 NOTE**, both environmental (`qpdf` WARNING, `tidy` NOTE).
+- BiocCheck (`logs/13_bioccheck.txt`): 1 environmental ERROR (support-site
+  email 404 — register
+  `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org),
+  1 justified WARNING (`set.seed` in the documented `seed` arg), 13 advisory
+  NOTES — all explained in `logs/notes_documented.md`.
 - BiocCheck equivalent run locally via `validation/docker_check.sh` when a
   Docker-capable machine is available (see `validation/cross_platform.md`).
 

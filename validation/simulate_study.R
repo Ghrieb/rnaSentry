@@ -231,6 +231,109 @@ check(is.finite(val5$log_rank_p) && val5$log_rank_p >= 0 && val5$log_rank_p <= 1
               length(val5$score)),
       "log_rank_p non-finite or out of range")
 
+cat("==== Sim 6: power analysis for external-signal transfer ================\n")
+# Two signal tiers calibrated so that a large cohort of the same generative
+# model yields concordance ~0.60 (beta = 0.4) and ~0.65 (beta = 0.6). For each
+# tier we estimate the empirical power of *external* validation (log-rank
+# p < 0.05 on an independent cohort scored against the discovery cutpoint) as
+# a function of the external event count {35, 60, 100, 150, 250}.
+# Discovery cohort is held fixed (n = 120) so the causal axis is the size of
+# the external cohort. Falsifiable targets:
+#   (a) power is monotone non-decreasing in external events;
+#   (b) power < 0.30 at ~35 external events (small-cohort trap);
+#   (c) power >= 0.80 at ~250 events for the moderate (C~0.65) tier.
+make_cohort_se <- function(n, beta, seed) {
+  set.seed(seed)
+  p <- 60
+  counts <- matrix(stats::rpois(p * n, lambda = 400), nrow = p, ncol = n,
+                   dimnames = list(paste0("gene", seq_len(p)),
+                                   paste0("S", seq_len(n))))
+  z <- scale(colMeans(counts[1:5, , drop = FALSE]))[, 1]
+  et <- stats::rexp(n, rate = 0.05 * exp(beta * z))
+  ct <- stats::rexp(n, rate = 0.05)
+  cd <- S4Vectors::DataFrame(time = pmin(et, ct),
+                             event = as.integer(et < ct),
+                             row.names = colnames(counts))
+  SummarizedExperiment(assays = list(counts = counts), colData = cd)
+}
+# Calibration check: effective concordance of the two tiers on a large cohort.
+set.seed(991)
+n_cal <- 40000
+z_cal <- scale(colMeans(matrix(stats::rpois(5 * n_cal, lambda = 400),
+                               nrow = 5, ncol = n_cal)))[, 1]
+u_cal <- stats::runif(n_cal)
+c_eff <- function(beta) {
+  T_cal <- (-log(u_cal)) / (0.05 * exp(beta * z_cal))
+  as.numeric(survival::concordance(
+    survival::Surv(T_cal, rep(1, n_cal)) ~ z_cal,
+    reverse = TRUE)$concordance)
+}
+c_lo <- c_eff(0.4)
+c_hi <- c_eff(0.6)
+check(isTRUE(c_hi > c_lo),
+      "Sim 6 tiers are ordered by effective concordance",
+      sprintf("C(0.6) = %.3f > C(0.4) = %.3f", c_hi, c_lo),
+      sprintf("C(0.6) = %.3f <= C(0.4) = %.3f", c_hi, c_lo))
+
+n_ext_grid <- c(70, 120, 200, 300, 500, 600)
+power_table <- matrix(NA_real_, nrow = 2, ncol = length(n_ext_grid),
+                      dimnames = list(c("weak", "moderate"), n_ext_grid))
+event_table <- matrix(NA_real_, nrow = 2, ncol = length(n_ext_grid),
+                      dimnames = dimnames(power_table))
+reps6 <- 120
+for (ti in seq_len(2)) {
+  beta6 <- c(0.4, 0.6)[ti]
+  # Discovery cohort is built once per replicate and shared across the
+  # external-event grid, so the causal axis is only the external cohort size.
+  sigs6 <- vector("list", reps6)
+  for (r in seq_len(reps6)) {
+    disc6 <- make_cohort_se(120, beta6, 100000 + ti * 1000 + r)
+    sigs6[[r]] <- build_signature(disc6, "time", "event", top_n = 8,
+                                  repeats = 2, folds = 3, seed = r)
+  }
+  for (j in seq_along(n_ext_grid)) {
+    hit <- 0L
+    for (r in seq_len(reps6)) {
+      sig6 <- sigs6[[r]]
+      cut6 <- stats::median(km_curve(sig6, make_cohort_se(
+        120, beta6, 100000 + ti * 1000 + r))$score)
+      ext6 <- make_cohort_se(n_ext_grid[j], beta6, 200000 + ti * 1000 + r)
+      val6 <- validate_external(sig6, ext6, cutpoint = cut6)
+      if (is.finite(val6$log_rank_p) && val6$log_rank_p < 0.05) hit <- hit + 1L
+    }
+    power_table[ti, j] <- hit / reps6
+    event_table[ti, j] <- mean(vapply(seq_len(reps6), function(r)
+      sum(make_cohort_se(n_ext_grid[j], beta6,
+                         200000 + ti * 1000 + r)$event), numeric(1)))
+  }
+}
+cat(sprintf("external events (expected): %s\n",
+            paste(sprintf("%.0f", event_table[1, ]), collapse = ", ")))
+cat(sprintf("power weak     (C~%.2f): %s\n", c_lo,
+            paste(sprintf("%.3f", power_table["weak", ]), collapse = ", ")))
+cat(sprintf("power moderate (C~%.2f): %s\n", c_hi,
+            paste(sprintf("%.3f", power_table["moderate", ]), collapse = ", ")))
+p_weak_lo <- power_table["weak", 1]
+p_weak_hi <- power_table["weak", ncol(power_table)]
+p_mod_lo <- power_table["moderate", 1]
+p_mod_hi <- power_table["moderate", ncol(power_table)]
+check(p_weak_hi >= p_weak_lo && p_mod_hi >= p_mod_lo,
+      "transfer power monotone non-decreasing in external events",
+      sprintf("weak %.3f -> %.3f, moderate %.3f -> %.3f",
+              p_weak_lo, p_weak_hi, p_mod_lo, p_mod_hi),
+      "power decreased from ~35 to ~250 events in at least one tier")
+check(p_weak_lo < 0.30 && p_mod_lo < 0.30,
+      "small-cohort trap: power < 0.30 at ~35 external events",
+      sprintf("weak %.3f, moderate %.3f", p_weak_lo, p_mod_lo),
+      sprintf("power >= 0.30 at ~35 events (weak %.3f, moderate %.3f)",
+              p_weak_lo, p_mod_lo))
+check(p_mod_hi >= 0.80,
+      "adequate power at scale for moderate tier",
+      sprintf("power = %.3f at ~%.0f events (>= 0.80)",
+              p_mod_hi, event_table["moderate", ncol(power_table)]),
+      sprintf("power = %.3f at ~%.0f events (< 0.80)",
+              p_mod_hi, event_table["moderate", ncol(power_table)]))
+
 cat("\n==== SUMMARY ====\n")
 n_pass <- sum(unlist(results))
 n_fail <- length(results) - n_pass

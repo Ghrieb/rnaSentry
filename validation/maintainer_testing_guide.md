@@ -45,7 +45,10 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
   baseline 0 ERROR / 1 WARNING / 1 NOTE, both environmental),
   `11_as_cran.txt` is absent by design (log `11_live_geo.txt` is the Phase-3
   live GEO run, see Gate 5b), and `12_as_cran.txt` (2026-08-04, after the
-  CV-optimism reframe doc round — clean baseline again).
+  CV-optimism reframe doc round — clean baseline again), and
+  `13_as_cran.txt` (2026-08-04, Phase-3 case-study/power round: three new
+  vignettes + `inst/extdata/gse20685_case_study.rds` — 0 ERROR / 1 WARNING /
+  1 NOTE, both environmental).
   Note: prior gates run `R CMD check --as-cran` with
   `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
   connectivity; the remote/incoming block is skipped, so no examples-timing
@@ -134,7 +137,7 @@ asserts that a locked signature makes a second `run_rnaSentry()` call refuse
 to run and that `lock_signature(sig, lock = FALSE)` restores the ability to
 re-run.
 
-## Gate 4 — simulation study (11 falsifiable targets)
+## Gate 4 — simulation study (15 falsifiable targets)
 
 ```r
 source("validation/simulate_study.R")   # exits non-zero on any failure
@@ -142,9 +145,13 @@ source("validation/simulate_study.R")   # exits non-zero on any failure
 
 Covers planted sex-label swaps, planted confounder redundancy, the null-data
 CV-concordance expectation (with a random-gene calibration control), a
-planted time-varying-hazard scenario, and the external-validation lock check.
-Expected: **11 targets / 11 PASS**. Results and interpretation:
-`simulation_study.md`. Log: `logs/03_simulation.txt`.
+planted time-varying-hazard scenario, the external-validation lock check, and
+the Phase-3 **external-transfer power analysis** (Sim 6: two tiers calibrated
+to effective C = 0.608 / 0.654; power monotone in external events, < 0.30 at
+~35 events, >= 0.80 at ~300 events for the moderate tier). Expected:
+**15 targets / 15 PASS**. Results and interpretation:
+`simulation_study.md`. Logs: `logs/03_simulation.txt` (Sims 1-5),
+`logs/13_simulation.txt` (full suite).
 
 ## Gate 5 — real-data face validity (GSE20685)
 
@@ -171,7 +178,6 @@ trail surfaces it. Log: `logs/04_face_validity.txt`, report:
 `logs/face_validity_report.html`.
 
 ## Gate 5b — live GEO cross-cohort test (Phase 3)
-
 `validation/repro_live_geo.R` downloads (or reads from the local cache under
 `validation/cache/`) two independent GEO LUAD cohorts, GSE31210 (discovery,
 226 tumors, 35 deaths) and GSE50081 (external validation, 128
@@ -204,6 +210,24 @@ estimate. Log: `validation/logs/11_live_geo.txt`, report:
 `face_validity_review.md` (live GEO section),
 `submission_success_criteria.md` (Section A gate).
 
+## Gate 5c — case-study vignettes and bundled data (Phase 3)
+
+`validation/repro_gse20685.R` builds `inst/extdata/gse20685_case_study.rds`
+from the GEO series matrix (reads the cached `series.rds` when available, else
+downloads via GEOquery; the raw file is wrapped in a list, so the script
+unwraps with the same `eset[[1]]` pattern as `repro_live_geo.R`). Expected
+output: 3000 genes x 327 samples, 83 events, colData `time/event/age/subtype`.
+
+The three case-study vignettes (`vignettes/case-study-brca.Rmd`,
+`case-study-confounder-audit.Rmd`, `case-study-small-cohort.Rmd`) must build
+**offline** via `rmarkdown::render()` (or, as part of Gate 0, inside
+`R CMD build`). Their inline numbers are pinned in
+`validation/paper_qa_summary.md`:
+BRCA subset CV C = 0.797 (sd 0.027), log-rank p = 2.99e-15, recommended
+formula `~ age + subtype`; confounder case Cramer's V = 0.82 with recommended
+`~ batch`; small-cohort case 23 events / 5 genes (4.6 < 5, guardrail fires),
+mean CV C = 0.743 with per-fold spread 0.50-1.00.
+
 ## Gate 6 — cross-platform (not yet run on this machine)
 
 Needs a Docker-capable machine (`validation/docker_check.sh` runs the devel
@@ -217,7 +241,9 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
    WARNING/NOTE are the `qpdf`/`tidy` external tools).
 2. Gate 1 suite (142/441; 32 expected guardrail warnings on small fixtures).
-3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation.
+3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation
+   (15/15).
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
-5. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
-6. Commit logs with the change at a logical checkpoint.
+5. If vignettes or bundled data changed: Gate 5c offline vignette build.
+6. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
+7. Commit logs with the change at a logical checkpoint.
