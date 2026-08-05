@@ -30,7 +30,10 @@ The pkgdown workflow (`.github/workflows/pkgdown.yaml`) runs on
 Biobase 2.72, BiocStyle 2.40). Run #1 was green end-to-end: the package
 installed with all Bioconductor dependencies, and **all five vignettes
 compiled offline** with the same pinned numbers as the local R 4.5.2 / Bioc
-3.22 runs (0.316/0.684/1.0, CV C = 0.797, `C + C_rev = 1`). This is genuine
+3.22 runs (0.316/0.684/1.0, CV C = 0.797, `C + C_rev = 1`). The
+getting-started round added a sixth vignette that run #3 compiled the same
+way (commit `11d575a` -> `gh-pages` `f9646cd`, 2026-08-05): **all six
+vignettes now compile on Linux/Bioc release**. This is genuine
 non-Windows evidence that the package installs and the vignettes build on a
 Linux/Bioc release environment — but it is **not** a full `R CMD check` or a
 test-suite run, which still require the container/service options below.

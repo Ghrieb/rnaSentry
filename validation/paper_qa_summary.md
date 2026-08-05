@@ -2,7 +2,7 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-05 (CI auto-deploy + site-sync round).
+Last updated 2026-08-05 (getting-started CSV->SE bridge round; also CI auto-deploy + site-sync).
 
 ## Method summary
 
@@ -141,7 +141,10 @@ decisions.
   1.42, Biobase 2.72, BiocStyle 2.40) and produced the **same pinned numbers**
   as the local R 4.5.2 / Bioc 3.22 runs (0.316/0.684/1.0 convention read, CV
   C = 0.797, `C + C_rev = 1` = 0.488 + 0.512) — a cross-environment
-  reproducibility data point.
+  reproducibility data point. The getting-started round added a sixth vignette
+  (CSV -> `SummarizedExperiment` bridge); run #3 (commit `11d575a` ->
+  `gh-pages` `f9646cd`) compiled **all six vignettes** on the same Linux/Bioc
+  release stack.
 - Historical drift fixed: before this round the live site had been stale at
   gh-pages `46d9d06` (docs/ is gitignored, so a push to `main` alone did not
   publish). Manual `deploy_to_branch()` published `d36a20f` (case-study

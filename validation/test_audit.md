@@ -201,7 +201,9 @@ described in prose. Each fires only on a specific, test-pinned condition.
   guardrail warnings, and the as-cran / BiocCheck / simulation numbers are
   unchanged. New automation verified green: `.github/workflows/pkgdown.yaml`
   run #1 installed the package with Bioc release deps on ubuntu-latest,
-  built the full pkgdown site (all 4 case-study vignettes + main vignette)
+  built the full pkgdown site (all 4 case-study vignettes + main vignette at
+  run #1; the getting-started vignette added the same day was compiled by run
+  #3, commit `11d575a` -> `gh-pages` `f9646cd`)
   with the same pinned numbers as the local runs, and deployed to `gh-pages`
   (`3893b77`; prior manual publish `d36a20f`). `.Rbuildignore` excludes
   `^\.github$`, so the tarball is unaffected (verified by re-building the
