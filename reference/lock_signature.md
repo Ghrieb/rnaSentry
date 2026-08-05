@@ -49,7 +49,7 @@ locked <- lock_signature(sig)
 locked$locked
 #> [1] TRUE
 locked$lock_time
-#> [1] "2026-08-05 16:46:22 UTC"
+#> [1] "2026-08-05 17:02:25 UTC"
 unlocked <- lock_signature(locked, lock = FALSE)
 unlocked$locked
 #> [1] FALSE
