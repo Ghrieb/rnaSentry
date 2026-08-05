@@ -89,3 +89,13 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 5. Gate 2 stale-number sweep.
 6. Commit logs together with the change at a logical checkpoint (see
    `maintainer_testing_guide.md` for the log naming convention).
+
+## Site deployment
+
+The pkgdown site (https://ghrieb.github.io/rnaSentry/) is rebuilt and
+deployed **automatically** by `.github/workflows/pkgdown.yaml` on every push
+to `main`: it installs the package with its Bioconductor dependencies, runs
+`pkgdown::build_site_github_pages()`, and pushes the result to the `gh-pages`
+branch. You do **not** need to touch `docs/` or `gh-pages` manually — a normal
+commit to `main` syncs the site. `docs/` stays gitignored (local preview
+only); the workflow is the single source of truth for what is published.

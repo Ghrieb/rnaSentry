@@ -303,9 +303,12 @@ the only outstanding "ready to submit" criterion (see
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. If vignettes or bundled data changed: Gate 5c offline vignette build.
 6. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
-7. If the DESCRIPTION URL, `_pkgdown.yml`, or the logo changed: re-run
-   `pkgdown::build_site()` (with `RSTUDIO_PANDOC` set) and confirm the sitrep
-   is clean (`URLs ok`, `Favicons ok`). The site lives in `docs/` (excluded
-   from the tarball via `.Rbuildignore`); the logo is regenerated from
-   `validation/make_logo.R` (base R only).
+7. If the DESCRIPTION URL, `_pkgdown.yml`, the logo, README, NEWS, or
+   vignettes changed: re-run `pkgdown::build_site()` (with `RSTUDIO_PANDOC`
+   set) and confirm the sitrep is clean (`URLs ok`, `Favicons ok`). The site
+   lives in `docs/` (excluded from the tarball via `.Rbuildignore`); the logo
+   is regenerated from `validation/make_logo.R` (base R only). **Publishing is
+   automatic**: `.github/workflows/pkgdown.yaml` rebuilds and deploys to
+   `gh-pages` on every push to `main` (2026-08-05) — never push to `gh-pages`
+   by hand; the manual local `build_site()` is a preview only.
 8. Commit logs with the change at a logical checkpoint.
