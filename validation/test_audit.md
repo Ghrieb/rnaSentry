@@ -207,6 +207,14 @@ described in prose. Each fires only on a specific, test-pinned condition.
   `^\.github$`, so the tarball is unaffected (verified by re-building the
   tarball 2026-08-05 — no `.github` in the archive). Log:
   `logs/18_ci_site.txt`.
+- Getting-started round (2026-08-05): **docs-only again** — no R code or
+  test changes, so Gate 1 (147/457/0/0/32) and every other gate number
+  stands. Added `vignettes/getting-started.Rmd` (CSV -> `SummarizedExperiment`
+  bridge: read, intersect sample IDs, `load_counts()`, `design_audit()`,
+  `run_rnaSentry()`) and a README "Getting started with your own data"
+  section. The sweep was re-run with no allow-list change — the new text
+  avoids all six swept patterns. CI must compile the new vignette on
+  Bioc-release Linux. Log: `logs/19_getting_started.txt`.
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
   suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
   power analysis; `logs/13_simulation.txt`); three offline case-study

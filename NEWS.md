@@ -4,6 +4,10 @@
 
 ### Case studies and documentation
 
+- New vignette `getting-started`: the exact CSV -> `SummarizedExperiment`
+  bridge for your own data (read `counts.csv` + `clinical.csv`, intersect
+  sample IDs, `load_counts()`, `design_audit()`, then `run_rnaSentry()`).
+  README gains the same block under "Getting started with your own data".
 - The pkgdown site (https://ghrieb.github.io/rnaSentry/) is rebuilt and
   deployed automatically on every push to `main` by
   `.github/workflows/pkgdown.yaml` (Bioc release in CI); `docs/` stays

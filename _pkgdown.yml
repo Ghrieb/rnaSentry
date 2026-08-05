@@ -39,6 +39,10 @@ reference:
       - load_counts
       - generate_report
 articles:
+  - title: Getting started
+    desc: Bridge your own counts and clinical CSV files into a SummarizedExperiment.
+    contents:
+      - getting-started
   - title: Case studies
     desc: Naive analysis vs rnaSentry, run against real public cohorts.
     contents:
