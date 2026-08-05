@@ -67,12 +67,12 @@
 </tr></thead><tbody><tr><td>0</td>
 <td>Hygiene + check</td>
 <td>
-<code>R CMD build</code>, <code>R CMD check --as-cran</code> on the tarball (expect 0 ERROR; the only WARNING/NOTE are the <code>qpdf</code>/<code>tidy</code> external tools), <code>BiocCheck</code>
+<code>R CMD build</code>, <code>R CMD check --as-cran</code> on the tarball (expect 0 ERROR / 0 WARNING / 1 NOTE - the residual NOTE is the HTML <code>tidy</code> external tool; the <code>qpdf</code> WARNING cleared 2026-08-05), <code>BiocCheck</code>
 </td>
 </tr><tr><td>1</td>
 <td>Full test suite</td>
 <td>
-<code>Rscript &lt;temp&gt;/run_tests_parity.R</code> (devtools::test) — 143 blocks / 445 expectations / 0 fail / 0 error / 32 expected guardrail warnings</td>
+<code>Rscript &lt;temp&gt;/run_tests_parity.R</code> (devtools::test) — 147 blocks / 457 expectations / 0 fail / 0 error / 32 expected guardrail warnings</td>
 </tr><tr><td>2</td>
 <td>Adversarial review + stale-number sweep</td>
 <td>
@@ -107,9 +107,9 @@
 </div>
 <div class="section level2">
 <h2 id="full-regression-loop-after-any-code-change">Full regression loop after any code change<a class="anchor" aria-label="anchor" href="#full-regression-loop-after-any-code-change"></a></h2>
-<ol style="list-style-type: decimal"><li>Gate 1 suite (143/445, 0 fail, 0 error).</li>
+<ol style="list-style-type: decimal"><li>Gate 1 suite (147/457, 0 fail, 0 error).</li>
 <li>
-<code>R CMD build</code> + <code>R CMD check --as-cran</code> on the tarball (0 ERROR; <code>qpdf</code>/ <code>tidy</code> WARNING/NOTE only).</li>
+<code>R CMD build</code> + <code>R CMD check --as-cran</code> on the tarball (0 ERROR / 0 WARNING / 1 NOTE, <code>tidy</code> only).</li>
 <li>If statistics or tests changed: Gate 3 parity suite + Gate 4 simulation (15/15).</li>
 <li>If intake/annotation handling changed: Gate 5 repro on the bundled subset.</li>
 <li>Gate 2 stale-number sweep.</li>

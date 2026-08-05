@@ -73,6 +73,12 @@ Ghrieb</h4>
 pipeline behaves on real data. It is <em>not</em> peer-reviewed and the
 signature reported here is provisional until a preprint is published.
 Treat every number below as a demonstration, not a clinical claim.</p>
+<p>The narrative follows the <em>three-tier</em> structure used across
+the case studies: a <strong>naive analysis</strong> first, then
+<strong>rnaSentry standing guard</strong>, then the
+<strong>counterfactual</strong> – what a researcher would have concluded
+without the guardrails, and what the guarded analysis actually
+recovers.</p>
 </div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
@@ -171,6 +177,7 @@ subset,</li>
 <span><span class="co">#&gt; The following objects are masked from 'package:matrixStats':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     anyMissing, rowMedians</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"gse20685_case_study.rds"</span>,</span>
 <span>                          package <span class="op">=</span> <span class="st">"rnaSentry"</span><span class="op">)</span><span class="op">)</span></span>
@@ -191,14 +198,68 @@ subset,</li>
 <span><span class="co">#&gt; [1] 83</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="running-the-pipeline">Running the pipeline<a class="anchor" aria-label="anchor" href="#running-the-pipeline"></a>
+<h2 id="tier-1-the-naive-analysis">Tier 1: the naive analysis<a class="anchor" aria-label="anchor" href="#tier-1-the-naive-analysis"></a>
 </h2>
-<p>We run the full pipeline in one call: confounder scan, PCA audit,
-signature construction with repeated cross-validation, and Kaplan-Meier
-risk groups. Because the cohort metadata records <code>age</code> and
-<code>subtype</code>, both are supplied as design variables so the audit
-can check them against the expression surrogate.</p>
+<p>A standard, unguarded analysis of this cohort would proceed along
+these lines: pick a few highly variable genes, screen them against
+survival with univariate Cox regressions, average the survivors into a
+risk score, and quote the concordance that R prints by default. Let us
+run exactly that.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">logcounts</span></span>
+<span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">lg</span>, <span class="fl">1</span>, <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cand</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">vars</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">cand</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">time</span>, <span class="va">se</span><span class="op">$</span><span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">lg</span><span class="op">[</span><span class="va">g</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span>, p <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">stat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cand</span></span>
+<span><span class="va">top</span> <span class="op">&lt;-</span> <span class="va">stat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">stat</span><span class="op">[</span>, <span class="st">"p"</span><span class="op">]</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">naive_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MatrixGenerics/man/rowMeans.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign</a></span><span class="op">(</span><span class="va">top</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="va">lg</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">c_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/concordance.html" class="external-link">concordance</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">time</span>, <span class="va">se</span><span class="op">$</span><span class="va">event</span><span class="op">)</span> <span class="op">~</span></span>
+<span>                                    <span class="va">naive_score</span><span class="op">)</span><span class="op">$</span><span class="va">concordance</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">c_reverse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/concordance.html" class="external-link">concordance</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">time</span>, <span class="va">se</span><span class="op">$</span><span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">naive_score</span>,</span>
+<span>                                    reverse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">$</span><span class="va">concordance</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>c_default <span class="op">=</span> <span class="va">c_default</span>, c_reverse <span class="op">=</span> <span class="va">c_reverse</span>, sum <span class="op">=</span> <span class="va">c_default</span> <span class="op">+</span> <span class="va">c_reverse</span><span class="op">)</span></span>
+<span><span class="co">#&gt; c_default c_reverse       sum </span></span>
+<span><span class="co">#&gt; 0.3156447 0.6843553 1.0000000</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/pkg/survival/man/concordance.html" class="external-link">survival::concordance()</a></code> defaults to the convention
+<em>larger score means longer survival</em>
+(<code>reverse = FALSE</code>). A Cox risk score means the opposite –
+larger score means <em>shorter</em> survival – so the default read is
+inverted: <code>C_default = 1 - Harrell's C</code>. The naive analyst
+sees <code>C_default &lt; 0.5</code> and concludes “below chance, poor
+generalization, the signature is a failure.”</p>
+<p>This is not hypothetical. The first real-data face-validity run of
+this very cohort reported CV concordance <strong>0.217</strong> and the
+review initially rationalized it as extreme selection-induced winner’s
+curse; the correct value is <code>1 - 0.217 = 0.783</code>, a strong
+held-out result in the biologically expected direction. The full
+diagnosis, including the <code>C + C_rev = 1</code> invariant you can
+see holding above, is recorded in
+<code>validation/face_validity_review.md</code>. The parity test suite
+now asserts that invariant on every fold so the convention cannot
+silently flip again.</p>
+<p>Even read in the correct direction, a naive analyst stops at the
+cross- validated mean and treats it as an out-of-sample estimate. As the
+LUAD honest-negative case study documents, a screening-internal CV on a
+large candidate panel is <em>optimistic</em>: even survival-permuted
+data yields a null CV around 0.8 on ~21k genes, not 0.5. Any concordance
+below must be read relative to a matched null, and the only fully
+out-of-sample number is <code><a href="../reference/validate_external.html">validate_external()</a></code> on an
+independent cohort.</p>
+</div>
+<div class="section level2">
+<h2 id="tier-2-rnasentry-standing-guard">Tier 2: rnaSentry standing guard<a class="anchor" aria-label="anchor" href="#tier-2-rnasentry-standing-guard"></a>
+</h2>
+<p>Now the same cohort through the guarded pipeline: confounder scan,
+PCA audit, signature construction with repeated cross-validation, and
+Kaplan-Meier risk groups. Because the cohort metadata records
+<code>age</code> and <code>subtype</code>, both are supplied as design
+variables so the audit can check them against the expression
+surrogate.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_rnaSentry.html">run_rnaSentry</a></span><span class="op">(</span><span class="va">se</span>, time_col <span class="op">=</span> <span class="st">"time"</span>, event_col <span class="op">=</span> <span class="st">"event"</span>,</span>
 <span>                     outcome_col <span class="op">=</span> <span class="st">"overall_survival"</span>,</span>
 <span>                     design_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"subtype"</span><span class="op">)</span>,</span>
@@ -229,33 +290,48 @@ can check them against the expression surrogate.</p>
 same session is refused until the lock is released (see the main
 vignette). Because all vignettes build in one session, we release it
 here so the remaining vignettes can run their own pipeline calls:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span> <span class="op">&lt;-</span></span>
 <span>    <span class="fu"><a href="../reference/lock_signature.html">lock_signature</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span>, lock <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>The <code>events_per_parameter</code> warning is expected and matches
-the documented limitation: 83 deaths for a 20-gene signature is 4.2
-events per parameter, below the guardrail of 5. The signature should be
-read as hypothesis-generating, and the cross-validated concordance and
-hazard ratios as unstable at this event count.</p>
-<p>The cross-validated concordance (mean C = 0.80) is a
-<em>screening-internal</em> estimate: gene selection happens on the full
-cohort before the CV split, so it is optimistic. Read it relative to a
-matched null, as discussed in the main vignette and in the README.</p>
-</div>
-<div class="section level2">
-<h2 id="risk-groups">Risk groups<a class="anchor" aria-label="anchor" href="#risk-groups"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>The guardrails that the naive analysis missed are now explicit in the
+flag ledger:</p>
+<ul>
+<li>
+<strong>Direction.</strong> Every concordance in the pipeline is
+computed with <code>reverse = TRUE</code>; the sign convention cannot
+silently flip (a parity test asserts <code>C + C_rev = 1</code> on every
+fold).</li>
+<li>
+<strong>Events per parameter.</strong> The
+<code>events_per_parameter</code> warning is expected and matches the
+documented limitation: 83 deaths for a 20-gene signature is 4.2 events
+per parameter, below the guardrail of 5. The signature should be read as
+hypothesis-generating, and the cross-validated concordance and hazard
+ratios as unstable at this event count.</li>
+<li>
+<strong>Screening-internal CV.</strong> The cross-validated
+concordance (mean C = 0.80) is a <em>screening-internal</em> estimate:
+gene selection happens on the full cohort before the CV split, so it is
+optimistic. Read it relative to a matched null, as discussed in the main
+vignette and in the README.</li>
+<li>
+<strong>Design.</strong> The design audit below decides which
+confounders the screening adjusts for, instead of an ad-hoc pick.</li>
+</ul>
+<div class="section level3">
+<h3 id="risk-groups">Risk groups<a class="anchor" aria-label="anchor" href="#risk-groups"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">km</span> <span class="op">&lt;-</span> <span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">km_curve</span></span>
 <span><span class="va">km</span><span class="op">$</span><span class="va">log_rank_p</span></span>
 <span><span class="co">#&gt; [1] 2.99146e-15</span></span></code></pre></div>
 <p>The discovered signature separates the cohort into risk groups whose
 survival curves differ dramatically at the discovery cutpoint.</p>
 </div>
-<div class="section level2">
-<h2 id="design-audit">Design audit<a class="anchor" aria-label="anchor" href="#design-audit"></a>
-</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="design-audit">Design audit<a class="anchor" aria-label="anchor" href="#design-audit"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span> <span class="op">&lt;-</span> <span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">design_audit</span></span>
 <span><span class="va">da</span><span class="op">$</span><span class="va">confounder_table</span></span>
 <span><span class="co">#&gt;   variable        type   n test   statistic     df       p_value effect_size</span></span>
@@ -272,6 +348,66 @@ therefore keeps it, so that univariate gene screening is adjusted for
 subtype. <code>age</code> is not flagged. This is exactly the kind of
 design decision <code>rnaSentry</code> is meant to surface before any
 differential-expression or signature work.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="tier-3-the-counterfactual">Tier 3: the counterfactual<a class="anchor" aria-label="anchor" href="#tier-3-the-counterfactual"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th></th>
+<th>Naive analysis (Tier 1)</th>
+<th>rnaSentry (Tier 2)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Score direction</td>
+<td>default convention reads the score as <em>protective</em>;
+<code>C &lt; 0.5</code> looks like failure</td>
+<td>
+<code>reverse = TRUE</code>; <code>C_rev = 1 - C_default</code>,
+direction correct</td>
+</tr>
+<tr class="even">
+<td>Headline concordance</td>
+<td>
+<code>C_default</code> quoted as gospel</td>
+<td>
+<code>C_rev</code> quoted with its convention, and flagged
+screening-internal</td>
+</tr>
+<tr class="odd">
+<td>Out-of-sample claim</td>
+<td>none / implicit</td>
+<td>only <code><a href="../reference/validate_external.html">validate_external()</a></code> counts; matched-null
+calibration required</td>
+</tr>
+<tr class="even">
+<td>Events per parameter</td>
+<td>not reported</td>
+<td>4.2 &lt; 5, warned in the ledger</td>
+</tr>
+<tr class="odd">
+<td>Design</td>
+<td>ad-hoc</td>
+<td>
+<code>subtype</code> flagged and adjusted for</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What a guarded manuscript can claim:</strong> on the
+full-cohort face-validity run of this dataset rnaSentry reports a
+directionally correct held-out concordance of 0.783 against a 0.582
+random-gene control (and a 0.490 simulated null) – genuine survival
+signal, not a 0.22 collapse – while the naive pipeline either reports a
+“failed” signature (inverted convention) or an uncalibrated 0.80
+(screening-internal optimism). The events-per-parameter limitation is
+stated, not hidden.</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
@@ -300,7 +436,7 @@ used).</li>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.2 (2025-10-31 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
@@ -324,12 +460,13 @@ used).</li>
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] SummarizedExperiment_1.38.1 Biobase_2.68.0             </span></span>
-<span><span class="co">#&gt;  [3] GenomicRanges_1.60.0        GenomeInfoDb_1.44.2        </span></span>
-<span><span class="co">#&gt;  [5] IRanges_2.42.0              S4Vectors_0.46.0           </span></span>
-<span><span class="co">#&gt;  [7] BiocGenerics_0.54.0         generics_0.1.4             </span></span>
-<span><span class="co">#&gt;  [9] MatrixGenerics_1.20.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [11] rnaSentry_0.99.0            BiocStyle_2.36.0           </span></span>
+<span><span class="co">#&gt;  [1] survival_3.8-3              SummarizedExperiment_1.38.1</span></span>
+<span><span class="co">#&gt;  [3] Biobase_2.68.0              GenomicRanges_1.60.0       </span></span>
+<span><span class="co">#&gt;  [5] GenomeInfoDb_1.44.2         IRanges_2.42.0             </span></span>
+<span><span class="co">#&gt;  [7] S4Vectors_0.46.0            BiocGenerics_0.54.0        </span></span>
+<span><span class="co">#&gt;  [9] generics_0.1.4              MatrixGenerics_1.20.0      </span></span>
+<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.0           </span></span>
+<span><span class="co">#&gt; [13] BiocStyle_2.36.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] Matrix_1.7-4            jsonlite_2.0.0          crayon_1.5.3           </span></span>
@@ -343,9 +480,9 @@ used).</li>
 <span><span class="co">#&gt; [25] xfun_0.52               fs_1.6.6                sass_0.4.10            </span></span>
 <span><span class="co">#&gt; [28] SparseArray_1.8.1       cli_3.6.5               pkgdown_2.1.3          </span></span>
 <span><span class="co">#&gt; [31] grid_4.5.2              digest_0.6.37           lifecycle_1.0.5        </span></span>
-<span><span class="co">#&gt; [34] evaluate_1.0.5          ragg_1.5.0              survival_3.8-3         </span></span>
-<span><span class="co">#&gt; [37] abind_1.4-8             rmarkdown_2.29          httr_1.4.7             </span></span>
-<span><span class="co">#&gt; [40] tools_4.5.2             htmltools_0.5.8.1       UCSC.utils_1.4.0</span></span></code></pre></div>
+<span><span class="co">#&gt; [34] evaluate_1.0.5          ragg_1.5.0              abind_1.4-8            </span></span>
+<span><span class="co">#&gt; [37] rmarkdown_2.29          httr_1.4.7              tools_4.5.2            </span></span>
+<span><span class="co">#&gt; [40] htmltools_0.5.8.1       UCSC.utils_1.4.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

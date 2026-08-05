@@ -70,7 +70,10 @@ Ghrieb</h4>
 </h2>
 <p>This is a synthetic-data walkthrough demonstrating how the
 <code>events_per_parameter</code> guardrail and fold-level reporting
-expose unstable signatures. It is a vignette, not a study.</p>
+expose unstable signatures. It is a vignette, not a study. The narrative
+follows the <em>three-tier</em> structure used across the case studies:
+a <strong>naive analysis</strong> first, then <strong>rnaSentry standing
+guard</strong>, then the <strong>counterfactual</strong>.</p>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
@@ -177,9 +180,26 @@ This is 4.6 events per parameter – below the guardrail of 5.</p>
 <span><span class="co">#&gt; cohort.</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="the-guardrail-fires">The guardrail fires<a class="anchor" aria-label="anchor" href="#the-guardrail-fires"></a>
+<h2 id="tier-1-the-naive-analysis">Tier 1: the naive analysis<a class="anchor" aria-label="anchor" href="#tier-1-the-naive-analysis"></a>
 </h2>
+<p>A standard analysis reports the single number the summary returns and
+stops there:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sig</span><span class="op">$</span><span class="va">cv_summary</span></span>
+<span><span class="co">#&gt;      mean        sd </span></span>
+<span><span class="co">#&gt; 0.7430831 0.1411627</span></span></code></pre></div>
+<p>The mean cross-validated concordance is 0.74 – which a careless
+reader would call “decent.” A naive manuscript would report
+<em>“cross-validated C = 0.74”</em> as evidence that the signature is
+prognostic, with no sense of how much that single mean is hiding.</p>
+</div>
+<div class="section level2">
+<h2 id="tier-2-rnasentry-standing-guard">Tier 2: rnaSentry standing guard<a class="anchor" aria-label="anchor" href="#tier-2-rnasentry-standing-guard"></a>
+</h2>
+<div class="section level3">
+<h3 id="the-guardrail-fires">The guardrail fires<a class="anchor" aria-label="anchor" href="#the-guardrail-fires"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sig</span><span class="op">$</span><span class="va">flags</span></span>
 <span><span class="co">#&gt;                  check severity</span></span>
 <span><span class="co">#&gt; 1 events_per_parameter  warning</span></span>
@@ -187,19 +207,14 @@ This is 4.6 events per parameter – below the guardrail of 5.</p>
 <span><span class="co">#&gt; 1 Only 23 event(s) for a 5-gene signature (4.6 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.</span></span>
 <span><span class="co">#&gt;             stage</span></span>
 <span><span class="co">#&gt; 1 build_signature</span></span></code></pre></div>
-<p>The <code>events_per_parameter</code> warning fires immediately, and
-is also recorded in the stage’s flag ledger so it propagates into the
+<p>The <code>events_per_parameter</code> warning fires immediately – 23
+events for 5 genes is 4.6 per parameter, below the guardrail of 5 – and
+is recorded in the stage’s flag ledger so it propagates into the
 rendered report.</p>
 </div>
-<div class="section level2">
-<h2 id="the-mean-hides-the-spread">The mean hides the spread<a class="anchor" aria-label="anchor" href="#the-mean-hides-the-spread"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sig</span><span class="op">$</span><span class="va">cv_summary</span></span>
-<span><span class="co">#&gt;      mean        sd </span></span>
-<span><span class="co">#&gt; 0.7430831 0.1411627</span></span></code></pre></div>
-<p>The mean cross-validated concordance is 0.74 – which a careless
-reader would call “decent”. Look at the fold-level table instead:</p>
+<div class="section level3">
+<h3 id="the-mean-hides-the-spread">The mean hides the spread<a class="anchor" aria-label="anchor" href="#the-mean-hides-the-spread"></a>
+</h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sig</span><span class="op">$</span><span class="va">cv_results</span></span>
 <span><span class="co">#&gt;    repeat_id fold   c_index</span></span>
@@ -234,13 +249,56 @@ fold, single-fold C estimates are nearly coin flips, and the standard
 deviation (0.14) is enormous relative to the mean. A signature like this
 is unstable and should be treated as hypothesis-generating only.</p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="tier-3-the-counterfactual">Tier 3: the counterfactual<a class="anchor" aria-label="anchor" href="#tier-3-the-counterfactual"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th></th>
+<th>Naive analysis (Tier 1)</th>
+<th>rnaSentry (Tier 2)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Reported statistic</td>
+<td>mean CV C = 0.74, quoted alone</td>
+<td>mean + fold-level distribution (range 0.50-1.00, sd 0.14)</td>
+</tr>
+<tr class="even">
+<td>Events per parameter</td>
+<td>not computed</td>
+<td>4.6 &lt; 5, <code>events_per_parameter</code> warning in the
+ledger</td>
+</tr>
+<tr class="odd">
+<td>Scientific status</td>
+<td>“a decent prognostic signature”</td>
+<td>“hypothesis-generating only; unstable”</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What a guarded manuscript can claim:</strong> the exact same
+cross-validated concordance that a naive analysis would headline as 0.74
+is shown by <code><a href="../reference/build_signature.html">build_signature()</a></code> to be an average over
+near-coin-flip folds – and the guardrail warns rather than silently
+proceeding. This is the documented “small-cohort trap,” quantified in
+the simulation study (<code>validation/simulate_study.R</code>, Sim 5):
+with fewer than ~5 events per signature gene, neither the concordance
+nor the hazard ratios are trustworthy, and a <em>mean</em> C-index hides
+the instability that the fold-level table exposes.</p>
+</div>
 <div class="section level2">
 <h2 id="reading">Reading<a class="anchor" aria-label="anchor" href="#reading"></a>
 </h2>
 <p>The takeaway is exactly the documented “small-cohort trap”: with
 fewer than ~5 events per signature gene, neither the concordance nor the
-hazard ratios are trustworthy, and a <em>mean</em> C-index hides the
-instability that the fold-level table exposes. This is why
+hazard ratios are trustworthy. This is why
 <code><a href="../reference/build_signature.html">build_signature()</a></code> reports the per-fold distribution, not
 just the mean, and why the guardrail warns rather than silently
 proceeding.</p>

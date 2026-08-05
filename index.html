@@ -164,21 +164,56 @@
 <div class="section level2">
 <h2 id="case-studies">Case studies<a class="anchor" aria-label="anchor" href="#case-studies"></a>
 </h2>
-<p>Four analyses are bundled so the pipeline’s behaviour can be inspected without pulling data from the network.</p>
+<p>Every case study is written as a three-tier narrative: a <strong>naive analysis</strong> (what a standard, unguarded pipeline would report), <strong>rnaSentry standing guard</strong> (the same data through the pipeline, with the flag ledger), and the <strong>counterfactual</strong> (the error prevented and the true signal recovered). <code><a href="articles/case-study-impact.html">vignette("case-study-impact")</a></code> is the landing page with the master impact table. Three studies are bundled so the pipeline’s behaviour can be inspected without pulling data from the network; the fourth (LUAD) is reproduced from live GEO and documented here.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Failure mode</th>
+<th>Naive headline</th>
+<th>Guarded headline</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Wrong direction (GSE20685)</td>
+<td>inverted-convention read (C ~ 0.2) looks like a failure</td>
+<td>held-out C = 0.783 vs 0.582 random-gene control</td>
+</tr>
+<tr>
+<td>Confounded design (synthetic cohort)</td>
+<td>six batch-driven genes are “prognostic”; batch + region are “independent”</td>
+<td>batch/region redundant (Cramer’s V = 0.82); design reduced to <code>~ batch</code>
+</td>
+</tr>
+<tr>
+<td>Underpowered discovery (30 samples, 23 events)</td>
+<td>“mean CV C = 0.74 - decent”</td>
+<td>fold range 0.50-1.00, sd 0.14, 4.6 events/parameter</td>
+</tr>
+<tr>
+<td>False transfer (GSE31210 -&gt; GSE50081)</td>
+<td>“CV C = 0.86, validated”</td>
+<td>external C = 0.540, p = 0.266: transfer not demonstrated</td>
+</tr>
+</tbody>
+</table>
 <div class="section level3">
 <h3 id="id_1-breast-cancer-signature-discovery-gse20685">1. Breast cancer signature discovery (GSE20685)<a class="anchor" aria-label="anchor" href="#id_1-breast-cancer-signature-discovery-gse20685"></a>
 </h3>
-<p>A 3000-gene x 327-sample subset of GSE20685 (Li <em>et al.</em>, 2010; Affymetrix GPL570, 83 deaths) ships as <code>inst/extdata/gse20685_case_study.rds</code> and is walked through in <code><a href="articles/case-study-brca.html">vignette("case-study-brca")</a></code>. On the bundled subset the pipeline finds a 20-gene signature with screening-internal CV C = 0.80 (sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design audit flags <code>subtype</code> (eta-squared = 0.78) and recommends adjusting for it. The signature is provisional: at 83 events for 20 genes the <code>events_per_parameter</code> guardrail fires (4.2 &lt; 5), so this demonstrates the pipeline, not a validated biomarker. There is no independent breast-cohort validation here; external validation is shown on an independent cohort in the LUAD narrative (case study 4).</p>
+<p>A 3000-gene x 327-sample subset of GSE20685 (Li <em>et al.</em>, 2010; Affymetrix GPL570, 83 deaths) ships as <code>inst/extdata/gse20685_case_study.rds</code> and is walked through in <code><a href="articles/case-study-brca.html">vignette("case-study-brca")</a></code>. On the bundled subset the pipeline finds a 20-gene signature with screening-internal CV C = 0.80 (sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design audit flags <code>subtype</code> (eta-squared = 0.78) and recommends adjusting for it. The narrative contrasts this with the naive default-convention concordance read (C ~ 0.2, i.e. “below chance”), which the <code>reverse = TRUE</code> convention and the <code>C + C_rev = 1</code> parity test prevent – the exact mechanism behind the historical concordance-inversion bug documented in <code>validation/face_validity_review.md</code>. The signature is provisional: at 83 events for 20 genes the <code>events_per_parameter</code> guardrail fires (4.2 &lt; 5), so this demonstrates the pipeline, not a validated biomarker. There is no independent breast-cohort validation here; external validation is shown on an independent cohort in the LUAD narrative (case study 4).</p>
 </div>
 <div class="section level3">
 <h3 id="id_2-confounder-stress-test">2. Confounder stress test<a class="anchor" aria-label="anchor" href="#id_2-confounder-stress-test"></a>
 </h3>
-<p><code><a href="articles/case-study-confounder-audit.html">vignette("case-study-confounder-audit")</a></code> plants a batch effect and a redundant, near-collinear design variable (Cramer’s V = 0.82). <code><a href="reference/design_audit.html">design_audit()</a></code> flags both variables as associated with the expression surrogate and recommends the minimal design <code>~ batch</code>, dropping the redundant term instead of double-counting it in a model.</p>
+<p><code><a href="articles/case-study-confounder-audit.html">vignette("case-study-confounder-audit")</a></code> plants a batch effect and a redundant, near-collinear design variable (Cramer’s V = 0.82), plus a survival signal that runs through the batch. The naive tier shows the six batch-driven genes ranking as the most “prognostic” genes in an unadjusted screen; the guarded tier shows <code><a href="reference/design_audit.html">design_audit()</a></code> flagging both variables as associated with the expression surrogate and recommending the minimal design <code>~ batch</code>, after which the batch-artifact genes drop out of screening.</p>
 </div>
 <div class="section level3">
 <h3 id="id_3-the-small-cohort-guardrail">3. The small-cohort guardrail<a class="anchor" aria-label="anchor" href="#id_3-the-small-cohort-guardrail"></a>
 </h3>
-<p><code><a href="articles/case-study-small-cohort.html">vignette("case-study-small-cohort")</a></code> shows why the <code>events_per_parameter</code> guardrail exists: on 30 samples / 23 events the mean CV C reads 0.74 while the per-fold values span <strong>0.50-1.00</strong>. A mean hides what the fold-level table exposes; the guardrail fires (<code>4.6 &lt; 5</code>) rather than quietly reporting unstable numbers.</p>
+<p><code><a href="articles/case-study-small-cohort.html">vignette("case-study-small-cohort")</a></code> shows why the <code>events_per_parameter</code> guardrail exists: on 30 samples / 23 events the naive reading quotes the mean CV C = 0.74, while the fold-level table exposes a range of <strong>0.50-1.00</strong> (sd 0.14). The guardrail fires (<code>4.6 &lt; 5</code>) rather than quietly reporting unstable numbers.</p>
 </div>
 <div class="section level3">
 <h3 id="id_4-luad-honest-negative-gse31210---gse50081">4. LUAD honest negative (GSE31210 -&gt; GSE50081)<a class="anchor" aria-label="anchor" href="#id_4-luad-honest-negative-gse31210---gse50081"></a>
@@ -207,7 +242,7 @@
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <ul>
-<li>Vignette: <code>browseVignettes("rnaSentry")</code> — <code><a href="articles/rnaSentry.html">vignette("rnaSentry")</a></code> is the main walkthrough; <code><a href="articles/case-study-brca.html">vignette("case-study-brca")</a></code>, <code><a href="articles/case-study-confounder-audit.html">vignette("case-study-confounder-audit")</a></code>, and <code><a href="articles/case-study-small-cohort.html">vignette("case-study-small-cohort")</a></code> are the bundled case studies.</li>
+<li>Vignette: <code>browseVignettes("rnaSentry")</code> — <code><a href="articles/rnaSentry.html">vignette("rnaSentry")</a></code> is the main walkthrough; <code><a href="articles/case-study-impact.html">vignette("case-study-impact")</a></code> is the naive-vs-guarded landing page; <code><a href="articles/case-study-brca.html">vignette("case-study-brca")</a></code>, <code><a href="articles/case-study-confounder-audit.html">vignette("case-study-confounder-audit")</a></code>, and <code><a href="articles/case-study-small-cohort.html">vignette("case-study-small-cohort")</a></code> are the bundled case studies.</li>
 <li>Function reference: <code><a href="https://rdrr.io/pkg/rnaSentry/man" class="external-link">help(package = "rnaSentry")</a></code>
 </li>
 <li>Validation dossier (sign-convention fix, parity tests, audit table, simulation incl. the power analysis, face validity, maintainer testing guide): see the <code>validation/</code> directory of the source package.</li>

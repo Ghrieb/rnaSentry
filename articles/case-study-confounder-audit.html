@@ -70,7 +70,10 @@ Ghrieb</h4>
 </h2>
 <p>This is a synthetic-data walkthrough used to verify
 <code><a href="../reference/design_audit.html">design_audit()</a></code> behavior on a deliberately confounded
-cohort. It is a vignette, not a study.</p>
+cohort. It is a vignette, not a study. The narrative follows the
+<em>three-tier</em> structure used across the case studies: a
+<strong>naive analysis</strong> first, then <strong>rnaSentry standing
+guard</strong>, then the <strong>counterfactual</strong>.</p>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
@@ -87,9 +90,11 @@ normal variable;</li>
 shuffled).</li>
 </ul>
 <p>We also plant a real batch effect in expression: six genes are
-multiplied by a batch-dependent factor. The surrogate expression PC is
-therefore driven by <code>batch</code>, and
-<code>batch</code>/<code>region</code> are nearly collinear.</p>
+multiplied by a batch-dependent factor. Finally, survival depends on the
+latent variable (so <code>region</code>, and through its overlap
+<code>batch</code>, are genuine survival correlates) – a realistic
+setting in which an unadjusted screen can mistake batch-driven genes for
+prognostic ones.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Ghrieb/rnaSentry" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
@@ -167,6 +172,7 @@ therefore driven by <code>batch</code>, and
 <span><span class="co">#&gt; The following objects are masked from 'package:matrixStats':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     anyMissing, rowMedians</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">180</span></span>
@@ -184,19 +190,96 @@ therefore driven by <code>batch</code>, and
 <span>    <span class="va">counts</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="va">idx</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">counts</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="va">idx</span><span class="op">]</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> <span class="va">b</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">DataFrame</span><span class="op">(</span>batch <span class="op">=</span> <span class="va">batch</span>, region <span class="op">=</span> <span class="va">region</span>, row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">cd</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">event_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n</span>, rate <span class="op">=</span> <span class="fl">0.05</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.8</span> <span class="op">*</span> <span class="va">latent</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">censor_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n</span>, rate <span class="op">=</span> <span class="fl">0.03</span><span class="op">)</span></span>
+<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">DataFrame</span><span class="op">(</span>batch <span class="op">=</span> <span class="va">batch</span>, region <span class="op">=</span> <span class="va">region</span>,</span>
+<span>                time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">cd</span><span class="op">)</span></span>
+<span><span class="va">se</span></span>
+<span><span class="co">#&gt; class: SummarizedExperiment </span></span>
+<span><span class="co">#&gt; dim: 50 180 </span></span>
+<span><span class="co">#&gt; metadata(0):</span></span>
+<span><span class="co">#&gt; assays(1): counts</span></span>
+<span><span class="co">#&gt; rownames(50): g1 g2 ... g49 g50</span></span>
+<span><span class="co">#&gt; rowData names(0):</span></span>
+<span><span class="co">#&gt; colnames(180): S1 S2 ... S179 S180</span></span>
+<span><span class="co">#&gt; colData names(4): batch region time event</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="the-audit">The audit<a class="anchor" aria-label="anchor" href="#the-audit"></a>
+<h2 id="tier-1-the-naive-analysis">Tier 1: the naive analysis<a class="anchor" aria-label="anchor" href="#tier-1-the-naive-analysis"></a>
 </h2>
+<p>A naive analyst runs univariate Cox regressions for every gene
+against survival and takes the top hits – without checking whether the
+candidate genes are driven by batch, and without auditing the
+design.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="va">counts</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">lg</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">cd</span><span class="op">$</span><span class="va">time</span>, <span class="va">cd</span><span class="op">$</span><span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">lg</span><span class="op">[</span><span class="va">g</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span>, p <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">stat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">lg</span><span class="op">)</span></span>
+<span><span class="va">naive_top</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">stat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">stat</span><span class="op">[</span>, <span class="st">"p"</span><span class="op">]</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>, <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">naive_top</span><span class="op">)</span>,</span>
+<span>           planted_batch_effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">naive_top</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>           <span class="va">naive_top</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    gene planted_batch_effect     beta            p</span></span>
+<span><span class="co">#&gt; g3   g3                 TRUE 2.155854 2.099216e-08</span></span>
+<span><span class="co">#&gt; g5   g5                 TRUE 2.044039 6.186780e-08</span></span>
+<span><span class="co">#&gt; g6   g6                 TRUE 1.896791 9.984742e-08</span></span>
+<span><span class="co">#&gt; g4   g4                 TRUE 1.858827 7.106999e-07</span></span>
+<span><span class="co">#&gt; g1   g1                 TRUE 1.778014 7.113127e-07</span></span>
+<span><span class="co">#&gt; g2   g2                 TRUE 1.826484 9.162488e-07</span></span></code></pre></div>
+<p>The six genes whose expression we multiplied by the batch factor rank
+as the most “prognostic” genes in the cohort. An unguarded screen would
+put exactly these batch artifacts into a signature. A naive model that
+then includes both of the near-identical design variables compounds the
+problem by double-counting collinear terms:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="va">region</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cd</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; coxph(formula = Surv(time, event) ~ batch + region, data = as.data.frame(cd))</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 180, number of events= 103 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;            coef exp(coef) se(coef)     z Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; batchR2  0.2114    1.2354   0.5220 0.405  0.68551    </span></span>
+<span><span class="co">#&gt; batchR3  0.5957    1.8144   0.4873 1.222  0.22154    </span></span>
+<span><span class="co">#&gt; regionR2 0.9230    2.5168   0.5293 1.744  0.08118 .  </span></span>
+<span><span class="co">#&gt; regionR3 1.6504    5.2090   0.4966 3.323  0.00089 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;          exp(coef) exp(-coef) lower .95 upper .95</span></span>
+<span><span class="co">#&gt; batchR2      1.235     0.8095    0.4441     3.437</span></span>
+<span><span class="co">#&gt; batchR3      1.814     0.5512    0.6981     4.716</span></span>
+<span><span class="co">#&gt; regionR2     2.517     0.3973    0.8919     7.102</span></span>
+<span><span class="co">#&gt; regionR3     5.209     0.1920    1.9679    13.788</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Concordance= 0.695  (se = 0.023 )</span></span>
+<span><span class="co">#&gt; Likelihood ratio test= 45.62  on 4 df,   p=3e-09</span></span>
+<span><span class="co">#&gt; Wald test            = 42.64  on 4 df,   p=1e-08</span></span>
+<span><span class="co">#&gt; Score (logrank) test = 50.55  on 4 df,   p=3e-10</span></span></code></pre></div>
+<p><code>batch</code> and <code>region</code> carry almost the same
+information; fitting both inflates standard errors and produces unstable
+coefficients that look like two “independent” effects when there is
+really one.</p>
+</div>
+<div class="section level2">
+<h2 id="tier-2-rnasentry-standing-guard">Tier 2: rnaSentry standing guard<a class="anchor" aria-label="anchor" href="#tier-2-rnasentry-standing-guard"></a>
+</h2>
+<div class="section level3">
+<h3 id="design-audit">Design audit<a class="anchor" aria-label="anchor" href="#design-audit"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/design_audit.html">design_audit</a></span><span class="op">(</span><span class="va">se</span>, design_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"batch"</span>, <span class="st">"region"</span><span class="op">)</span>,</span>
 <span>                   redundant_effect_size <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="pairwise-redundancy">Pairwise redundancy<a class="anchor" aria-label="anchor" href="#pairwise-redundancy"></a>
-</h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="section level4">
+<h4 id="pairwise-redundancy">Pairwise redundancy<a class="anchor" aria-label="anchor" href="#pairwise-redundancy"></a>
+</h4>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span><span class="op">$</span><span class="va">pairwise_table</span></span>
 <span><span class="co">#&gt;    var1   var2                 type_pair       test statistic df      p_value</span></span>
 <span><span class="co">#&gt; 1 batch region categorical x categorical chisq.test  241.7757  4 3.846267e-51</span></span>
@@ -207,10 +290,10 @@ therefore driven by <code>batch</code>, and
 Including both in a model would double-count nearly the same
 information.</p>
 </div>
-<div class="section level3">
-<h3 id="confounder-scan">Confounder scan<a class="anchor" aria-label="anchor" href="#confounder-scan"></a>
-</h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="section level4">
+<h4 id="confounder-scan">Confounder scan<a class="anchor" aria-label="anchor" href="#confounder-scan"></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span><span class="op">$</span><span class="va">confounder_table</span></span>
 <span><span class="co">#&gt;   variable        type   n         test  statistic     df       p_value</span></span>
 <span><span class="co">#&gt; 1    batch categorical 180          aov 2577.97331 2, 177 1.285386e-131</span></span>
@@ -219,14 +302,14 @@ information.</p>
 <span><span class="co">#&gt; 1   0.9668101      eta_squared    TRUE 2.570773e-131</span></span>
 <span><span class="co">#&gt; 2   0.5461877  epsilon_squared    TRUE  3.740642e-22</span></span></code></pre></div>
 <p>Both variables are flagged as associated with the expression
-surrogate <code>batch</code> with eta-squared 0.97, <code>region</code>
+surrogate: <code>batch</code> with eta-squared 0.97, <code>region</code>
 with epsilon-squared 0.55 (it leaks the same signal through its overlap
 with <code>batch</code>).</p>
 </div>
-<div class="section level3">
-<h3 id="recovered-design">Recovered design<a class="anchor" aria-label="anchor" href="#recovered-design"></a>
-</h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="section level4">
+<h4 id="recovered-design">Recovered design<a class="anchor" aria-label="anchor" href="#recovered-design"></a>
+</h4>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span><span class="op">$</span><span class="va">formula_text</span></span>
 <span><span class="co">#&gt; [1] "~ batch"</span></span></code></pre></div>
 <p>The audit therefore recommends the minimal formula
@@ -235,6 +318,100 @@ This is the behavior verified by the test suite
 (<code>confounder-detection</code> and <code>design-audit</code>
 blocks): a redundant design term is reported, not silently kept.</p>
 </div>
+</div>
+<div class="section level3">
+<h3 id="batch-adjusted-screening">Batch-adjusted screening<a class="anchor" aria-label="anchor" href="#batch-adjusted-screening"></a>
+</h3>
+<p>Armed with the recommended design, the guarded discovery run adjusts
+its univariate screening for <code>batch</code>. The batch-driven genes
+are no longer the top hits:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">adj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">lg</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">cd</span><span class="op">$</span><span class="va">time</span>, <span class="va">cd</span><span class="op">$</span><span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">lg</span><span class="op">[</span><span class="va">g</span>, <span class="op">]</span> <span class="op">+</span> <span class="va">batch</span>,</span>
+<span>                       data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cd</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span>, p <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">adj</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">lg</span><span class="op">)</span></span>
+<span><span class="va">guarded_top</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">adj</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">adj</span><span class="op">[</span>, <span class="st">"p"</span><span class="op">]</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>, <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">guarded_top</span><span class="op">)</span>,</span>
+<span>           planted_batch_effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">guarded_top</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"g"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>           <span class="va">guarded_top</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     gene planted_batch_effect      beta          p</span></span>
+<span><span class="co">#&gt; g35  g35                FALSE -2.421041 0.01122042</span></span>
+<span><span class="co">#&gt; g15  g15                FALSE  2.543141 0.01764476</span></span>
+<span><span class="co">#&gt; g31  g31                FALSE  2.107756 0.02446470</span></span>
+<span><span class="co">#&gt; g47  g47                FALSE -2.160102 0.06155177</span></span>
+<span><span class="co">#&gt; g13  g13                FALSE  1.600798 0.09347755</span></span>
+<span><span class="co">#&gt; g23  g23                FALSE -1.665415 0.11027676</span></span></code></pre></div>
+<p>Once <code>batch</code> is in the model, the planted genes lose their
+survival association. The pipeline records this decision in the flag
+ledger:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sig_guarded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_signature.html">build_signature</a></span><span class="op">(</span><span class="va">se</span>, <span class="st">"time"</span>, <span class="st">"event"</span>, top_n <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                               repeats <span class="op">=</span> <span class="fl">3</span>, folds <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                               design_terms <span class="op">=</span> <span class="st">"batch"</span>, seed <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="va">sig_guarded</span><span class="op">$</span><span class="va">genes</span></span>
+<span><span class="co">#&gt; [1] "g35" "g15" "g31" "g47" "g13" "g23"</span></span>
+<span><span class="va">sig_guarded</span><span class="op">$</span><span class="va">flags</span></span>
+<span><span class="co">#&gt;                check severity</span></span>
+<span><span class="co">#&gt; 1 adjusted_screening     info</span></span>
+<span><span class="co">#&gt;                                                     detail           stage</span></span>
+<span><span class="co">#&gt; 1 Univariate screening adjusted for design term(s): batch. build_signature</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="tier-3-the-counterfactual">Tier 3: the counterfactual<a class="anchor" aria-label="anchor" href="#tier-3-the-counterfactual"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th></th>
+<th>Naive analysis (Tier 1)</th>
+<th>rnaSentry (Tier 2)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Screening</td>
+<td>unadjusted; the 6 batch-driven genes rank as most “prognostic”</td>
+<td>adjusted for <code>batch</code>; batch-driven genes no longer top
+hits</td>
+</tr>
+<tr class="even">
+<td>Design</td>
+<td>
+<code>batch + region</code> fitted together; collinear terms
+double-counted</td>
+<td>
+<code>redundant</code> flag on the pair (Cramer’s V = 0.82); minimal
+<code>~ batch</code> recommended</td>
+</tr>
+<tr class="odd">
+<td>Surrogate association</td>
+<td>never checked</td>
+<td>
+<code>batch</code> eta-squared 0.97, <code>region</code>
+epsilon-squared 0.55 reported</td>
+</tr>
+<tr class="even">
+<td>Ledger</td>
+<td>none</td>
+<td>
+<code>redundant_variable</code>, <code>adjusted_screening</code>
+recorded</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What a guarded manuscript can claim:</strong> without
+<code><a href="../reference/design_audit.html">design_audit()</a></code>, this cohort would produce a six-gene
+“prognostic” signature that is entirely a batch artifact, plus a model
+reporting two collinear “independent” risk factors. With it, the batch
+confounder is surfaced with its effect size, the redundant term is
+dropped, and screening is adjusted so the discovered signature is not a
+batch echo.</p>
 </div>
 <div class="section level2">
 <h2 id="reading">Reading<a class="anchor" aria-label="anchor" href="#reading"></a>
@@ -248,7 +425,7 @@ then trust the recommended formula over an ad-hoc pick.</p>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.2 (2025-10-31 ucrt)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
@@ -272,28 +449,29 @@ then trust the recommended formula over an ad-hoc pick.</p>
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] SummarizedExperiment_1.38.1 Biobase_2.68.0             </span></span>
-<span><span class="co">#&gt;  [3] GenomicRanges_1.60.0        GenomeInfoDb_1.44.2        </span></span>
-<span><span class="co">#&gt;  [5] IRanges_2.42.0              S4Vectors_0.46.0           </span></span>
-<span><span class="co">#&gt;  [7] BiocGenerics_0.54.0         generics_0.1.4             </span></span>
-<span><span class="co">#&gt;  [9] MatrixGenerics_1.20.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [11] rnaSentry_0.99.0            BiocStyle_2.36.0           </span></span>
+<span><span class="co">#&gt;  [1] survival_3.8-3              SummarizedExperiment_1.38.1</span></span>
+<span><span class="co">#&gt;  [3] Biobase_2.68.0              GenomicRanges_1.60.0       </span></span>
+<span><span class="co">#&gt;  [5] GenomeInfoDb_1.44.2         IRanges_2.42.0             </span></span>
+<span><span class="co">#&gt;  [7] S4Vectors_0.46.0            BiocGenerics_0.54.0        </span></span>
+<span><span class="co">#&gt;  [9] generics_0.1.4              MatrixGenerics_1.20.0      </span></span>
+<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.0           </span></span>
+<span><span class="co">#&gt; [13] BiocStyle_2.36.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] Matrix_1.7-4            jsonlite_2.0.0          crayon_1.5.3           </span></span>
 <span><span class="co">#&gt;  [4] compiler_4.5.2          BiocManager_1.30.26     jquerylib_0.1.4        </span></span>
-<span><span class="co">#&gt;  [7] systemfonts_1.2.3       textshaping_1.0.3       yaml_2.3.10            </span></span>
-<span><span class="co">#&gt; [10] fastmap_1.2.0           lattice_0.22-7          R6_2.6.1               </span></span>
-<span><span class="co">#&gt; [13] XVector_0.48.0          S4Arrays_1.8.1          knitr_1.50             </span></span>
-<span><span class="co">#&gt; [16] htmlwidgets_1.6.4       DelayedArray_0.34.1     bookdown_0.47          </span></span>
-<span><span class="co">#&gt; [19] desc_1.4.3              GenomeInfoDbData_1.2.14 bslib_0.9.0            </span></span>
-<span><span class="co">#&gt; [22] rlang_1.1.7             cachem_1.1.0            xfun_0.52              </span></span>
-<span><span class="co">#&gt; [25] fs_1.6.6                sass_0.4.10             SparseArray_1.8.1      </span></span>
-<span><span class="co">#&gt; [28] cli_3.6.5               pkgdown_2.1.3           grid_4.5.2             </span></span>
-<span><span class="co">#&gt; [31] digest_0.6.37           lifecycle_1.0.5         evaluate_1.0.5         </span></span>
-<span><span class="co">#&gt; [34] ragg_1.5.0              abind_1.4-8             rmarkdown_2.29         </span></span>
-<span><span class="co">#&gt; [37] httr_1.4.7              tools_4.5.2             htmltools_0.5.8.1      </span></span>
-<span><span class="co">#&gt; [40] UCSC.utils_1.4.0</span></span></code></pre></div>
+<span><span class="co">#&gt;  [7] splines_4.5.2           systemfonts_1.2.3       textshaping_1.0.3      </span></span>
+<span><span class="co">#&gt; [10] yaml_2.3.10             fastmap_1.2.0           lattice_0.22-7         </span></span>
+<span><span class="co">#&gt; [13] R6_2.6.1                XVector_0.48.0          S4Arrays_1.8.1         </span></span>
+<span><span class="co">#&gt; [16] knitr_1.50              htmlwidgets_1.6.4       DelayedArray_0.34.1    </span></span>
+<span><span class="co">#&gt; [19] bookdown_0.47           desc_1.4.3              GenomeInfoDbData_1.2.14</span></span>
+<span><span class="co">#&gt; [22] bslib_0.9.0             rlang_1.1.7             cachem_1.1.0           </span></span>
+<span><span class="co">#&gt; [25] xfun_0.52               fs_1.6.6                sass_0.4.10            </span></span>
+<span><span class="co">#&gt; [28] SparseArray_1.8.1       cli_3.6.5               pkgdown_2.1.3          </span></span>
+<span><span class="co">#&gt; [31] grid_4.5.2              digest_0.6.37           lifecycle_1.0.5        </span></span>
+<span><span class="co">#&gt; [34] evaluate_1.0.5          ragg_1.5.0              abind_1.4-8            </span></span>
+<span><span class="co">#&gt; [37] rmarkdown_2.29          httr_1.4.7              tools_4.5.2            </span></span>
+<span><span class="co">#&gt; [40] htmltools_0.5.8.1       UCSC.utils_1.4.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
