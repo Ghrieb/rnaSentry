@@ -193,7 +193,20 @@ described in prose. Each fires only on a specific, test-pinned condition.
   `vignettes/case-study-impact.Rmd` (now explicit allow-list entries
   alongside `validation/`) and one new quote in `paper_qa_summary.md`;
   `*.Rcheck/`/`chk*/` build-artifact directories are excluded from the scan
-  (PASS, exit 0)
+  (PASS, exit 0); re-run 2026-08-05 after `CONTRIBUTING.md` gained the
+  site-deployment section — still **69 files / 29 hits**, all inside
+  `validation/` or the two allow-listed narrative vignettes, exit 0
+- CI / site round (2026-08-05): **no R code or test changes**, so Gate 1
+  stands at 147 blocks / 457 expectations / 0 fail / 0 error / 32 expected
+  guardrail warnings, and the as-cran / BiocCheck / simulation numbers are
+  unchanged. New automation verified green: `.github/workflows/pkgdown.yaml`
+  run #1 installed the package with Bioc release deps on ubuntu-latest,
+  built the full pkgdown site (all 4 case-study vignettes + main vignette)
+  with the same pinned numbers as the local runs, and deployed to `gh-pages`
+  (`3893b77`; prior manual publish `d36a20f`). `.Rbuildignore` excludes
+  `^\.github$`, so the tarball is unaffected (verified by re-building the
+  tarball 2026-08-05 — no `.github` in the archive). Log:
+  `logs/18_ci_site.txt`.
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
   suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
   power analysis; `logs/13_simulation.txt`); three offline case-study

@@ -2,7 +2,7 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-04 (Phase-3 case studies + power-analysis gate).
+Last updated 2026-08-05 (CI auto-deploy + site-sync round).
 
 ## Method summary
 
@@ -125,6 +125,29 @@ decisions.
 - Gate 4's dataset label corrected: GSE20685 is **not** TCGA-BRCA (it is
   Li et al., 2010, Affymetrix GPL570); the old "TCGA-BRCA GSE20685" wording
   was removed from this file.
+
+## Site, CI deployment, and cross-environment build (2026-08-05)
+
+- The live site https://ghrieb.github.io/rnaSentry/ is served from the
+  `gh-pages` branch and is rebuilt + deployed **automatically** on every push
+  to `main` by `.github/workflows/pkgdown.yaml` (`r-lib` actions: `setup-r`
+  with `bioc-version: release`, `setup-r-dependencies` with `needs: website`
+  + `r-lib/pkgdown` + `local::.`, then `build_site_github_pages()` and
+  `deploy_to_branch()`). `docs/` is gitignored (local preview only) and
+  `^\.github$` is excluded from the source tarball (`.Rbuildignore`).
+- Verified end-to-end 2026-08-05: workflow run #1 green (run
+  31026245981); all four case-study vignettes + the main vignette compiled in
+  a clean Ubuntu container on **R 4.6.1 / Bioc release** (SummarizedExperiment
+  1.42, Biobase 2.72, BiocStyle 2.40) and produced the **same pinned numbers**
+  as the local R 4.5.2 / Bioc 3.22 runs (0.316/0.684/1.0 convention read, CV
+  C = 0.797, `C + C_rev = 1` = 0.488 + 0.512) — a cross-environment
+  reproducibility data point.
+- Historical drift fixed: before this round the live site had been stale at
+  gh-pages `46d9d06` (docs/ is gitignored, so a push to `main` alone did not
+  publish). Manual `deploy_to_branch()` published `d36a20f` (case-study
+  impact article went live), then CI published `3893b77`; future pushes sync
+  the site with no manual step.
+- Round record: `validation/logs/18_ci_site.txt`.
 
 ## Real-data face validity (Gate 4)
 

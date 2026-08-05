@@ -4,6 +4,11 @@
 
 ### Case studies and documentation
 
+- The pkgdown site (https://ghrieb.github.io/rnaSentry/) is rebuilt and
+  deployed automatically on every push to `main` by
+  `.github/workflows/pkgdown.yaml` (Bioc release in CI); `docs/` stays
+  local-only and `.github/` is excluded from the source tarball. The
+  case-study impact article is live on the site.
 - New bundled case-study data: `inst/extdata/gse20685_case_study.rds`, a
   3000-gene x 327-sample subset of GSE20685 (Li et al., 2010; Affymetrix
   GPL570) with overall-survival metadata, built by the dev-only repro script

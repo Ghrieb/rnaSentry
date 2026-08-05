@@ -68,7 +68,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
 | B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; log 16 (`16_as_cran.txt`, 2026-08-05 Ultimate Pre-Flight) is **0 ERROR / 0 WARNING / 1 NOTE** — the `qpdf` WARNING cleared after installing the qpdf CLI 12.3.2 and running with `R_QPDF` + `_R_CHECK_DOC_SIZES_=true`; the sole remaining NOTE is `tidy` (HTML validation), deliberately skipped per maintainer decision; re-confirmed unchanged at `17_as_cran.txt` (2026-08-05 BiocParallel round) |
 | B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); at `16_bioccheck.txt`/`16_bioccheck_tarball.txt` (2026-08-05 Ultimate Pre-Flight) **0 WARNING / 8 advisory NOTES** — the `set.seed` WARNING (→ `withr::with_seed()` refactor), the R-version NOTE (→ `R >= 4.5.0`), the `Avoid 1:` NOTE (→ `seq_len()`), and the two `\dontrun`/runnable-examples NOTES (→ self-contained `\donttest`) are all resolved; the remaining 8 are justified in `logs/notes_documented.md`; re-confirmed unchanged at the BiocParallel round (`17_bioccheck.txt`/`17_bioccheck_tarball.txt`); GitClone `16_bioccheck_gitclone.txt` is **0 ERROR / 1 WARNING (CITATION `doi`, kept by decision) / 0 NOTES**, re-confirmed at `17_bioccheck_gitclone.txt` |
-| B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — **SKIPPED by maintainer decision 2026-08-05** (Phase 4 / rhub was cancelled; no Docker on this machine); local Windows/R 4.5.2 is green; see `cross_platform.md` |
+| B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — **SKIPPED by maintainer decision 2026-08-05** (Phase 4 / rhub was cancelled; no Docker on this machine); local Windows/R 4.5.2 is green; **partial Linux evidence added 2026-08-05**: the CI pkgdown workflow (ubuntu-latest, R 4.6.1 / Bioc release) installs the package and compiles all five vignettes successfully — not a full `R CMD check`/test-suite run; see `cross_platform.md` |
 | B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
 | B7 | DESCRIPTION fields complete (`Authors@R` with maintainer email, `biocViews`, `License`, `URL`, `BugReports`) | PASS — `biocViews`: Software, GeneExpression, RNASeq, DifferentialExpression, Survival, QualityControl, BatchEffect, Normalization |
@@ -88,6 +88,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | Gate 5b | Live GEO pair (Phase 3) | see Section A acceptance gate | `repro_live_geo.R`, `logs/11_live_geo.txt` |
 | Gate 5c | Case-study vignettes + bundled data (Phase 3) | offline build; numbers match documented values | `repro_gse20685.R`, `inst/extdata/gse20685_case_study.rds`, `vignettes/case-study-*.Rmd` |
 | Gate 6 | Cross-platform | per-platform `Status:` lines | `cross_platform.md` |
+| Gate 7 | Site + CI deploy | pkgdown build green + `gh-pages` updated on every push to `main` | `.github/workflows/pkgdown.yaml`, `logs/18_ci_site.txt` (2026-08-05: run #1 green, `gh-pages` `3893b77`) |
 
 ## D. Definition of "ready to submit"
 
@@ -122,5 +123,7 @@ Step 5 is closed" criterion is met in full:
 
 The remaining items before submission are **user actions only**, none of them
 code gates: register the maintainer email on the Bioconductor Support Site
-(clears the last BiocCheck ERROR), enable GitHub Pages / verify the pushed
-site, and open the Contributions issue.
+(clears the last BiocCheck ERROR), and open the Contributions issue. The
+"enable GitHub Pages / verify the pushed site" action from earlier rounds is
+**done (2026-08-05)**: GitHub Pages serves from the `gh-pages` branch and is
+now updated automatically on every push to `main` (Gate 7).

@@ -311,4 +311,8 @@ the only outstanding "ready to submit" criterion (see
    automatic**: `.github/workflows/pkgdown.yaml` rebuilds and deploys to
    `gh-pages` on every push to `main` (2026-08-05) — never push to `gh-pages`
    by hand; the manual local `build_site()` is a preview only.
-8. Commit logs with the change at a logical checkpoint.
+8. If any of the above touched `main`: confirm the pushed commit's
+   `.github/workflows/pkgdown.yaml` run is green (GitHub Actions → pkgdown);
+   it installs the package with Bioc release deps, builds the full site, and
+    redeploys `gh-pages` (Gate 7).
+9. Commit logs with the change at a logical checkpoint.

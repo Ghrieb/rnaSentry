@@ -23,6 +23,18 @@ blocked, and exactly how to finish it.
   of 2026-08-05, and the 4 serial↔parallel `BPPARAM` blocks added in the
   same round). Logs: `logs/00.1_test.txt`, re-run `logs/17_test.txt`.
 
+## Partial Linux evidence via CI (2026-08-05)
+
+The pkgdown workflow (`.github/workflows/pkgdown.yaml`) runs on
+`ubuntu-latest` with **R 4.6.1 / Bioc release** (SummarizedExperiment 1.42,
+Biobase 2.72, BiocStyle 2.40). Run #1 was green end-to-end: the package
+installed with all Bioconductor dependencies, and **all five vignettes
+compiled offline** with the same pinned numbers as the local R 4.5.2 / Bioc
+3.22 runs (0.316/0.684/1.0, CV C = 0.797, `C + C_rev = 1`). This is genuine
+non-Windows evidence that the package installs and the vignettes build on a
+Linux/Bioc release environment — but it is **not** a full `R CMD check` or a
+test-suite run, which still require the container/service options below.
+
 ## Blocked (needs a Docker-capable machine or remote service)
 
 The local machine has **no Docker** and no `R CMD BiocCheck` CLI launcher
