@@ -6,14 +6,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Case study: why small cohorts fail silently • rnaSentry</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
-<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
-<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="icon" sizes="any" href="../favicon.ico">
-<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Case study: why small cohorts fail silently">
 </head>
@@ -59,7 +54,7 @@ Ghrieb</h4>
             
             <h4 data-toc-skip class="date">2026-08-05</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/HEAD/vignettes/case-study-small-cohort.Rmd" class="external-link"><code>vignettes/case-study-small-cohort.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/main/vignettes/case-study-small-cohort.Rmd" class="external-link"><code>vignettes/case-study-small-cohort.Rmd</code></a></small>
       <div class="d-none name"><code>case-study-small-cohort.Rmd</code></div>
     </div>
 
@@ -82,7 +77,7 @@ guard</strong>, then the <strong>counterfactual</strong>.</p>
 survival signal driven by five genes, then ask for a 5-gene signature.
 This is 4.6 events per parameter – below the guardrail of 5.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Ghrieb/rnaSentry" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ghrieb.github.io/rnaSentry/">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: MatrixGenerics</span></span>
 <span><span class="co">#&gt; Loading required package: matrixStats</span></span>
@@ -138,12 +133,7 @@ This is 4.6 events per parameter – below the guardrail of 5.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     expand.grid, I, unname</span></span>
 <span><span class="co">#&gt; Loading required package: IRanges</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'IRanges'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:grDevices':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     windows</span></span>
-<span><span class="co">#&gt; Loading required package: GenomeInfoDb</span></span>
+<span><span class="co">#&gt; Loading required package: Seqinfo</span></span>
 <span><span class="co">#&gt; Loading required package: Biobase</span></span>
 <span><span class="co">#&gt; Welcome to Bioconductor</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -219,29 +209,29 @@ rendered report.</p>
 <code class="sourceCode R"><span><span class="va">sig</span><span class="op">$</span><span class="va">cv_results</span></span>
 <span><span class="co">#&gt;    repeat_id fold   c_index</span></span>
 <span><span class="co">#&gt; 1          1    1 0.5000000</span></span>
-<span><span class="co">#&gt; 2          1    2 0.7368421</span></span>
-<span><span class="co">#&gt; 3          1    3 0.7142857</span></span>
-<span><span class="co">#&gt; 4          1    4 0.7500000</span></span>
-<span><span class="co">#&gt; 5          1    5 0.8750000</span></span>
-<span><span class="co">#&gt; 6          2    1 0.6000000</span></span>
+<span><span class="co">#&gt; 2          2    1 0.6000000</span></span>
+<span><span class="co">#&gt; 3          3    1 0.5789474</span></span>
+<span><span class="co">#&gt; 4          4    1 0.7500000</span></span>
+<span><span class="co">#&gt; 5          5    1 0.8750000</span></span>
+<span><span class="co">#&gt; 6          1    2 0.7368421</span></span>
 <span><span class="co">#&gt; 7          2    2 0.7647059</span></span>
-<span><span class="co">#&gt; 8          2    3 0.6666667</span></span>
-<span><span class="co">#&gt; 9          2    4 0.5000000</span></span>
-<span><span class="co">#&gt; 10         2    5 0.8571429</span></span>
-<span><span class="co">#&gt; 11         3    1 0.5789474</span></span>
-<span><span class="co">#&gt; 12         3    2 0.8461538</span></span>
+<span><span class="co">#&gt; 8          3    2 0.8461538</span></span>
+<span><span class="co">#&gt; 9          4    2 0.6923077</span></span>
+<span><span class="co">#&gt; 10         5    2 0.6666667</span></span>
+<span><span class="co">#&gt; 11         1    3 0.7142857</span></span>
+<span><span class="co">#&gt; 12         2    3 0.6666667</span></span>
 <span><span class="co">#&gt; 13         3    3 0.7692308</span></span>
-<span><span class="co">#&gt; 14         3    4 0.8888889</span></span>
-<span><span class="co">#&gt; 15         3    5 1.0000000</span></span>
-<span><span class="co">#&gt; 16         4    1 0.7500000</span></span>
-<span><span class="co">#&gt; 17         4    2 0.6923077</span></span>
-<span><span class="co">#&gt; 18         4    3 0.9285714</span></span>
+<span><span class="co">#&gt; 14         4    3 0.9285714</span></span>
+<span><span class="co">#&gt; 15         5    3 0.9166667</span></span>
+<span><span class="co">#&gt; 16         1    4 0.7500000</span></span>
+<span><span class="co">#&gt; 17         2    4 0.5000000</span></span>
+<span><span class="co">#&gt; 18         3    4 0.8888889</span></span>
 <span><span class="co">#&gt; 19         4    4 0.5000000</span></span>
-<span><span class="co">#&gt; 20         4    5 0.8000000</span></span>
-<span><span class="co">#&gt; 21         5    1 0.8750000</span></span>
-<span><span class="co">#&gt; 22         5    2 0.6666667</span></span>
-<span><span class="co">#&gt; 23         5    3 0.9166667</span></span>
-<span><span class="co">#&gt; 24         5    4 0.8000000</span></span>
+<span><span class="co">#&gt; 20         5    4 0.8000000</span></span>
+<span><span class="co">#&gt; 21         1    5 0.8750000</span></span>
+<span><span class="co">#&gt; 22         2    5 0.8571429</span></span>
+<span><span class="co">#&gt; 23         3    5 1.0000000</span></span>
+<span><span class="co">#&gt; 24         4    5 0.8000000</span></span>
 <span><span class="co">#&gt; 25         5    5 0.6000000</span></span></code></pre></div>
 <p>The per-fold concordances range from <strong>0.50 to 1.00</strong>
 across repeats and folds. With only a handful of held-out samples per
@@ -308,50 +298,50 @@ proceeding.</p>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.5.2 (2025-10-31 ucrt)</span></span>
-<span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
-<span><span class="co">#&gt; Running under: Windows 11 x64 (build 26200)</span></span>
+<span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt;   LAPACK version 3.12.1</span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt; [1] LC_COLLATE=English_United States.utf8 </span></span>
-<span><span class="co">#&gt; [2] LC_CTYPE=English_United States.utf8   </span></span>
-<span><span class="co">#&gt; [3] LC_MONETARY=English_United States.utf8</span></span>
-<span><span class="co">#&gt; [4] LC_NUMERIC=C                          </span></span>
-<span><span class="co">#&gt; [5] LC_TIME=English_United States.utf8    </span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: Africa/Algiers</span></span>
-<span><span class="co">#&gt; tzcode source: internal</span></span>
+<span><span class="co">#&gt; time zone: UTC</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats4    stats     graphics  grDevices utils     datasets  methods  </span></span>
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] SummarizedExperiment_1.38.1 Biobase_2.68.0             </span></span>
-<span><span class="co">#&gt;  [3] GenomicRanges_1.60.0        GenomeInfoDb_1.44.2        </span></span>
-<span><span class="co">#&gt;  [5] IRanges_2.42.0              S4Vectors_0.46.0           </span></span>
-<span><span class="co">#&gt;  [7] BiocGenerics_0.54.0         generics_0.1.4             </span></span>
-<span><span class="co">#&gt;  [9] MatrixGenerics_1.20.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [11] rnaSentry_0.99.0            BiocStyle_2.36.0           </span></span>
+<span><span class="co">#&gt;  [1] SummarizedExperiment_1.42.0 Biobase_2.72.0             </span></span>
+<span><span class="co">#&gt;  [3] GenomicRanges_1.64.0        Seqinfo_1.2.0              </span></span>
+<span><span class="co">#&gt;  [5] IRanges_2.46.0              S4Vectors_0.50.1           </span></span>
+<span><span class="co">#&gt;  [7] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
+<span><span class="co">#&gt;  [9] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
+<span><span class="co">#&gt; [11] rnaSentry_0.99.0            BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] Matrix_1.7-4            jsonlite_2.0.0          crayon_1.5.3           </span></span>
-<span><span class="co">#&gt;  [4] compiler_4.5.2          BiocManager_1.30.26     jquerylib_0.1.4        </span></span>
-<span><span class="co">#&gt;  [7] splines_4.5.2           systemfonts_1.2.3       textshaping_1.0.3      </span></span>
-<span><span class="co">#&gt; [10] yaml_2.3.10             fastmap_1.2.0           lattice_0.22-7         </span></span>
-<span><span class="co">#&gt; [13] R6_2.6.1                XVector_0.48.0          S4Arrays_1.8.1         </span></span>
-<span><span class="co">#&gt; [16] knitr_1.50              htmlwidgets_1.6.4       DelayedArray_0.34.1    </span></span>
-<span><span class="co">#&gt; [19] bookdown_0.47           desc_1.4.3              GenomeInfoDbData_1.2.14</span></span>
-<span><span class="co">#&gt; [22] bslib_0.9.0             rlang_1.1.7             cachem_1.1.0           </span></span>
-<span><span class="co">#&gt; [25] xfun_0.52               fs_1.6.6                sass_0.4.10            </span></span>
-<span><span class="co">#&gt; [28] SparseArray_1.8.1       cli_3.6.5               pkgdown_2.1.3          </span></span>
-<span><span class="co">#&gt; [31] grid_4.5.2              digest_0.6.37           lifecycle_1.0.5        </span></span>
-<span><span class="co">#&gt; [34] evaluate_1.0.5          ragg_1.5.0              survival_3.8-3         </span></span>
-<span><span class="co">#&gt; [37] abind_1.4-8             rmarkdown_2.29          httr_1.4.7             </span></span>
-<span><span class="co">#&gt; [40] tools_4.5.2             htmltools_0.5.8.1       UCSC.utils_1.4.0</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] Matrix_1.7-5        jsonlite_2.0.0      compiler_4.6.1     </span></span>
+<span><span class="co">#&gt;  [4] BiocManager_1.30.27 jquerylib_0.1.4     splines_4.6.1      </span></span>
+<span><span class="co">#&gt;  [7] systemfonts_1.3.2   textshaping_1.0.5   yaml_2.3.12        </span></span>
+<span><span class="co">#&gt; [10] fastmap_1.2.0       lattice_0.22-9      XVector_0.52.0     </span></span>
+<span><span class="co">#&gt; [13] R6_2.6.1            S4Arrays_1.12.0     knitr_1.51         </span></span>
+<span><span class="co">#&gt; [16] htmlwidgets_1.6.4   DelayedArray_0.38.2 bookdown_0.47      </span></span>
+<span><span class="co">#&gt; [19] desc_1.4.3          bslib_0.12.0        rlang_1.3.0        </span></span>
+<span><span class="co">#&gt; [22] cachem_1.1.0        xfun_0.60           fs_2.1.0           </span></span>
+<span><span class="co">#&gt; [25] sass_0.4.10         otel_0.2.0          SparseArray_1.12.2 </span></span>
+<span><span class="co">#&gt; [28] cli_3.6.6           withr_3.0.3         pkgdown_2.2.1.9000 </span></span>
+<span><span class="co">#&gt; [31] grid_4.6.1          digest_0.6.39       lifecycle_1.0.5    </span></span>
+<span><span class="co">#&gt; [34] evaluate_1.0.5      ragg_1.5.2          survival_3.8-6     </span></span>
+<span><span class="co">#&gt; [37] abind_1.4-8         rmarkdown_2.31      tools_4.6.1        </span></span>
+<span><span class="co">#&gt; [40] htmltools_0.5.9</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -364,7 +354,7 @@ proceeding.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.9000.</p>
 </div>
 
     </footer>

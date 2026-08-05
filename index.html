@@ -6,14 +6,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures • rnaSentry</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
-<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" sizes="any" href="favicon.ico">
-<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures">
 <meta name="description" content="Orchestrates the statistical pipeline underlying prognostic biomarker discovery from bulk RNA-seq SummarizedExperiment objects: sample-identity and quality-control auditing, confounder and design-formula detection prior to differential expression, signature construction with explicit cross-validation stability reporting, survival modeling (Kaplan-Meier, log-rank, Cox proportional hazards), and external validation against public cohorts. Every automated statistical decision is reported with its supporting statistic and a plain-language rationale, and validation stages are gated rather than silently degraded when guardrail criteria are not met.">
@@ -75,7 +70,7 @@
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Ghrieb/rnaSentry" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ghrieb.github.io/rnaSentry/">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># counts: a gene x sample integer matrix, gene symbols as rownames.</span></span>
@@ -243,7 +238,7 @@
 </h2>
 <ul>
 <li>Vignette: <code>browseVignettes("rnaSentry")</code> — <code><a href="articles/rnaSentry.html">vignette("rnaSentry")</a></code> is the main walkthrough; <code><a href="articles/case-study-impact.html">vignette("case-study-impact")</a></code> is the naive-vs-guarded landing page; <code><a href="articles/case-study-brca.html">vignette("case-study-brca")</a></code>, <code><a href="articles/case-study-confounder-audit.html">vignette("case-study-confounder-audit")</a></code>, and <code><a href="articles/case-study-small-cohort.html">vignette("case-study-small-cohort")</a></code> are the bundled case studies.</li>
-<li>Function reference: <code><a href="https://rdrr.io/pkg/rnaSentry/man" class="external-link">help(package = "rnaSentry")</a></code>
+<li>Function reference: <code><a href="https://ghrieb.github.io/rnaSentry/reference">help(package = "rnaSentry")</a></code>
 </li>
 <li>Validation dossier (sign-convention fix, parity tests, audit table, simulation incl. the power analysis, face validity, maintainer testing guide): see the <code>validation/</code> directory of the source package.</li>
 </ul>
@@ -303,7 +298,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.9000.</p>
 </div>
 
     </footer>
