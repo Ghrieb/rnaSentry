@@ -2,9 +2,10 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-05 (future case-study roster round: official A/B/C
-designation; prior: getting-started CSV->SE bridge round; CI auto-deploy +
-site-sync).
+Last updated 2026-08-05 (case-study roadmap round: README/NEWS roadmap for
+the official A/B/C roster; prior: future case-study roster round with the
+official A/B/C designation; getting-started CSV->SE bridge round; CI
+auto-deploy + site-sync).
 
 ## Method summary
 
@@ -198,6 +199,11 @@ until the submission verdict. Round record:
   impact article went live), then CI published `3893b77`; future pushes sync
   the site with no manual step.
 - Round record: `validation/logs/18_ci_site.txt`.
+- Round 22 (2026-08-05, docs-only): the README now carries a prominent
+  `## Case study roadmap` section (planned case studies A/C/B) that renders
+  on the GitHub landing page and the pkgdown site; NEWS gains the matching
+  bullet. The site is re-deployed automatically by CI on the round-22 push
+  (see `validation/logs/22_case_study_roadmap.txt`).
 
 ## Real-data face validity (Gate 4)
 

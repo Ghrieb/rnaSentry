@@ -34,6 +34,13 @@
   discovery-to-external honest negative, GSE31210 -> GSE50081), a
   positioning/prior-art section (asuri, signifinder, SurvMarker, mRNAsi), and
   a Contributing pointer. Added `CONTRIBUTING.md` and `NEWS.md`.
+- README gains a prominent `## Case study roadmap` section: three planned
+  case studies (A clinical-covariate trap on the bundled GSE20685 subset
+  with zero new downloads; C batch catastrophe on the GSE31210 + GSE30219
+  identical-GPL570 merge; B cross-histology LUAD -> LUSC transfer on
+  GSE30219), sequenced A -> C -> B. They are designed and data-sourced now
+  but built only after the Bioconductor submission, so v0.99.0 stays locked;
+  no numbers ship until the experiments run.
 
 ### Engine reproducibility and check hygiene (2026-08-05)
 

@@ -1,0 +1,180 @@
+﻿Rscript.exe : Ôä╣ Testing rnaSentry
+At line:1 char:86
++ ... bin\tools"; & "C:\Program Files\R\R-4.5.2\bin\Rscript.exe" "C:\Users\ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Ôä╣ Testing rnaSentry:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: 'MatrixGenerics'
+
+The following objects are masked from 'package:matrixStats':
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: generics
+
+Attaching package: 'generics'
+
+The following objects are masked from 'package:base':
+
+    as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
+    setequal, union
+
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, saveRDS, table, tapply, unique,
+    unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:utils':
+
+    findMatches
+
+The following objects are masked from 'package:base':
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object is masked from 'package:grDevices':
+
+    windows
+
+Loading required package: GenomeInfoDb
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: 'Biobase'
+
+The following object is masked from 'package:MatrixGenerics':
+
+    rowMedians
+
+The following objects are masked from 'package:matrixStats':
+
+    anyMissing, rowMedians
+
+adversarial_regressions: W.W......W.....W........................
+build_signature: ...............W................W........................................
+cox_model: ..........W...............W.W.W.......
+design_audit: ............................................
+generate_report: ..W..W...
+km_curve: .....W...........W........W......
+load_counts: .......................
+lock_signature: ...............................
+pca_audit: .........................................
+qc_explore: ..........
+run_rnaSentry: W........W.....
+sex_check: .............
+statistical_parity: W.W....W.....W...W...W.............W....
+survival_parametric: ....W.....................W.......
+validate_external: .......W.....W............W..W.W..........W..
+
+ÔòÉÔòÉ Warnings ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+1. build_signature rejects leave-one-out or oversized folds cleanly ('test-adversarial_regressions.R:9:3') - Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+2. build_signature rejects leave-one-out or oversized folds cleanly ('test-adversarial_regressions.R:11:3') - Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+3. build_signature rejects folds >= n on a two-sample cohort ('test-adversarial_regressions.R:47:3') - Only 2 event(s) for a 5-gene signature (0.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+4. exactly collinear genes are dropped from the signature with a flag ('test-adversarial_regressions.R:86:3') - Only 31 event(s) for a 7-gene signature (4.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+5. build_signature returns the documented signature shape ('test-build_signature.R:61:3') - Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+6. build_signature flags fewer genes than requested ('test-build_signature.R:104:3') - Only 8 event(s) for a 4-gene signature (2.0 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+7. cox_model returns the documented structure ('test-cox_model.R:31:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+8. cox_model gene coefficients match the gene-only signature fit ('test-cox_model.R:58:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+9. cox_model includes design terms recorded in the signature ('test-cox_model.R:68:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+10. cox_model flags missing covariate values and estimates by complete cases ('test-cox_model.R:76:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+11. generate_report renders a pipeline report ('test-generate_report.R:16:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+12. generate_report renders the pipeline assumptions section ('test-generate_report.R:36:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+13. km_curve returns the documented structure on a built signature ('test-km_curve.R:34:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+14. km_curve re-applies a discovery cutpoint to a new cohort ('test-km_curve.R:53:3') - Only 35 event(s) for a 10-gene signature (3.5 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+15. km_curve separates high-risk from low-risk survival ('test-km_curve.R:75:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+16. run_rnaSentry runs the full pipeline and renders a report ('test-run_rnaSentry.R:18:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+17. run_rnaSentry can skip the report and the design audit ('test-run_rnaSentry.R:39:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+18. km_curve log-rank p matches survival::survdiff on the same split ('test-statistical_parity.R:10:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+19. validate_external log-rank p matches survival::survdiff ('test-statistical_parity.R:24:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+20. cox_model hazard ratios and CIs match an independent survival::coxph ('test-statistical_parity.R:61:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+21. cox_model Schoenfeld table matches survival::cox.zph ('test-statistical_parity.R:89:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+22. cox_model concordance is the risk-score direction (independently recomputed) ('test-statistical_parity.R:110:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+23. survival_parametric AIC/loglik/npar match stats::AIC on the same fits ('test-statistical_parity.R:130:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+24. build_signature fold concordance matches concordance on the same folds ('test-statistical_parity.R:152:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+25. survival_parametric returns the documented structure ('test-survival_parametric.R:18:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+26. survival_parametric score matches the km_curve risk score ('test-survival_parametric.R:44:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+27. validate_external never recomputes cutpoint from external data ('test-validate_external.R:25:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+28. validate_external returns the documented structure ('test-validate_external.R:44:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+29. validate_external concordance uses the risk-score direction ('test-validate_external.R:76:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+30. validate_external errors strictly on missing genes by default ('test-validate_external.R:100:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+31. validate_external drops missing genes only when opted in ('test-validate_external.R:112:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+32. validate_external flags an already-log-scaled external cohort ('test-validate_external.R:157:3') - Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+
+ÔòÉÔòÉ DONE ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+FILES: 147  PASSED: 457  FAILED: 0  ERROR: 0  WARNING: 32  SKIPPED: 0

@@ -235,6 +235,21 @@ described in prose. Each fires only on a specific, test-pinned condition.
   19-20 recorded "69 files", the pre-getting-started total; the true count
   after `vignettes/getting-started.Rmd` is 70). Log:
   `logs/21_future_case_studies.txt`.
+- Case-study roadmap round (2026-08-05): **docs-only again** — no R code or
+  test changes, so Gate 1 (147/457/0/0/32) and every other gate number
+  stands. README gains a top-level `## Case study roadmap` section (planned
+  case studies A clinical-covariate trap on bundled GSE20685, C batch
+  catastrophe on the GSE31210 + GSE30219 identical-GPL570 merge, B cross-
+  histology LUAD→LUSC transfer on GSE30219, sequenced A -> C -> B) so the
+  roster is visible on the GitHub landing page and the pkgdown site; NEWS
+  bullet added; `submission_success_criteria.md` tracker reference updated
+  from the frozen `Bioconductor/Contributions` to the 2026
+  `Bioconductor/BiocContributions` system (B9 / Section D / Gate 7 rows).
+  Gates re-run and unchanged: tests `logs/22_test.txt` (147/457/0/0/32),
+  as-cran `logs/22_as_cran.txt` (0 E / 0 W / 3 N, all environmental),
+  tarball rebuilt clean of `.github`, local pkgdown build clean. Sweep
+  re-run: **70 files / 29 hits / exit 0**, no allow-list change. Log:
+  `logs/22_case_study_roadmap.txt`.
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
   suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
   power analysis; `logs/13_simulation.txt`); three offline case-study

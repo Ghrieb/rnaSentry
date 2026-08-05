@@ -73,7 +73,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
 | B7 | DESCRIPTION fields complete (`Authors@R` with maintainer email, `biocViews`, `License`, `URL`, `BugReports`) | PASS — `biocViews`: Software, GeneExpression, RNASeq, DifferentialExpression, Survival, QualityControl, BatchEffect, Normalization |
 | B8 | Version 0.99.x targets Bioc devel | PASS — 0.99.0 |
-| B9 | GitHub: package-only default branch, maintainer SSH key, `gh` access | PENDING — user task (push + open Contributions issue) |
+| B9 | GitHub: public package-only repo, default branch `main`, repo name == `Package` | READY (verified 2026-08-05: `Ghrieb/rnaSentry` public, default branch `main`); submission is a user task, opened by the maintainer at `Bioconductor/BiocContributions` |
 | B10 | Bioconductor Support Site account registered with the maintainer email | PENDING — user task |
 
 ## C. Evidence map
@@ -88,7 +88,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | Gate 5b | Live GEO pair (Phase 3) | see Section A acceptance gate | `repro_live_geo.R`, `logs/11_live_geo.txt` |
 | Gate 5c | Case-study vignettes + bundled data (Phase 3) | offline build; numbers match documented values | `repro_gse20685.R`, `inst/extdata/gse20685_case_study.rds`, `vignettes/case-study-*.Rmd` |
 | Gate 6 | Cross-platform | per-platform `Status:` lines | `cross_platform.md` |
-| Gate 7 | Site + CI deploy | pkgdown build green + `gh-pages` updated on every push to `main` | `.github/workflows/pkgdown.yaml`, `logs/18_ci_site.txt` (2026-08-05: run #1 green, `gh-pages` `3893b77`) |
+| Gate 7 | Site + CI deploy | pkgdown build green + `gh-pages` updated on every push to `main` | `.github/workflows/pkgdown.yaml`, `logs/18_ci_site.txt` (2026-08-05: run #1 green, `gh-pages` `3893b77`; re-confirmed on the round-21 and round-22 docs commits, latest verified `gh-pages` `f651c79`) |
 
 ## D. Definition of "ready to submit"
 
@@ -99,8 +99,27 @@ machine; **Gate 6 (cross-platform) is the only outstanding "ready to submit"
 criterion** — it was explicitly skipped by maintainer decision (Phase 4 /
 rhub cancelled), so submission readiness depends on either a later
 non-Windows check (rhub/win-builder/Docker) or an explicit decision to
-accept that risk. At that point the GitHub push and the Contributions issue
-(`Bioconductor/Contributions#...`, title `rnaSentry`) can be opened.
+accept that risk. At that point the submission issue can be opened at
+`Bioconductor/BiocContributions` (the tracker that replaced
+`Bioconductor/Contributions` on 2026-06-15), title `rnaSentry`, using the
+`new_submission_template`.
+
+**Submission tracker (2026-06-15+):** Bioconductor moved new-package
+submission to `Bioconductor/BiocContributions` (GitHub Actions + r-universe
+backend; the old `Bioconductor/Contributions` tracker is frozen). Flow:
+(1) maintainer opens the issue with the new-submission template and the link
+to `https://github.com/Ghrieb/rnaSentry`; (2) the precheck action validates
+the repo (public URL, DESCRIPTION + vignettes, `x.99.y` version, no
+`Remotes`/`Additional_repositories`, files ≤ 5 MB, no Git LFS, no duplicate);
+(3) the maintainer comments `/accept-policies`; (4) the system clones the
+repo into `BiocStaging`, adds it to a submission r-universe, and posts the
+staging remote URL — subsequent builds are triggered by pushing there
+(expect ~24 h for a report); (5) the build report runs `R CMD check` on
+Linux-devel / macOS / Windows plus BiocCheck, which also closes the Gate-6
+non-Windows gap organically; (6) every fix during review requires a z-bump
+(0.99.0 -> 0.99.1 -> ...) pushed to the staging remote; (7) on acceptance the
+issue posts instructions to switch remotes to the canonical Bioconductor
+repository and a BiocCredential account is created for SSH push access.
 
 ## Step-5 closure (local verification fully closed, 2026-08-05)
 
@@ -123,7 +142,9 @@ Step 5 is closed" criterion is met in full:
 
 The remaining items before submission are **user actions only**, none of them
 code gates: register the maintainer email on the Bioconductor Support Site
-(clears the last BiocCheck ERROR), and open the Contributions issue. The
+(clears the last BiocCheck ERROR), and open the submission issue at
+`Bioconductor/BiocContributions` (see the submission-tracker note in Section
+D). The
 "enable GitHub Pages / verify the pushed site" action from earlier rounds is
 **done (2026-08-05)**: GitHub Pages serves from the `gh-pages` branch and is
 now updated automatically on every push to `main` (Gate 7).
