@@ -13,6 +13,14 @@
   batch/region redundancy recovered as a minimal design), and
   `case-study-small-cohort` (the `events_per_parameter` guardrail and
   fold-level instability).
+- The case-study vignettes were re-written as a three-tier naive-vs-guarded
+  narrative (naive analysis -> rnaSentry standing guard -> counterfactual
+  impact), and a landing page `case-study-impact` adds a master impact table
+  across the four failure modes (wrong direction, confounded design,
+  underpowered discovery, false transfer) plus the reproducible
+  `C + C_rev = 1` invariant. The naive tiers are scripted inline (manual
+  univariate screening, default-convention concordance, unadjusted design)
+  and build fully offline.
 - README now carries a status note, four case studies (including the LUAD
   discovery-to-external honest negative, GSE31210 -> GSE50081), a
   positioning/prior-art section (asuri, signifinder, SurvMarker, mRNAsi), and

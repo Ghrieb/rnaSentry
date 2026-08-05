@@ -187,7 +187,13 @@ described in prose. Each fires only on a specific, test-pinned condition.
   scanned at the 2026-08-05 BiocParallel round, +1 from the new
   `validation/make_logo.R`), all inside `validation/` (the intentional
   correction narrative), 0 in code, `@examples`, the vignette, the report
-  template, or the man pages (PASS, exit 0)
+  template, or the man pages (PASS, exit 0); after the three-tier case-study
+  round the sweep scans **69 files (29 hits)**, the extra hits being the
+  naive-tier counterfactual quotes in `vignettes/case-study-brca.Rmd` and
+  `vignettes/case-study-impact.Rmd` (now explicit allow-list entries
+  alongside `validation/`) and one new quote in `paper_qa_summary.md`;
+  `*.Rcheck/`/`chk*/` build-artifact directories are excluded from the scan
+  (PASS, exit 0)
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
   suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
   power analysis; `logs/13_simulation.txt`); three offline case-study

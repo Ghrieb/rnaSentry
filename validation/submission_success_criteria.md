@@ -81,7 +81,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | Gate | What it runs | Expected | Artifact |
 |---|---|---|---|
 | Gate 1 | Full test suite | 147 blocks / 457 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt`; re-confirmed 2026-08-05 at `logs/17_test.txt` (post-`withr` refactor + BiocParallel opt-in round) |
-| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; hits inside (correction narrative) | `test_audit.md`, `grep_stale_numbers.ps1`; sweep re-run 2026-08-05 (BiocParallel round): **68 files / 20 hits**, all inside `validation/`, exit 0 |
+| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; hits inside (correction narrative) | `test_audit.md`, `grep_stale_numbers.ps1`; sweep re-run 2026-08-05 (BiocParallel round): **68 files / 20 hits**, all inside `validation/`, exit 0; re-run 2026-08-05 (three-tier case-study round): **69 files / 29 hits**, all inside `validation/` or the two narrative-vignette allow-list entries (`case-study-brca.Rmd`, `case-study-impact.Rmd`), `*.Rcheck/`/`chk*/` build artifacts excluded, exit 0 |
 | Gate 3 | Statistical parity | items 1–7 closed + serial↔parallel `BPPARAM` equivalence (2026-08-05) | `test-statistical_parity.R`, `test-build_signature.R` |
 | Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt`, `logs/16_simulation.txt`, `logs/17_simulation.txt` (re-run 2026-08-05) |
 | Gate 5 | Real-data face validity | discrimination beyond chance, correct biology, honest external check | `face_validity_review.md`, `logs/04_face_validity.txt` |

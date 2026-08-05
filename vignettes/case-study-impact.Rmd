@@ -1,0 +1,114 @@
+---
+title: "Naive analysis vs rnaSentry: what the guardrails prevent"
+author: "Abdelkarim Hani Ghrieb"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{Naive analysis vs rnaSentry: what the guardrails prevent}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+# The three-tier structure
+
+The case studies are written as three acts. Tier 1 runs the analysis the way
+a standard, unguarded pipeline would, and prints the headline a researcher
+would have believed. Tier 2 runs the *same data* through `rnaSentry` and
+shows which guardrail fired, with the statistic that justified it. Tier 3
+states the counterfactual: the error the guardrails prevented, and the true
+signal the guarded analysis still recovered.
+
+Four failure modes -- the ways a prognostic-signature study most often goes
+wrong -- are covered by the case studies:
+
+| # | Failure mode | Where it is demonstrated |
+|---|---|---|
+| 1 | **Wrong direction**: an inverted concordance convention turns a strong signature into a "failure" | `vignette("case-study-brca")` |
+| 2 | **Confounded design**: batch-driven genes masquerade as prognostic; collinear terms are double-counted | `vignette("case-study-confounder-audit")` |
+| 3 | **Underpowered discovery**: a mean C-index hides coin-flip folds | `vignette("case-study-small-cohort")` |
+| 4 | **False transfer**: screening-internal CV optimism is mistaken for cross-cohort validity | README / main vignette (LUAD honest negative, below) |
+
+# The master impact table
+
+| Failure mode | Naive headline | Guarded headline | Guardrails that fired | What a guarded manuscript can claim |
+|---|---|---|---|---|
+| Wrong direction (GSE20685) | "CV C = 0.217, signature fails to generalize (winner's curse)" | held-out C = **0.783**, direction correct, far above the 0.582 random-gene control | `reverse = TRUE` convention; `C + C_rev = 1` parity tests; direction-sensitive regression tests | the signature is not a 0.22 collapse but a strong, directionally correct held-out signal |
+| Confounded design (synthetic batch cohort) | "six batch-driven genes are prognostic; batch and region are two independent risk factors" | `batch`/`region` flagged redundant (Cramer's V = 0.82); `batch` surrogate eta-squared 0.97; minimal design `~ batch`; adjusted screening drops the batch-artifact genes | `redundant_variable`, surrogate-association flags, `adjusted_screening` | the discovered signature is not a batch echo |
+| Underpowered discovery (30 samples, 23 events) | "cross-validated C = 0.74 -- decent" | fold range **0.50-1.00**, sd 0.14, 4.6 events/parameter < 5 | `events_per_parameter`, fold-level reporting | the concordance is an average over coin-flip folds; hypothesis-generating only |
+| False transfer (GSE31210 -> GSE50081, LUAD) | "CV C = 0.86, the signature is validated" | CV C = 0.862 vs permutation null 0.836 (delta +0.026); external C = **0.540**, log-rank p = **0.266** -- transfer *not* demonstrated | permutation-null calibration; honest-negative external validation; power analysis | no false claim of cross-cohort validity; the negative is a power finding (35 events), not a tool failure |
+
+# Why the first failure mode is worth dwelling on
+
+A sign-convention bug is the one error class that flips a paper's conclusion
+without any red flag in the data. `survival::concordance()` defaults to
+*larger score means longer survival*; a Cox risk score means the opposite.
+Calling the default on a risk score returns `1 - Harrell's C`. The identity
+below is what the parity test suite now asserts on every fold:
+
+```{r}
+library(rnaSentry)
+library(SummarizedExperiment)
+library(survival)
+
+se <- readRDS(system.file("extdata", "gse20685_case_study.rds",
+                          package = "rnaSentry"))
+score <- colMeans(assays(se)$logcounts[1:5, , drop = FALSE])
+c_default <- as.numeric(concordance(Surv(se$time, se$event) ~
+                                    score)$concordance[1])
+c_reverse <- as.numeric(concordance(Surv(se$time, se$event) ~ score,
+                                    reverse = TRUE)$concordance[1])
+c(c_default = c_default, c_reverse = c_reverse, sum = c_default + c_reverse)
+```
+
+The first real-data run of this package reported 0.217 and the review briefly
+rationalized it as winner's curse; `1 - 0.217 = 0.783` was the correct,
+biologically expected value all along (full diagnosis in
+`validation/face_validity_review.md`). The same class of error has appeared
+in published survival literature; rnaSentry pins the convention in code, in
+parity tests, and in the rendered report.
+
+# The LUAD honest negative (GSE31210 -> GSE50081)
+
+The fourth failure mode is demonstrated on independent GEO cohorts in the
+README and main vignette; the numbers are reproduced by the dev-only script
+`validation/repro_live_geo.R`. Because the data are downloaded live, the
+walkthrough is narrative here rather than a build-time vignette:
+
+- **Discovery** GSE31210 (LUAD, 35 deaths), **external validation** GSE50081
+  (n = 128, 52 deaths).
+- Screening-internal CV C = 0.862 against a permutation null of 0.836
+  (delta +0.026) -- even survival-permuted data yields a high null CV (about
+  0.8 on ~21k genes), so the CV must be calibrated against a matched null.
+- External validation: **C = 0.540, log-rank p = 0.266** -- transfer was
+  *not* demonstrated, and the tool reports an honest negative rather than a
+  "validated signature."
+- The power analysis (`validation/simulate_study.R`, Sim 6) quantifies why:
+  transfer power < 0.30 at ~35 discovery events, and >= 0.80 only near ~300
+  events for a C ~ 0.65 signature.
+
+# Reading this package's claims
+
+- **Every number above is pinned.** The case-study vignettes build offline
+  and their outputs match the values recorded in the validation dossier
+  (`validation/paper_qa_summary.md`); the stale-number sweep
+  (`validation/grep_stale_numbers.ps1`) fails the build if a superseded
+  number leaks back into shipped docs outside the allowed correction
+  narrative.
+- **The guardrails are falsifiable.** Each flag in the report's audit trail
+  is a `(check, severity, detail, stage)` record backed by a statistic, and
+  each has a regression test asserting the condition that fires it.
+- **This is a demonstration, not a clinical claim.** All signatures are
+  provisional until a preprint is published.
+
+# Session info
+
+```{r}
+sessionInfo()
+```

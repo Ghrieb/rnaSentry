@@ -40,8 +40,9 @@ reference:
       - generate_report
 articles:
   - title: Case studies
-    desc: Full walkthroughs against real public cohorts.
+    desc: Naive analysis vs rnaSentry, run against real public cohorts.
     contents:
+      - case-study-impact
       - case-study-brca
       - case-study-confounder-audit
       - case-study-small-cohort

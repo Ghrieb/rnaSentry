@@ -20,7 +20,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 This is a synthetic-data walkthrough demonstrating how the
 `events_per_parameter` guardrail and fold-level reporting expose unstable
-signatures. It is a vignette, not a study.
+signatures. It is a vignette, not a study. The narrative follows the
+*three-tier* structure used across the case studies: a **naive analysis**
+first, then **rnaSentry standing guard**, then the **counterfactual**.
 
 # Setup
 
@@ -49,23 +51,33 @@ sig <- build_signature(se, "time", "event", top_n = 5,
                        repeats = 5, folds = 5, seed = 30)
 ```
 
-# The guardrail fires
+# Tier 1: the naive analysis
 
-```{r}
-sig$flags
-```
-
-The `events_per_parameter` warning fires immediately, and is also recorded in
-the stage's flag ledger so it propagates into the rendered report.
-
-# The mean hides the spread
+A standard analysis reports the single number the summary returns and stops
+there:
 
 ```{r}
 sig$cv_summary
 ```
 
 The mean cross-validated concordance is 0.74 -- which a careless reader would
-call "decent". Look at the fold-level table instead:
+call "decent." A naive manuscript would report *"cross-validated C = 0.74"*
+as evidence that the signature is prognostic, with no sense of how much that
+single mean is hiding.
+
+# Tier 2: rnaSentry standing guard
+
+## The guardrail fires
+
+```{r}
+sig$flags
+```
+
+The `events_per_parameter` warning fires immediately -- 23 events for 5 genes
+is 4.6 per parameter, below the guardrail of 5 -- and is recorded in the
+stage's flag ledger so it propagates into the rendered report.
+
+## The mean hides the spread
 
 ```{r}
 sig$cv_results
@@ -77,14 +89,31 @@ estimates are nearly coin flips, and the standard deviation (0.14) is
 enormous relative to the mean. A signature like this is unstable and should
 be treated as hypothesis-generating only.
 
+# Tier 3: the counterfactual
+
+| | Naive analysis (Tier 1) | rnaSentry (Tier 2) |
+|---|---|---|
+| Reported statistic | mean CV C = 0.74, quoted alone | mean + fold-level distribution (range 0.50-1.00, sd 0.14) |
+| Events per parameter | not computed | 4.6 < 5, `events_per_parameter` warning in the ledger |
+| Scientific status | "a decent prognostic signature" | "hypothesis-generating only; unstable" |
+
+**What a guarded manuscript can claim:** the exact same cross-validated
+concordance that a naive analysis would headline as 0.74 is shown by
+`build_signature()` to be an average over near-coin-flip folds -- and the
+guardrail warns rather than silently proceeding. This is the documented
+"small-cohort trap," quantified in the simulation study
+(`validation/simulate_study.R`, Sim 5): with fewer than ~5 events per
+signature gene, neither the concordance nor the hazard ratios are
+trustworthy, and a *mean* C-index hides the instability that the fold-level
+table exposes.
+
 # Reading
 
 The takeaway is exactly the documented "small-cohort trap": with fewer than
 ~5 events per signature gene, neither the concordance nor the hazard ratios
-are trustworthy, and a *mean* C-index hides the instability that the
-fold-level table exposes. This is why `build_signature()` reports the
-per-fold distribution, not just the mean, and why the guardrail warns rather
-than silently proceeding.
+are trustworthy. This is why `build_signature()` reports the per-fold
+distribution, not just the mean, and why the guardrail warns rather than
+silently proceeding.
 
 # Session info
 

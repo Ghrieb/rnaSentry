@@ -138,8 +138,21 @@ out-of-sample estimate.
 
 ## Case studies
 
-Four analyses are bundled so the pipeline's behaviour can be inspected without
-pulling data from the network.
+Every case study is written as a three-tier narrative: a **naive analysis**
+(what a standard, unguarded pipeline would report), **rnaSentry standing
+guard** (the same data through the pipeline, with the flag ledger), and the
+**counterfactual** (the error prevented and the true signal recovered).
+`vignette("case-study-impact")` is the landing page with the master impact
+table. Three studies are bundled so the pipeline's behaviour can be inspected
+without pulling data from the network; the fourth (LUAD) is reproduced from
+live GEO and documented here.
+
+| Failure mode | Naive headline | Guarded headline |
+|---|---|---|
+| Wrong direction (GSE20685) | inverted-convention read (C ~ 0.2) looks like a failure | held-out C = 0.783 vs 0.582 random-gene control |
+| Confounded design (synthetic cohort) | six batch-driven genes are "prognostic"; batch + region are "independent" | batch/region redundant (Cramer's V = 0.82); design reduced to `~ batch` |
+| Underpowered discovery (30 samples, 23 events) | "mean CV C = 0.74 - decent" | fold range 0.50-1.00, sd 0.14, 4.6 events/parameter |
+| False transfer (GSE31210 -> GSE50081) | "CV C = 0.86, validated" | external C = 0.540, p = 0.266: transfer not demonstrated |
 
 ### 1. Breast cancer signature discovery (GSE20685)
 
@@ -149,26 +162,32 @@ walked through in `vignette("case-study-brca")`. On the bundled subset the
 pipeline finds a 20-gene signature with screening-internal CV C = 0.80
 (sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design
 audit flags `subtype` (eta-squared = 0.78) and recommends adjusting for it.
-The signature is provisional: at 83 events for 20 genes the
-`events_per_parameter` guardrail fires (4.2 < 5), so this demonstrates the
-pipeline, not a validated biomarker. There is no independent breast-cohort
-validation here; external validation is shown on an independent cohort in the
-LUAD narrative (case study 4).
+The narrative contrasts this with the naive default-convention concordance
+read (C ~ 0.2, i.e. "below chance"), which the `reverse = TRUE` convention
+and the `C + C_rev = 1` parity test prevent -- the exact mechanism behind the
+historical concordance-inversion bug documented in
+`validation/face_validity_review.md`. The signature is provisional:
+at 83 events for 20 genes the `events_per_parameter` guardrail fires
+(4.2 < 5), so this demonstrates the pipeline, not a validated biomarker.
+There is no independent breast-cohort validation here; external validation is
+shown on an independent cohort in the LUAD narrative (case study 4).
 
 ### 2. Confounder stress test
 
 `vignette("case-study-confounder-audit")` plants a batch effect and a
-redundant, near-collinear design variable (Cramer's V = 0.82).
-`design_audit()` flags both variables as associated with the expression
-surrogate and recommends the minimal design `~ batch`, dropping the redundant
-term instead of double-counting it in a model.
+redundant, near-collinear design variable (Cramer's V = 0.82), plus a
+survival signal that runs through the batch. The naive tier shows the six
+batch-driven genes ranking as the most "prognostic" genes in an unadjusted
+screen; the guarded tier shows `design_audit()` flagging both variables as
+associated with the expression surrogate and recommending the minimal design
+`~ batch`, after which the batch-artifact genes drop out of screening.
 
 ### 3. The small-cohort guardrail
 
 `vignette("case-study-small-cohort")` shows why the `events_per_parameter`
-guardrail exists: on 30 samples / 23 events the mean CV C reads 0.74 while
-the per-fold values span **0.50-1.00**. A mean hides what the fold-level table
-exposes; the guardrail fires (`4.6 < 5`) rather than quietly reporting
+guardrail exists: on 30 samples / 23 events the naive reading quotes the mean
+CV C = 0.74, while the fold-level table exposes a range of **0.50-1.00**
+(sd 0.14). The guardrail fires (`4.6 < 5`) rather than quietly reporting
 unstable numbers.
 
 ### 4. LUAD honest negative (GSE31210 -> GSE50081)
@@ -221,7 +240,8 @@ the developer workflow, and the gate suite that every change must pass.
 ## Documentation
 
 - Vignette: `browseVignettes("rnaSentry")` — `vignette("rnaSentry")` is the
-  main walkthrough; `vignette("case-study-brca")`,
+  main walkthrough; `vignette("case-study-impact")` is the naive-vs-guarded
+  landing page; `vignette("case-study-brca")`,
   `vignette("case-study-confounder-audit")`, and
   `vignette("case-study-small-cohort")` are the bundled case studies.
 - Function reference: `help(package = "rnaSentry")`

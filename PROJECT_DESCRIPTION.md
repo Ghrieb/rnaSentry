@@ -270,7 +270,7 @@ the vignette documents the fix (rename the assay `logcounts`).
 `rnaSentry` does not ship without evidence that it works.
 
 ### Automated tests
-- **445 tests passing across 143 test files**, 0 failures, 0 errors, with 32
+- **457 expectations passing across 147 test blocks**, 0 failures, 0 errors, with 32
   expected `events_per_parameter` warnings (these are deliberate guardrail
   assertions). Shared fixtures (`helper-fixtures.R`) build synthetic survival
   cohorts, adversarial PCA cohorts, and in-memory signature objects so tests
@@ -289,8 +289,8 @@ the vignette documents the fix (rename the assay `logcounts`).
 
 ### Build checks
 - `R CMD check` on the built tarball (`rnaSentry_0.99.0.tar.gz`): **0 errors /
-  1 warning (qpdf) / 1 note (tidy)**; `checkRd` clean (14/14).
-- BiocCheck baseline: 1 error (404) / 1 warning / 13 notes.
+  0 warnings / 1 note (tidy)**; `checkRd` clean (14/14).
+- BiocCheck baseline: 1 error (404) / 0 warnings / 8 notes.
 
 ---
 

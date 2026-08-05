@@ -117,7 +117,10 @@ It scans `.R` (code and `@examples`), `.Rmd` (vignette and report template),
 `.md`, and `.Rd` (man pages) for the superseded numbers (`0.217`, `0.424`,
 `0.510`, `0.160`) and the old "poor generalization" / "winner's curse"
 phrasing. Hits are permitted only under `validation/` (the intentional
-before/after correction narrative); any hit elsewhere fails the gate (exit 1).
+before/after correction narrative) and the two narrative vignettes that
+deliberately quote the superseded numbers as naive-tier counterfactuals
+(`vignettes/case-study-brca.Rmd`, `vignettes/case-study-impact.Rmd`); any hit
+elsewhere fails the gate (exit 1).
 First run (2026-08-04): 15 hits, all inside `validation/`, 0 elsewhere.
 After the 2026-08-04 guardrail/documentation round the sweep scanned 52 files
 and found 19 hits, all still inside `validation/` (the intentional
@@ -129,6 +132,12 @@ scans **157 files (20 hits, same narrative), exit 0**. After the Phase-1 BiocChe
 narrative), exit 0**. After the Phase-1 BiocParallel round (2026-08-05) it
 scans **68 files (20 hits, same narrative), exit 0** — the one additional
 file is the new `validation/make_logo.R` logo generator (no stale patterns).
+After the three-tier case-study round (2026-08-05) it scans **69 files
+(29 hits), exit 0** — the vignette allow-list above was added (8 naive-tier
+counterfactual quotes in `case-study-brca.Rmd` and `case-study-impact.Rmd`,
+plus 1 new quote in the four-vignette section of `paper_qa_summary.md`),
+build-artifact directories (`*.Rcheck/`, `chk*/`) are now excluded from the
+scan, and the README and the other two case-study vignettes stay clean.
 
 ## Gate 3 — statistical parity
 

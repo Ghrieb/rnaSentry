@@ -20,6 +20,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 This is a synthetic-data walkthrough used to verify `design_audit()`
 behavior on a deliberately confounded cohort. It is a vignette, not a study.
+The narrative follows the *three-tier* structure used across the case
+studies: a **naive analysis** first, then **rnaSentry standing guard**, then
+the **counterfactual**.
 
 # Setup
 
@@ -31,12 +34,15 @@ interchangeable:
   label; the rest are shuffled).
 
 We also plant a real batch effect in expression: six genes are multiplied by
-a batch-dependent factor. The surrogate expression PC is therefore driven by
-`batch`, and `batch`/`region` are nearly collinear.
+a batch-dependent factor. Finally, survival depends on the latent variable
+(so `region`, and through its overlap `batch`, are genuine survival
+correlates) -- a realistic setting in which an unadjusted screen can mistake
+batch-driven genes for prognostic ones.
 
 ```{r}
 library(rnaSentry)
 library(SummarizedExperiment)
+library(survival)
 
 set.seed(12)
 n <- 180
@@ -54,18 +60,59 @@ for (b in 1:3) {
     counts[1:6, idx] <- counts[1:6, idx] * (1 + 0.6 * b)
 }
 
-cd <- DataFrame(batch = batch, region = region, row.names = colnames(counts))
+event_time <- rexp(n, rate = 0.05 * exp(0.8 * latent))
+censor_time <- rexp(n, rate = 0.03)
+cd <- DataFrame(batch = batch, region = region,
+                time = pmin(event_time, censor_time),
+                event = as.integer(event_time < censor_time),
+                row.names = colnames(counts))
 se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
+se
 ```
 
-# The audit
+# Tier 1: the naive analysis
+
+A naive analyst runs univariate Cox regressions for every gene against
+survival and takes the top hits -- without checking whether the candidate
+genes are driven by batch, and without auditing the design.
+
+```{r, warning = FALSE}
+lg <- log2(counts + 1)
+stat <- do.call(rbind, lapply(rownames(lg), function(g) {
+    s <- summary(coxph(Surv(cd$time, cd$event) ~ lg[g, ]))
+    c(beta = s$coefficients[1, 1], p = s$coefficients[1, 5])
+}))
+rownames(stat) <- rownames(lg)
+naive_top <- head(stat[order(stat[, "p"]), , drop = FALSE], 6)
+data.frame(gene = rownames(naive_top),
+           planted_batch_effect = rownames(naive_top) %in% paste0("g", 1:6),
+           naive_top)
+```
+
+The six genes whose expression we multiplied by the batch factor rank as the
+most "prognostic" genes in the cohort. An unguarded screen would put exactly
+these batch artifacts into a signature. A naive model that then includes both
+of the near-identical design variables compounds the problem by
+double-counting collinear terms:
+
+```{r}
+summary(coxph(Surv(time, event) ~ batch + region, data = as.data.frame(cd)))
+```
+
+`batch` and `region` carry almost the same information; fitting both inflates
+standard errors and produces unstable coefficients that look like two
+"independent" effects when there is really one.
+
+# Tier 2: rnaSentry standing guard
+
+## Design audit
 
 ```{r}
 da <- design_audit(se, design_vars = c("batch", "region"),
                    redundant_effect_size = 0.5)
 ```
 
-## Pairwise redundancy
+### Pairwise redundancy
 
 ```{r}
 da$pairwise_table
@@ -75,17 +122,17 @@ da$pairwise_table
 pair is flagged `redundant`. Including both in a model would double-count
 nearly the same information.
 
-## Confounder scan
+### Confounder scan
 
 ```{r}
 da$confounder_table
 ```
 
-Both variables are flagged as associated with the expression surrogate
+Both variables are flagged as associated with the expression surrogate:
 `batch` with eta-squared 0.97, `region` with epsilon-squared 0.55 (it leaks
 the same signal through its overlap with `batch`).
 
-## Recovered design
+### Recovered design
 
 ```{r}
 da$formula_text
@@ -95,6 +142,52 @@ The audit therefore recommends the minimal formula `~ batch`, dropping the
 redundant `region` term. This is the behavior verified by the test suite
 (`confounder-detection` and `design-audit` blocks): a redundant design term
 is reported, not silently kept.
+
+## Batch-adjusted screening
+
+Armed with the recommended design, the guarded discovery run adjusts its
+univariate screening for `batch`. The batch-driven genes are no longer the
+top hits:
+
+```{r, warning = FALSE}
+adj <- do.call(rbind, lapply(rownames(lg), function(g) {
+    s <- summary(coxph(Surv(cd$time, cd$event) ~ lg[g, ] + batch,
+                       data = as.data.frame(cd)))
+    c(beta = s$coefficients[1, 1], p = s$coefficients[1, 5])
+}))
+rownames(adj) <- rownames(lg)
+guarded_top <- head(adj[order(adj[, "p"]), , drop = FALSE], 6)
+data.frame(gene = rownames(guarded_top),
+           planted_batch_effect = rownames(guarded_top) %in% paste0("g", 1:6),
+           guarded_top)
+```
+
+Once `batch` is in the model, the planted genes lose their survival
+association. The pipeline records this decision in the flag ledger:
+
+```{r, warning = TRUE}
+sig_guarded <- build_signature(se, "time", "event", top_n = 6,
+                               repeats = 3, folds = 3,
+                               design_terms = "batch", seed = 12)
+sig_guarded$genes
+sig_guarded$flags
+```
+
+# Tier 3: the counterfactual
+
+| | Naive analysis (Tier 1) | rnaSentry (Tier 2) |
+|---|---|---|
+| Screening | unadjusted; the 6 batch-driven genes rank as most "prognostic" | adjusted for `batch`; batch-driven genes no longer top hits |
+| Design | `batch + region` fitted together; collinear terms double-counted | `redundant` flag on the pair (Cramer's V = 0.82); minimal `~ batch` recommended |
+| Surrogate association | never checked | `batch` eta-squared 0.97, `region` epsilon-squared 0.55 reported |
+| Ledger | none | `redundant_variable`, `adjusted_screening` recorded |
+
+**What a guarded manuscript can claim:** without `design_audit()`, this cohort
+would produce a six-gene "prognostic" signature that is entirely a batch
+artifact, plus a model reporting two collinear "independent" risk factors.
+With it, the batch confounder is surfaced with its effect size, the redundant
+term is dropped, and screening is adjusted so the discovered signature is not
+a batch echo.
 
 # Reading
 

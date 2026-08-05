@@ -24,6 +24,11 @@ peer-reviewed and the signature reported here is provisional until a preprint
 is published. Treat every number below as a demonstration, not a clinical
 claim.
 
+The narrative follows the *three-tier* structure used across the case studies:
+a **naive analysis** first, then **rnaSentry standing guard**, then the
+**counterfactual** -- what a researcher would have concluded without the
+guardrails, and what the guarded analysis actually recovers.
+
 # Data
 
 We use a bundled subset of GSE20685 (Li *et al.*, 2010), an Affymetrix
@@ -41,6 +46,7 @@ processed in `validation/repro_gse20685.R` (dev-only script, not shipped):
 ```{r}
 library(rnaSentry)
 library(SummarizedExperiment)
+library(survival)
 
 se <- readRDS(system.file("extdata", "gse20685_case_study.rds",
                           package = "rnaSentry"))
@@ -49,13 +55,62 @@ table(se$subtype)
 sum(se$event)
 ```
 
-# Running the pipeline
+# Tier 1: the naive analysis
 
-We run the full pipeline in one call: confounder scan, PCA audit, signature
-construction with repeated cross-validation, and Kaplan-Meier risk groups.
-Because the cohort metadata records `age` and `subtype`, both are supplied as
-design variables so the audit can check them against the expression
-surrogate.
+A standard, unguarded analysis of this cohort would proceed along these
+lines: pick a few highly variable genes, screen them against survival with
+univariate Cox regressions, average the survivors into a risk score, and
+quote the concordance that R prints by default. Let us run exactly that.
+
+```{r, warning = FALSE}
+lg <- assays(se)$logcounts
+vars <- apply(lg, 1, stats::var, na.rm = TRUE)
+cand <- names(sort(vars, decreasing = TRUE))[seq_len(200)]
+stat <- do.call(rbind, lapply(cand, function(g) {
+    s <- summary(coxph(Surv(se$time, se$event) ~ lg[g, ]))
+    c(beta = s$coefficients[1, 1], p = s$coefficients[1, 5])
+}))
+rownames(stat) <- cand
+top <- stat[order(stat[, "p"]), , drop = FALSE][seq_len(5), , drop = FALSE]
+naive_score <- colMeans(sign(top[, "beta"]) * lg[rownames(top), , drop = FALSE])
+
+c_default <- as.numeric(concordance(Surv(se$time, se$event) ~
+                                    naive_score)$concordance[1])
+c_reverse <- as.numeric(concordance(Surv(se$time, se$event) ~ naive_score,
+                                    reverse = TRUE)$concordance[1])
+c(c_default = c_default, c_reverse = c_reverse, sum = c_default + c_reverse)
+```
+
+`survival::concordance()` defaults to the convention *larger score means
+longer survival* (`reverse = FALSE`). A Cox risk score means the opposite --
+larger score means *shorter* survival -- so the default read is inverted:
+`C_default = 1 - Harrell's C`. The naive analyst sees `C_default < 0.5` and
+concludes "below chance, poor generalization, the signature is a failure."
+
+This is not hypothetical. The first real-data face-validity run of this very
+cohort reported CV concordance **0.217** and the review initially rationalized
+it as extreme selection-induced winner's curse; the correct value is
+`1 - 0.217 = 0.783`, a strong held-out result in the biologically expected
+direction. The full diagnosis, including the `C + C_rev = 1` invariant you can
+see holding above, is recorded in `validation/face_validity_review.md`. The
+parity test suite now asserts that invariant on every fold so the convention
+cannot silently flip again.
+
+Even read in the correct direction, a naive analyst stops at the cross-
+validated mean and treats it as an out-of-sample estimate. As the LUAD
+honest-negative case study documents, a screening-internal CV on a large
+candidate panel is *optimistic*: even survival-permuted data yields a null CV
+around 0.8 on ~21k genes, not 0.5. Any concordance below must be read relative
+to a matched null, and the only fully out-of-sample number is
+`validate_external()` on an independent cohort.
+
+# Tier 2: rnaSentry standing guard
+
+Now the same cohort through the guarded pipeline: confounder scan, PCA audit,
+signature construction with repeated cross-validation, and Kaplan-Meier risk
+groups. Because the cohort metadata records `age` and `subtype`, both are
+supplied as design variables so the audit can check them against the
+expression surrogate.
 
 ```{r, warning = TRUE}
 run <- run_rnaSentry(se, time_col = "time", event_col = "event",
@@ -79,17 +134,25 @@ run$stages$build_signature <-
     lock_signature(run$stages$build_signature, lock = FALSE)
 ```
 
-The `events_per_parameter` warning is expected and matches the documented
-limitation: 83 deaths for a 20-gene signature is 4.2 events per parameter,
-below the guardrail of 5. The signature should be read as hypothesis-generating, and the cross-validated concordance and hazard ratios as
-unstable at this event count.
+The guardrails that the naive analysis missed are now explicit in the flag
+ledger:
 
-The cross-validated concordance (mean C = 0.80) is a *screening-internal*
-estimate: gene selection happens on the full cohort before the CV split, so
-it is optimistic. Read it relative to a matched null, as discussed in the
-main vignette and in the README.
+- **Direction.** Every concordance in the pipeline is computed with
+  `reverse = TRUE`; the sign convention cannot silently flip (a parity test
+  asserts `C + C_rev = 1` on every fold).
+- **Events per parameter.** The `events_per_parameter` warning is expected and
+  matches the documented limitation: 83 deaths for a 20-gene signature is 4.2
+  events per parameter, below the guardrail of 5. The signature should be read
+  as hypothesis-generating, and the cross-validated concordance and hazard
+  ratios as unstable at this event count.
+- **Screening-internal CV.** The cross-validated concordance (mean C = 0.80)
+  is a *screening-internal* estimate: gene selection happens on the full
+  cohort before the CV split, so it is optimistic. Read it relative to a
+  matched null, as discussed in the main vignette and in the README.
+- **Design.** The design audit below decides which confounders the screening
+  adjusts for, instead of an ad-hoc pick.
 
-# Risk groups
+## Risk groups
 
 ```{r}
 km <- run$stages$km_curve
@@ -99,7 +162,7 @@ km$log_rank_p
 The discovered signature separates the cohort into risk groups whose
 survival curves differ dramatically at the discovery cutpoint.
 
-# Design audit
+## Design audit
 
 ```{r}
 da <- run$stages$design_audit
@@ -112,6 +175,24 @@ eta-squared) and the recommended design formula therefore keeps it, so that
 univariate gene screening is adjusted for subtype. `age` is not flagged. This
 is exactly the kind of design decision `rnaSentry` is meant to surface before
 any differential-expression or signature work.
+
+# Tier 3: the counterfactual
+
+| | Naive analysis (Tier 1) | rnaSentry (Tier 2) |
+|---|---|---|
+| Score direction | default convention reads the score as *protective*; `C < 0.5` looks like failure | `reverse = TRUE`; `C_rev = 1 - C_default`, direction correct |
+| Headline concordance | `C_default` quoted as gospel | `C_rev` quoted with its convention, and flagged screening-internal |
+| Out-of-sample claim | none / implicit | only `validate_external()` counts; matched-null calibration required |
+| Events per parameter | not reported | 4.2 < 5, warned in the ledger |
+| Design | ad-hoc | `subtype` flagged and adjusted for |
+
+**What a guarded manuscript can claim:** on the full-cohort face-validity run
+of this dataset rnaSentry reports a directionally correct held-out concordance
+of 0.783 against a 0.582 random-gene control (and a 0.490 simulated null) --
+genuine survival signal, not a 0.22 collapse -- while the naive pipeline
+either reports a "failed" signature (inverted convention) or an
+uncalibrated 0.80 (screening-internal optimism). The events-per-parameter
+limitation is stated, not hidden.
 
 # Limitations
 

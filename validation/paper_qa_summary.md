@@ -102,14 +102,26 @@ decisions.
   (83 events), built by `validation/repro_gse20685.R` from the GEO series
   matrix (`logcounts` = MAS5 log2 intensities; probe->gene collapse by largest
   mean).
-- Three new vignettes, all offline-safe (no network during build):
-  `case-study-brca.Rmd` (pipeline on GSE20685 subset: CV C = 0.797 sd 0.027,
-  log-rank p = 2.99e-15, `design_audit` flags `subtype` — eta-squared
-  0.778 on the 3000-gene subset — and recommends
-  `~ age + subtype`), `case-study-confounder-audit.Rmd` (synthetic batch/
-  region redundancy: Cramer's V = 0.82, recommended `~ batch`),
-  `case-study-small-cohort.Rmd` (n = 30 / 23 events: guardrail fires,
-  fold-level C ranges 0.50-1.00 while the mean reads 0.743).
+- Four vignettes, all offline-safe (no network during build), all written as
+  a three-tier naive-vs-guarded narrative (naive analysis -> rnaSentry
+  standing guard -> counterfactual impact):
+  - `case-study-impact.Rmd` — landing page with the master impact table
+    across the four failure modes (wrong direction, confounded design,
+    underpowered discovery, false transfer) and the reproducible
+    `C + C_rev = 1` invariant (0.488 + 0.512 on the bundled subset).
+  - `case-study-brca.Rmd` (pipeline on GSE20685 subset: CV C = 0.797 sd
+    0.027, log-rank p = 2.99e-15, `design_audit` flags `subtype` —
+    eta-squared 0.778 on the 3000-gene subset — and recommends
+    `~ age + subtype`). The naive tier reproduces the inverted-convention
+    read (default-convention concordance 0.316 vs 0.684 with
+    `reverse = TRUE`, sum = 1) — the mechanism behind the historical
+    0.217/0.783 face-validity episode.
+  - `case-study-confounder-audit.Rmd` (synthetic batch/region redundancy:
+    Cramer's V = 0.82, recommended `~ batch`): naive screening ranks the six
+    planted batch-driven genes as the top "prognostic" hits; batch-adjusted
+    screening drops all six.
+  - `case-study-small-cohort.Rmd` (n = 30 / 23 events: guardrail fires,
+    fold-level C ranges 0.50-1.00 while the mean reads 0.743).
 - Gate 4's dataset label corrected: GSE20685 is **not** TCGA-BRCA (it is
   Li et al., 2010, Affymetrix GPL570); the old "TCGA-BRCA GSE20685" wording
   was removed from this file.
@@ -151,9 +163,10 @@ decisions.
 
 ## R CMD check (Gate 5)
 
-- `R CMD check --as-cran` on fresh tarball: **0 ERROR / 1 WARNING / 1-2 NOTEs**,
-  all environmental (`qpdf` missing; HTML `tidy` missing; occasionally
-  "unable to verify current time"), no package issues.
+- `R CMD check --as-cran` on fresh tarball: **0 ERROR / 0 WARNING / 1 NOTE**
+  (HTML `tidy` missing, external tool) since the 2026-08-05 qpdf CLI install;
+  earlier gates carried an additional environmental `qpdf` WARNING, now
+  resolved. No package issues.
 - Reproduced across six consecutive gates: `logs/05_as_cran.txt`,
   `06_as_cran.txt`, `07_as_cran.txt`, `08_as_cran.txt`, `09_as_cran.txt`,
   `10_as_cran.txt` (plus earlier `00.*`), and `12_as_cran.txt` (2026-08-04,
@@ -227,6 +240,7 @@ report's audit trail. Severities: critical / warning / info.
 | `model_fit_failed` | warning | survival_parametric | parametric fit did not converge |
 | `aic_models_close` | info | survival_parametric | competing models within AIC |
 | `missing_genes_dropped` | warning | validate_external | external cohort lacks signature genes |
+| `concordance_na` | warning | validate_external | external concordance non-estimable (`survival::concordance` returned non-finite); interpret validation cautiously |
 
 ## How to cite the QA evidence in the paper
 
