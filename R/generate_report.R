@@ -25,10 +25,27 @@
 #' @return The path of the rendered report, invisibly.
 #'
 #' @examples
-#' \dontrun{
-#' run <- run_rnaSentry(se, "time", "event")
-#' generate_report(run$stages)
-#' }
+#' library(SummarizedExperiment)
+#' set.seed(9)
+#' counts <- matrix(rpois(400, lambda = 500), nrow = 20, ncol = 20,
+#'                   dimnames = list(paste0("gene", 1:20), paste0("S", 1:20)))
+#' sig_expr <- colMeans(counts[1:5, , drop = FALSE])
+#' risk <- scale(sig_expr)[, 1] * 0.4
+#' event_time <- rexp(20, rate = 0.03 * exp(0.8 * risk))
+#' censor_time <- rexp(20, rate = 0.02)
+#' time <- pmin(event_time, censor_time)
+#' event <- as.integer(event_time < censor_time)
+#' coldata <- S4Vectors::DataFrame(time = time, event = event,
+#'                                  row.names = colnames(counts))
+#' se <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
+#'
+#' sig <- build_signature(se, "time", "event", top_n = 5, repeats = 1,
+#'                         folds = 2, seed = 1)
+#' stages <- list(
+#'   km_curve = km_curve(sig, se),
+#'   cox_model = cox_model(sig, se)
+#' )
+#' generate_report(stages, output_dir = tempdir())
 #'
 #' @export
 generate_report <- function(stages, output_file = "rnaSentry_report.html",

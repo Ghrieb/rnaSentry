@@ -109,7 +109,7 @@ load_counts <- function(counts, colData, assay_name = "counts",
   missing_ids <- setdiff(colnames(counts), rownames(colData))
   if (length(missing_ids) > 0) {
     stop(sprintf("colData is missing row names for sample(s): %s.",
-                 paste(missing_ids[1:min(5, length(missing_ids))],
+                 paste(missing_ids[seq_len(min(5, length(missing_ids)))],
                        collapse = ", ")),
          call. = FALSE)
   }

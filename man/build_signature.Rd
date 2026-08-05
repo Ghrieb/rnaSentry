@@ -52,7 +52,8 @@ or \code{"p_value"} (take every gene with adjusted p-value below
 \item{folds}{Integer. Number of folds per repeat. Defaults to \code{5}.}
 
 \item{seed}{Optional integer. Seeds the cross-validation fold shuffling for
-reproducible results.}
+reproducible results. Seeding is scoped with \code{withr::with_seed()}, so
+the caller's global random-number generator state is left unchanged.}
 
 \item{design_terms}{Character vector of \code{colData(se)} columns to
 adjust the univariate screening by. When non-empty and

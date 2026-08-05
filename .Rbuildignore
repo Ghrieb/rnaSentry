@@ -8,3 +8,5 @@
 ^CONTRIBUTING\.md$
 ^rnaSentry\.BiocCheck$
 ^validation$
+^PROJECT_DESCRIPTION\.md$
+^chk[0-9]+$

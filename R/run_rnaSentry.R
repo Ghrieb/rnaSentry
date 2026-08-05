@@ -46,8 +46,7 @@
 #'   \code{design_terms}.
 #' @param batch_col Optional character. \code{colData(se)} column tested by
 #'   the \code{\link{pca_audit}} batch scan. Defaults to \code{NULL}.
-#' @param method,top_n,p_threshold,repeats,folds,seed,adjust_for_design,
-#'   min_events_per_parameter Passed to \code{\link{build_signature}}.
+#' @param method,top_n,p_threshold,repeats,folds,seed,adjust_for_design,min_events_per_parameter Passed to \code{\link{build_signature}}.
 #' @param report_file Character. Output file name for the HTML report.
 #' @param report_dir Character. Directory (which must exist) to write the
 #'   report into.
@@ -74,10 +73,25 @@
 #'   }
 #'
 #' @examples
-#' \dontrun{
-#' run <- run_rnaSentry(se, "time", "event", design_vars = c("batch", "age"))
+#' library(SummarizedExperiment)
+#' set.seed(8)
+#' counts <- matrix(rpois(400, lambda = 500), nrow = 20, ncol = 20,
+#'                   dimnames = list(paste0("gene", 1:20), paste0("S", 1:20)))
+#' sig_expr <- colMeans(counts[1:5, , drop = FALSE])
+#' risk <- scale(sig_expr)[, 1] * 0.4
+#' event_time <- rexp(20, rate = 0.03 * exp(0.8 * risk))
+#' censor_time <- rexp(20, rate = 0.02)
+#' time <- pmin(event_time, censor_time)
+#' event <- as.integer(event_time < censor_time)
+#' coldata <- S4Vectors::DataFrame(time = time, event = event,
+#'                                  batch = factor(rep(c("B1", "B2"), 10)),
+#'                                  row.names = colnames(counts))
+#' se <- SummarizedExperiment(assays = list(counts = counts), colData = coldata)
+#'
+#' run <- run_rnaSentry(se, "time", "event", design_vars = "batch",
+#'                       top_n = 5, repeats = 1, folds = 2, seed = 1,
+#'                       report_dir = tempdir())
 #' run
-#' }
 #'
 #' @export
 run_rnaSentry <- function(se, time_col, event_col,

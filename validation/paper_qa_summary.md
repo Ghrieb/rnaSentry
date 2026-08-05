@@ -166,13 +166,18 @@ decisions.
   lock unlock, `min_events_per_parameter` forwarding, `concordance_na` flag,
   flags `stage` column docs): **0 ERROR / 1 WARNING / 1 NOTE**, both
   environmental.
-- BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`
-  and `logs/15_bioccheck.txt`):
+- `logs/16_as_cran.txt` (2026-08-05, Phase-1 BiocCheck-prep round — withr-
+  scoped seeding, `seq_len()`, runnable examples): **0 ERROR / 0 WARNING /
+  1 NOTE** (`qpdf` installed; the residual HTML `tidy` NOTE environmental).
+- BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`,
+  `logs/15_bioccheck.txt`, and `logs/16_bioccheck.txt`):
   1 environmental ERROR (support-site
   email 404 — register
   `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org),
-  1 justified WARNING (`set.seed` in the documented `seed` arg), 13 advisory
-  NOTES — all explained in `logs/notes_documented.md`.
+  0 WARNING (the justified `set.seed` warning was resolved at the Phase-1
+  BiocCheck-prep round by scoping reproducibility with `withr::with_seed()`),
+  8 advisory NOTES (down from 13) — all explained in
+  `logs/notes_documented.md`.
 - BiocCheck equivalent run locally via `validation/docker_check.sh` when a
   Docker-capable machine is available (see `validation/cross_platform.md`).
 

@@ -11,18 +11,27 @@ blocked, and exactly how to finish it.
   no stray dirs), and the compiled vignette `inst/doc/rnaSentry.html` is in the
   tarball (verified: `vignette(package="rnaSentry")` lists it, `browseVignettes`
   resolves it).
-- `R CMD check --as-cran` on the fresh tarball → **0 ERROR, 1 WARNING
-  (`qpdf` missing, external tool), 1 NOTE (HTML `tidy` missing, external
-  tool)**; both external-tool only. Log: `logs/00.4_as_cran.txt`.
+- `R CMD check --as-cran` on the fresh tarball → **0 ERROR, 0 WARNING,
+  1 NOTE (HTML `tidy` missing, external tool)**. The former `qpdf` WARNING
+  is gone — `qpdf` was installed 2026-08-05. Log: `logs/16_as_cran.txt`.
 - Full `devtools::test()` → **143 blocks / 445 passed / 0 failed / 0 error**
   (32 expected warnings from the `events_per_parameter` guardrail on
   deliberately small fixtures; includes the `load_counts()` intake and
-  enforceable-lock tests added 2026-08-04). Log: `logs/00.1_test.txt`.
+  enforceable-lock tests added 2026-08-04; byte-identical re-run 2026-08-05
+  after the withr-scoped seeding refactor). Log: `logs/16_test.txt`.
 
 ## Blocked (needs a Docker-capable machine or remote service)
 
 The local machine has **no Docker** and no `R CMD BiocCheck` CLI launcher
 (Windows), and R 4.5.2 ≠ the Bioc 3.21 devel R-devel build.
+
+### Status note (2026-08-05)
+
+Phase 4 of the submission checklist (cross-platform / devel-container check)
+was **skipped by decision on 2026-08-05** — rationale and follow-up are
+recorded in `maintainer_testing_guide.md` (Gate 6) and
+`submission_success_criteria.md`. The options below
+remain the documented finishing path.
 
 ### Option A — Bioconductor devel container (recommended)
 
@@ -66,6 +75,6 @@ to which the check logs are sent.
 2. Confirm BiocCheck is clean except the documented items in
    `logs/notes_documented.md` (support-site email 404 → register
    `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org; the
-   `CITATION` DOI placeholder; the justified `set.seed` warning).
+   `CITATION` DOI placeholder).
 3. Re-run `bash validation/docker_check.sh` if anything fails and iterate.
 4. Add a `PASS/FAIL` line per platform to the submission notes.

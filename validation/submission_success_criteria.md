@@ -66,9 +66,9 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | # | Rule | Current status |
 |---|---|---|
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
-| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; 1 WARNING (qpdf) / 1 NOTE (tidy) at 05–08, 10–13, and 14–15 (Batch-A and Batch-C rounds); log 09 was 1 WARNING / 2 NOTEs (one-off `unable to verify current time` note) |
-| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); 1 justified WARNING (`set.seed` in the documented `seed` arg); 13 advisory NOTES (12 at `00.3`/`00.5`; 13 after `load_counts.R`, `13_bioccheck.txt` adds the `Avoid 1:` note; re-confirmed at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB" warning via the extdata xz recompress, and at `15_bioccheck.txt` after the Batch C round); GitClone CITATION-doi warning — all explained in `logs/notes_documented.md` |
-| B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — pending (Docker/rhub/win-builder); local Windows/R 4.5.2 green; see `cross_platform.md` |
+| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; log 16 (`16_as_cran.txt`, 2026-08-05 Ultimate Pre-Flight) is **0 ERROR / 0 WARNING / 1 NOTE** — the `qpdf` WARNING cleared after installing the qpdf CLI 12.3.2 and running with `R_QPDF` + `_R_CHECK_DOC_SIZES_=true`; the sole remaining NOTE is `tidy` (HTML validation), deliberately skipped per maintainer decision |
+| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); at `16_bioccheck.txt`/`16_bioccheck_tarball.txt` (2026-08-05 Ultimate Pre-Flight) **0 WARNING / 8 advisory NOTES** — the `set.seed` WARNING (→ `withr::with_seed()` refactor), the R-version NOTE (→ `R >= 4.5.0`), the `Avoid 1:` NOTE (→ `seq_len()`), and the two `\dontrun`/runnable-examples NOTES (→ self-contained `\donttest`) are all resolved; the remaining 8 are justified in `logs/notes_documented.md`; GitClone `16_bioccheck_gitclone.txt` is **0 ERROR / 1 WARNING (CITATION `doi`, kept by decision) / 0 NOTES** |
+| B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — **SKIPPED by maintainer decision 2026-08-05** (Phase 4 / rhub was cancelled; no Docker on this machine); local Windows/R 4.5.2 is green; see `cross_platform.md` |
 | B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
 | B7 | DESCRIPTION fields complete (`Authors@R` with maintainer email, `biocViews`, `License`, `URL`, `BugReports`) | PASS — `biocViews`: Software, GeneExpression, RNASeq, DifferentialExpression, Survival, QualityControl, BatchEffect, Normalization |
@@ -80,10 +80,10 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 
 | Gate | What it runs | Expected | Artifact |
 |---|---|---|---|
-| Gate 1 | Full test suite | 143 blocks / 445 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt` |
-| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; 20 hits inside (correction narrative), 157 files scanned | `test_audit.md`, `grep_stale_numbers.ps1` |
+| Gate 1 | Full test suite | 143 blocks / 445 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt`; re-confirmed 2026-08-05 post-`withr` refactor |
+| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; hits inside (correction narrative), 157 files scanned | `test_audit.md`, `grep_stale_numbers.ps1`; sweep re-run 2026-08-05: 67 files / 20 hits, all inside `validation/`, exit 0 |
 | Gate 3 | Statistical parity | items 1–7 closed | `test-statistical_parity.R` |
-| Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt` |
+| Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt`, `logs/16_simulation.txt` (re-run 2026-08-05) |
 | Gate 5 | Real-data face validity | discrimination beyond chance, correct biology, honest external check | `face_validity_review.md`, `logs/04_face_validity.txt` |
 | Gate 5b | Live GEO pair (Phase 3) | see Section A acceptance gate | `repro_live_geo.R`, `logs/11_live_geo.txt` |
 | Gate 5c | Case-study vignettes + bundled data (Phase 3) | offline build; numbers match documented values | `repro_gse20685.R`, `inst/extdata/gse20685_case_study.rds`, `vignettes/case-study-*.Rmd` |
@@ -93,5 +93,10 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 
 All of S1–S10 pass, B1–B8 green, B9–B10 completed by the maintainer, Gate 6
 records at least one non-Windows platform pass, and the Phase-3 live gate is
-logged. At that point the GitHub push and the Contributions issue
+logged. As of 2026-08-05 all S1–S10 and B1–B8 are green on this Windows
+machine; **Gate 6 (cross-platform) is the only outstanding "ready to submit"
+criterion** — it was explicitly skipped by maintainer decision (Phase 4 /
+rhub cancelled), so submission readiness depends on either a later
+non-Windows check (rhub/win-builder/Docker) or an explicit decision to
+accept that risk. At that point the GitHub push and the Contributions issue
 (`Bioconductor/Contributions#...`, title `rnaSentry`) can be opened.

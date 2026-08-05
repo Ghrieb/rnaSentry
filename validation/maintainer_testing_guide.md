@@ -9,8 +9,11 @@ Environment used by the gate: Windows 11, R 4.5.2 at
 `C:\Program Files\RStudio\resources\app\bin\quarto\bin\tools` (point
 `RSTUDIO_PANDOC` at that **directory**, not the exe). The R session does not
 see that variable from a plain `Rscript -e`; it is honored by `R CMD build` /
-`R CMD check` when exported in the same shell. There is **no Rtools** on this
-machine, so `devtools::check()` aborts — use `R CMD build` + `R CMD check` on
+`R CMD check` when exported in the same shell. As of 2026-08-05 the qpdf CLI
+12.3.2 (MSVC64) is installed locally for the PDF size-reduction check; export
+`R_QPDF` to its `qpdf.exe` and set `_R_CHECK_DOC_SIZES_=true` (otherwise
+`--as-cran` emits the unconditional `'qpdf' is needed` WARNING). There is
+**no Rtools** on this machine, so `devtools::check()` aborts — use `R CMD build` + `R CMD check` on
 the tarball instead. PowerShell mangles `$` in `Rscript -e` strings — put
 multi-statement R into a temp script under
 `C:\Users\Hani\AppData\Local\Temp\opencode\`.
@@ -19,6 +22,8 @@ multi-statement R into a temp script under
 
 ```powershell
 $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\tools"
+$env:R_QPDF = "$env:LOCALAPPDATA\Programs\qpdf\qpdf-12.3.2-msvc64\bin\qpdf.exe"
+$env:_R_CHECK_DOC_SIZES_ = "true"
 R CMD build rnaSentry
 $env:_R_CHECK_CRAN_INCOMING_ = "false"   # no reliable CRAN connectivity on this machine
 R CMD check rnaSentry_0.99.0.tar.gz --as-cran --output=.\chk
@@ -27,16 +32,17 @@ Rscript -e "BiocCheck::BiocCheckGitClone()"   # run on a tree with the
                                               # rnaSentry.BiocCheck stamp removed
 ```
 
-Expected: `R CMD check --as-cran` → 0 ERROR, 1 WARNING (`qpdf`), 1 NOTE
-(`tidy`), both external tools; the previous run without `--no-build-vignettes`
+Expected: `R CMD check --as-cran` → 0 ERROR, 0 WARNING, 1 NOTE
+(`tidy`; the HTML-validator binary is deliberately not installed — see
+`logs/notes_documented.md`). The `qpdf` WARNING of prior gates cleared after
+the 2026-08-05 qpdf CLI install (`R_QPDF` + `_R_CHECK_DOC_SIZES_=true`). The
+previous run without `--no-build-vignettes`
 also verifies the compiled vignette (`inst/doc`) and `browseVignettes`.
 BiocCheck: 1 environmental ERROR (support-site email 404 — register the
-maintainer email on https://support.bioconductor.org), 1 justified WARNING
-(`set.seed` in the documented `seed` argument), 13 advisory NOTES (12 at the
-`00.3`/`00.5` runs; 13 at `13_bioccheck.txt`, after `load_counts.R`; re-confirmed
-at `14_bioccheck.txt`, which also cleared the one-off "data files exceed 5MB"
-warning after the extdata recompress, and at `15_bioccheck.txt` after the Batch C
-round). Every item
+maintainer email on https://support.bioconductor.org), 0 WARNINGs, 8 advisory
+NOTEs at the `16_bioccheck.txt`/`16_bioccheck_tarball.txt` run (2026-08-05
+Ultimate Pre-Flight; the `set.seed` WARNING and the R-version / `Avoid 1:` /
+`\dontrun` NOTEs were resolved in the same round). Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
@@ -57,13 +63,17 @@ is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
   ship-blocking round: LICENSE holder, report-template `results='asis'`,
   S4Vectors → Imports, xz-recompressed extdata — 0 ERROR / 1 WARNING /
   1 NOTE, both environmental), and `15_as_cran.txt` (2026-08-04, Batch C
-  design-hardening round: targeted lock unlock, `min_events_per_parameter`
-  forwarding, `concordance_na` flag, flags `stage` column docs — 0 ERROR /
-  1 WARNING / 1 NOTE, both environmental).
-  Note: prior gates run `R CMD check --as-cran` with
-  `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
-  connectivity; the remote/incoming block is skipped, so no examples-timing
-  or pandoc NOTEs appear — the documented baseline is 1 WARNING / 1 NOTE).
+   design-hardening round: targeted lock unlock, `min_events_per_parameter`
+   forwarding, `concordance_na` flag, flags `stage` column docs — 0 ERROR /
+   1 WARNING / 1 NOTE, both environmental), and `16_as_cran.txt` (2026-08-05,
+   Ultimate Pre-Flight: `withr::with_seed()` seeding refactor, `seq_len()`
+   fix, self-contained `\donttest` examples, qpdf CLI installed — **0 ERROR /
+   0 WARNING / 1 NOTE**, the sole NOTE being the deliberately-skipped `tidy`).
+   Note: prior gates run `R CMD check --as-cran` with
+   `_R_CHECK_CRAN_INCOMING_=false` (this machine has no reliable CRAN
+   connectivity; the remote/incoming block is skipped, so no examples-timing
+   or pandoc NOTEs appear — the documented baseline was 1 WARNING / 1 NOTE
+   before the 2026-08-05 qpdf install and is now 0 WARNING / 1 NOTE).
 
 ## Gate 1 — full test suite
 
@@ -106,7 +116,9 @@ before/after correction narrative), exit 0. After the `load_counts()` +
 enforceable-lock round it scans 58 files (19 hits, same narrative), exit 0.
 After the CV-optimism reframe round it scans 60 files (19 hits, same
 narrative), exit 0. After the Phase-3 case-study/power round (2026-08-04) it
-scans **157 files (20 hits, same narrative), exit 0**.
+scans **157 files (20 hits, same narrative), exit 0**. After the Phase-1
+BiocCheck-prep round (2026-08-05) it scans **67 files (20 hits, same
+narrative), exit 0**.
 
 ## Gate 3 — statistical parity
 
@@ -240,18 +252,23 @@ formula `~ age + subtype`; confounder case Cramer's V = 0.82 with recommended
 `~ batch`; small-cohort case 23 events / 5 genes (4.6 < 5, guardrail fires),
 mean CV C = 0.743 with per-fold spread 0.50-1.00.
 
-## Gate 6 — cross-platform (not yet run on this machine)
+## Gate 6 — cross-platform (skipped by decision 2026-08-05)
 
 Needs a Docker-capable machine (`validation/docker_check.sh` runs the devel
 container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
-(needs a GitHub token / an email address). Status and instructions:
-`cross_platform.md`. When results arrive, append the per-platform
+(needs a GitHub token / an email address). Phase 4 (rhub) was explicitly
+cancelled by the maintainer on 2026-08-05; Gate 6 is therefore NOT met and is
+the only outstanding "ready to submit" criterion (see
+`submission_success_criteria.md`, Section D). Status and instructions:
+`cross_platform.md`. If a later run happens, append the per-platform
 `Status:` lines to that file and to the submission notes.
 
 ## Full regression loop after any code change
 
-1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR; the only
-   WARNING/NOTE are the `qpdf`/`tidy` external tools).
+1. `R CMD build` → `R CMD check --as-cran` on the tarball (0 ERROR / 0 WARNING;
+   the sole NOTE is the deliberately-skipped `tidy`). Remember to export
+   `RSTUDIO_PANDOC`, `R_QPDF`, `_R_CHECK_DOC_SIZES_=true`, and
+   `_R_CHECK_CRAN_INCOMING_=false`.
 2. Gate 1 suite (143/445; 32 expected guardrail warnings on small fixtures).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation
    (15/15).

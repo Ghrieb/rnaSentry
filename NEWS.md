@@ -18,6 +18,17 @@
   positioning/prior-art section (asuri, signifinder, SurvMarker, mRNAsi), and
   a Contributing pointer. Added `CONTRIBUTING.md` and `NEWS.md`.
 
+### Engine reproducibility and check hygiene (2026-08-05)
+
+- Reproducibility is now scoped with `withr::with_seed()` in
+  `build_signature()` / `run_rnaSentry()`: the documented `seed` argument is
+  still fully reproducible, but the caller's RNG state is left untouched
+  (previously a `set.seed()` call leaked into the session).
+- R dependency raised to `R (>= 4.5.0)` to track the Bioconductor 3.21 devel
+  build.
+- `build_signature()` and `run_rnaSentry()` examples are now self-contained
+  and runnable (`\donttest`).
+
 ### Power analysis gate
 
 - `validation/simulate_study.R` gains **Sim 6**, an external-transfer power

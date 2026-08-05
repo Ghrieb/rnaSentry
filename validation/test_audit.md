@@ -121,7 +121,10 @@ described in prose. Each fires only on a specific, test-pinned condition.
 
 - tests: **143 blocks / 445 passed / 0 failed / 0 error / 32 warnings**
   (2026-08-04, after the `load_counts()` intake wrapper + enforceable-lock
-  round and the Batch C lock-targeted-unlock + concordance-flag round). The
+  round and the Batch C lock-targeted-unlock + concordance-flag round;
+  re-confirmed byte-identical on 2026-08-05 at `logs/16_test.txt` after the
+  Phase-1 BiocCheck-prep round — withr-scoped seeding, `seq_len()`, runnable
+  examples). The
   32 warnings are the
   `events_per_parameter` guardrail firing on deliberately small synthetic
   fixtures in tests that exercise other behavior; each guardrail's own
@@ -130,12 +133,15 @@ described in prose. Each fires only on a specific, test-pinned condition.
 - R CMD check tarball: 0 ERROR (00.2 pre-fix; re-confirmed 0 ERROR after the
   sign-convention fix — 05/06/07)
 - BiocCheck source + tarball: 1 ERROR (support-site email, environmental),
-  1 WARNING (`set.seed`, justified), 12 NOTES at the 00.3/00.5 runs and
-  13 NOTES at the 2026-08-04 re-run (`logs/13_bioccheck.txt`, which adds the
-  `Avoid 1:` note from `load_counts.R`; re-confirmed at `logs/14_bioccheck.txt`
-  after the Batch-A round — also cleared the one-off "data files exceed 5MB"
-  warning via the extdata xz recompress; re-confirmed at `logs/15_bioccheck.txt`
-  after the Batch C round); GitClone 0 ERROR / 1 WARNING
+  12 NOTES at the 00.3/00.5 runs and 13 NOTES at the 2026-08-04 re-run
+  (`logs/13_bioccheck.txt`, which adds the `Avoid 1:` note from
+  `load_counts.R`; re-confirmed at `logs/14_bioccheck.txt` after the Batch-A
+  round — also cleared the one-off "data files exceed 5MB" warning via the
+  extdata xz recompress; re-confirmed at `logs/15_bioccheck.txt` after the
+  Batch C round); at the Phase-1 BiocCheck-prep round (2026-08-05) the
+  justified `set.seed` WARNING is gone — reproducibility is now scoped with
+  `withr::with_seed()` (`logs/16_bioccheck.txt`: 1 ERROR (support-site email,
+  environmental) / 0 WARNING / 8 advisory NOTES); GitClone 0 ERROR / 1 WARNING
   (CITATION doi) — all explained in `logs/notes_documented.md`
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
@@ -147,11 +153,13 @@ described in prose. Each fires only on a specific, test-pinned condition.
   (LICENSE holder, report-template `results='asis'`, S4Vectors → Imports,
   xz-recompressed extdata); 15 after the Batch C round (targeted lock unlock,
   `min_events_per_parameter` forwarding, `concordance_na` flag, flags `stage`
-  column docs) — all clean 0 ERROR / 1 WARNING / 1 NOTE)
-- stale-number sweep (2026-08-04): `validation/grep_stale_numbers.ps1` scans
+  column docs) — all clean 0 ERROR / 1 WARNING / 1 NOTE; 16 after the
+  Phase-1 BiocCheck-prep round — `qpdf` now installed, so 0 ERROR / 0
+  WARNING / 1 NOTE, the residual HTML `tidy` NOTE environmental)
+- stale-number sweep (2026-08-04; re-run 2026-08-05): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
-  "poor generalization" / "winner's curse" phrasing — 20 hits (157 files
-  scanned, current round), all inside `validation/` (the intentional
+  "poor generalization" / "winner's curse" phrasing — 20 hits (67 files
+  scanned at the re-run), all inside `validation/` (the intentional
   correction narrative), 0 in code, `@examples`, the vignette, the report
   template, or the man pages (PASS, exit 0)
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation

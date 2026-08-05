@@ -68,7 +68,8 @@
 #'   \code{5}.
 #' @param folds Integer. Number of folds per repeat. Defaults to \code{5}.
 #' @param seed Optional integer. Seeds the cross-validation fold shuffling for
-#'   reproducible results.
+#'   reproducible results. Seeding is scoped with \code{withr::with_seed()}, so
+#'   the caller's global random-number generator state is left unchanged.
 #' @param design_terms Character vector of \code{colData(se)} columns to
 #'   adjust the univariate screening by. When non-empty and
 #'   \code{adjust_for_design = TRUE}, each gene is tested with
@@ -280,10 +281,6 @@ build_signature <- function(se, time_col, event_col,
     }
   }
 
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
   mat_info <- .get_analysis_matrix(se)
   mat <- mat_info$mat
   if (isTRUE(mat_info$log_scaled_possible)) {
@@ -434,13 +431,29 @@ build_signature <- function(se, time_col, event_col,
   flag_fold <- function(flags, check, detail) {
     .add_flag(flags, check, "warning", detail)
   }
+  # Fold assignment is the only source of randomness. Drawing every repeat's
+  # partitions inside a single seeded scope (when `seed` is supplied) keeps the
+  # original semantics - one seed, the RNG advancing across repeats so each
+  # repeat gets a distinct partition - while restoring the caller's global RNG
+  # state afterwards, which is the point of withr::with_seed().
+  make_all_folds <- function() {
+    lapply(seq_len(repeats), function(r) {
+      fold_ids <- integer(n)
+      for (grp in list(which(event_vec == 0L), which(event_vec == 1L))) {
+        if (length(grp) == 0) next
+        grp_shuffled <- grp[sample.int(length(grp))]
+        fold_ids[grp_shuffled] <- rep(seq_len(folds), length.out = length(grp))
+      }
+      fold_ids
+    })
+  }
+  all_fold_ids <- if (is.null(seed)) {
+    make_all_folds()
+  } else {
+    withr::with_seed(seed, make_all_folds())
+  }
   for (r in seq_len(repeats)) {
-    fold_ids <- integer(n)
-    for (grp in list(which(event_vec == 0L), which(event_vec == 1L))) {
-      if (length(grp) == 0) next
-      grp_shuffled <- grp[sample.int(length(grp))]
-      fold_ids[grp_shuffled] <- rep(seq_len(folds), length.out = length(grp))
-    }
+    fold_ids <- all_fold_ids[[r]]
     for (f in seq_len(folds)) {
       train <- which(fold_ids != f)
       test <- which(fold_ids == f)
