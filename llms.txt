@@ -304,6 +304,29 @@ analysis (`validation/simulate_study.R`, Sim 6) quantifies why a
 signatures: transfer power \< 0.30 at ~35 events, and \>= 0.80 only near
 ~300 events for a C ~ 0.65 signature.
 
+## Case study roadmap
+
+The three next failure modes on the roster are **planned** — designed
+and data-sourced now, built into vignettes after the Bioconductor
+submission so `v0.99.0` stays locked. No numbers ship until the
+experiments run; the table below shows exactly what each one will
+demonstrate.
+
+| ID | Planned case study | Data (public GEO) | What it demonstrates |
+|----|----|----|----|
+| **A** | Clinical-covariate trap (BRCA) | bundled `gse20685_case_study.rds` (GSE20685, 327 tumors) | a naive 10-gene signature looks significant univariately, then loses significance after `cox_model` adjustment for `age` + `subtype`; `design_audit` flags the covariates pre-modelling — **zero new downloads** |
+| **C** | Batch catastrophe (identical-platform merge) | **GSE31210** (n = 246, GPL570) + **GSE30219** (n = 293, GPL570) | same platform, different studies → a batch-only signal; ~50 “prognostic” genes track study/batch; `design_audit` `batch_associated_pc` + Cramér’s V expose it before modelling |
+| **B** | Cross-histology false transfer (LUAD → LUSC) | GSE30219 (single cohort, both histologies + survival) | discovery on LUAD, transfer across the histology boundary blocked as an honest negative |
+
+Sequencing **A → C → B**: A is the fastest path to a manuscript-ready
+demo (zero downloads); C is the strongest demonstration of
+`design_audit` catching a batch effect (subtle: same platform, batch
+only); B runs last because it is closest to the existing LUAD
+honest-negative case study. The framing matches the shipped roster: each
+failure mode is already documented in the clinical/meta-analysis
+literature, and rnaSentry’s guardrails catch it **automatically** at
+audit time — these case studies claim no discoveries.
+
 ## Positioning and prior art
 
 rnaSentry’s niche is **signature discovery with an enforced audit trail

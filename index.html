@@ -258,6 +258,48 @@
 </div>
 </div>
 <div class="section level2">
+<h2 id="case-study-roadmap">Case study roadmap<a class="anchor" aria-label="anchor" href="#case-study-roadmap"></a>
+</h2>
+<p>The three next failure modes on the roster are <strong>planned</strong> — designed and data-sourced now, built into vignettes after the Bioconductor submission so <code>v0.99.0</code> stays locked. No numbers ship until the experiments run; the table below shows exactly what each one will demonstrate.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr>
+<th>ID</th>
+<th>Planned case study</th>
+<th>Data (public GEO)</th>
+<th>What it demonstrates</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td>Clinical-covariate trap (BRCA)</td>
+<td>bundled <code>gse20685_case_study.rds</code> (GSE20685, 327 tumors)</td>
+<td>a naive 10-gene signature looks significant univariately, then loses significance after <code>cox_model</code> adjustment for <code>age</code> + <code>subtype</code>; <code>design_audit</code> flags the covariates pre-modelling — <strong>zero new downloads</strong>
+</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td>Batch catastrophe (identical-platform merge)</td>
+<td>
+<strong>GSE31210</strong> (n = 246, GPL570) + <strong>GSE30219</strong> (n = 293, GPL570)</td>
+<td>same platform, different studies → a batch-only signal; ~50 “prognostic” genes track study/batch; <code>design_audit</code> <code>batch_associated_pc</code> + Cramér’s V expose it before modelling</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td>Cross-histology false transfer (LUAD → LUSC)</td>
+<td>GSE30219 (single cohort, both histologies + survival)</td>
+<td>discovery on LUAD, transfer across the histology boundary blocked as an honest negative</td>
+</tr>
+</tbody>
+</table>
+<p>Sequencing <strong>A → C → B</strong>: A is the fastest path to a manuscript-ready demo (zero downloads); C is the strongest demonstration of <code>design_audit</code> catching a batch effect (subtle: same platform, batch only); B runs last because it is closest to the existing LUAD honest-negative case study. The framing matches the shipped roster: each failure mode is already documented in the clinical/meta-analysis literature, and rnaSentry’s guardrails catch it <strong>automatically</strong> at audit time — these case studies claim no discoveries.</p>
+</div>
+<div class="section level2">
 <h2 id="positioning-and-prior-art">Positioning and prior art<a class="anchor" aria-label="anchor" href="#positioning-and-prior-art"></a>
 </h2>
 <p>rnaSentry’s niche is <strong>signature discovery with an enforced audit trail and honest failure modes</strong>: quality control, sample-identity checks, confounder detection, and explicit gating are first-class product features rather than side effects. Two Bioconductor neighbours are closest:</p>
