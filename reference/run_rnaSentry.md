@@ -187,5 +187,5 @@ run
 #>   - km_curve
 #>   - cox_model
 #>   - survival_parametric
-#> Report: /tmp/Rtmpgo5CGw/rnaSentry_report.html
+#> Report: /tmp/RtmpIXJ0fR/rnaSentry_report.html
 ```

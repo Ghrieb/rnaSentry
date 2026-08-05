@@ -1,5 +1,13 @@
 # Articles
 
+### Getting started
+
+Bridge your own counts and clinical CSV files into a
+SummarizedExperiment.
+
+- [Getting started: from two CSVs to a
+  SummarizedExperiment](https://ghrieb.github.io/rnaSentry/articles/getting-started.md):
+
 ### Case studies
 
 Naive analysis vs rnaSentry, run against real public cohorts.
