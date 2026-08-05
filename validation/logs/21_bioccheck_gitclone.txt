@@ -1,0 +1,32 @@
+﻿Rscript.exe : ÔåÆ sourceDir: C:/Users/Hani/Desktop/Academic File/rnaSentry_pkg/rnaSentry
+At line:1 char:86
++ ... bin\tools"; & "C:\Program Files\R\R-4.5.2\bin\Rscript.exe" -e "BiocCh ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔåÆ sourceDir: ...y_pkg/rnaSentry:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔåÆ BiocVersion: 3.21
+ÔåÆ Package: rnaSentry
+ÔåÆ PackageVersion: 0.99.0
+ÔåÆ BiocCheckDir: C:/Users/Hani/Desktop/Academic File/rnaSentry_pkg/rnaSentry.BiocCheck
+ÔåÆ BiocCheckVersion: 1.44.2
+ÔåÆ sourceDir: C:/Users/Hani/Desktop/Academic File/rnaSentry_pkg/rnaSentry
+ÔåÆ installDir: NULL
+ÔåÆ isTarBall: FALSE
+ÔåÆ platform: windows
+* Checking valid files...
+* Checking individual file sizes...
+* Checking for stray BiocCheck output folders...
+* Checking for inst/doc folders...
+* Checking if DESCRIPTION is well formatted...
+* Checking for valid maintainer...
+* Checking CITATION...
+* Checking that provided CITATION file is correctly formatted...
+! WARNING: The 'doi' argument is missing or empty in the CITATION's
+'bibentry()'. Only include a CITATION file if there is a preprint or
+publication associated with this Bioconductor package.
+ÔöÇÔöÇ BiocCheck v1.44.2 results ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Ô£û 0 ERRORS | ÔÜá 1 WARNINGS | Ôä╣ 0 NOTES
+Ôä╣ For more details, run
+  browseVignettes(package = 'BiocCheck')

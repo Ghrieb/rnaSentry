@@ -1,0 +1,508 @@
+﻿Rscript.exe : Ôä╣ Testing rnaSentry
+At line:1 char:86
++ ... bin\tools"; & "C:\Program Files\R\R-4.5.2\bin\Rscript.exe" -e "devtoo ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Ôä╣ Testing rnaSentry:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: 'MatrixGenerics'
+
+The following objects are masked from 'package:matrixStats':
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: generics
+
+Attaching package: 'generics'
+
+The following objects are masked from 'package:base':
+
+    as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
+    setequal, union
+
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, saveRDS, table, tapply, unique,
+    unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: 'S4Vectors'
+
+The following object is masked from 'package:utils':
+
+    findMatches
+
+The following objects are masked from 'package:base':
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+
+Attaching package: 'IRanges'
+
+The following object is masked from 'package:grDevices':
+
+    windows
+
+Loading required package: GenomeInfoDb
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: 'Biobase'
+
+The following object is masked from 'package:MatrixGenerics':
+
+    rowMedians
+
+The following objects are masked from 'package:matrixStats':
+
+    anyMissing, rowMedians
+
+Ô£ö | F W  S  OK | Context
+
+ÔáÅ |          0 | adversarial_regressions                                        
+Ôáï |   1      0 | adversarial_regressions                                        
+Ôá╣ |   2      1 | adversarial_regressions                                        
+Ôá╝ |   2      3 | adversarial_regressions                                        
+Ôáº |   2      6 | adversarial_regressions                                        
+ÔáÅ |   3      7 | adversarial_regressions                                        
+ÔáÖ |   3      9 | adversarial_regressions                                        
+Ôá┤ |   4     12 | adversarial_regressions                                        
+ÔáÅ |   4     16 | adversarial_regressions                                        
+Ôáï |   4     17 | adversarial_regressions                                        
+ÔáÖ |   4     18 | adversarial_regressions                                        
+Ôá┤ |   4     22 | adversarial_regressions                                        
+Ôáç |   4     25 | adversarial_regressions                                        
+Ôáï |   4     27 | adversarial_regressions                                        
+Ôá© |   4     30 | adversarial_regressions                                        
+Ôá╝ |   4     31 | adversarial_regressions                                        
+Ôáç |   4     35 | adversarial_regressions                                        
+ÔáÅ |   4     36 | adversarial_regressions                                        
+Ô£ö |   4     36 | adversarial_regressions [6.1s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-adversarial_regressions.R:9:3'): build_signature rejects leave-one-out or oversized folds cleanly
+Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. Ôö£ÔöÇtestthat::expect_error(...) at test-adversarial_regressions.R:9:3
+ 2. Ôöé ÔööÔöÇtestthat:::expect_condition_matching(...)
+ 3. Ôöé   ÔööÔöÇtestthat:::quasi_capture(...)
+ 4. Ôöé     Ôö£ÔöÇtestthat (local) .capture(...)
+ 5. Ôöé     Ôöé ÔööÔöÇbase::withCallingHandlers(...)
+ 6. Ôöé     ÔööÔöÇrlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+ 7. ÔööÔöÇrnaSentry::build_signature(se, "time", "event", folds = 60, repeats = 1)
+
+Warning ('test-adversarial_regressions.R:11:3'): build_signature rejects leave-one-out or oversized folds cleanly
+Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. Ôö£ÔöÇtestthat::expect_error(...) at test-adversarial_regressions.R:11:3
+ 2. Ôöé ÔööÔöÇtestthat:::expect_condition_matching(...)
+ 3. Ôöé   ÔööÔöÇtestthat:::quasi_capture(...)
+ 4. Ôöé     Ôö£ÔöÇtestthat (local) .capture(...)
+ 5. Ôöé     Ôöé ÔööÔöÇbase::withCallingHandlers(...)
+ 6. Ôöé     ÔööÔöÇrlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+ 7. ÔööÔöÇrnaSentry::build_signature(se, "time", "event", folds = 61, repeats = 1)
+
+Warning ('test-adversarial_regressions.R:47:3'): build_signature rejects folds >= n on a two-sample cohort
+Only 2 event(s) for a 5-gene signature (0.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. Ôö£ÔöÇtestthat::expect_error(...) at test-adversarial_regressions.R:47:3
+ 2. Ôöé ÔööÔöÇtestthat:::expect_condition_matching(...)
+ 3. Ôöé   ÔööÔöÇtestthat:::quasi_capture(...)
+ 4. Ôöé     Ôö£ÔöÇtestthat (local) .capture(...)
+ 5. Ôöé     Ôöé ÔööÔöÇbase::withCallingHandlers(...)
+ 6. Ôöé     ÔööÔöÇrlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+ 7. ÔööÔöÇrnaSentry::build_signature(...)
+
+Warning ('test-adversarial_regressions.R:86:3'): exactly collinear genes are dropped from the signature with a flag
+Only 31 event(s) for a 7-gene signature (4.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-adversarial_regressions.R:86:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | build_signature                                                
+Ôáï |          1 | build_signature                                                
+Ôá╝ |          5 | build_signature                                                
+ÔáÅ |         10 | build_signature                                                
+Ôá┤ |   1     15 | build_signature                                                
+Ôáç |   1     18 | build_signature                                                
+Ôáï |   1     30 | build_signature                                                
+Ôá© |   2     32 | build_signature                                                
+Ôáº |   2     36 | build_signature                                                
+ÔáÖ |   2     40 | build_signature                                                
+Ôá┤ |   2     44 | build_signature                                                
+ÔáÅ |   2     48 | build_signature                                                
+Ôáï |   2     49 | build_signature                                                
+Ôá© |   2     52 | build_signature                                                
+Ôáª |   2     55 | build_signature                                                
+ÔáÅ |   2     58 | build_signature                                                
+ÔáÖ |   2     60 | build_signature                                                
+Ôáª |   2     65 | build_signature                                                
+ÔáÖ |   2     70 | build_signature                                                
+Ô£ö |   2     71 | build_signature [21.4s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-build_signature.R:61:3'): build_signature returns the documented signature shape
+Only 34 event(s) for a 20-gene signature (1.7 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-build_signature.R:61:3
+
+Warning ('test-build_signature.R:104:3'): build_signature flags fewer genes than requested
+Only 8 event(s) for a 4-gene signature (2.0 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-build_signature.R:104:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | cox_model                                                      
+Ôáï |          1 | cox_model                                                      
+Ôá╣ |          3 | cox_model                                                      
+Ôá╝ |          5 | cox_model                                                      
+ÔáÅ |         10 | cox_model                                                      
+Ôáï |   1     10 | cox_model                                                      
+ÔáÖ |   1     11 | cox_model                                                      
+Ôá╣ |   1     22 | cox_model                                                      
+Ôáª |   2     25 | cox_model                                                      
+Ôáç |   3     26 | cox_model                                                      
+Ôáï |   4     27 | cox_model                                                      
+ÔáÖ |   4     28 | cox_model                                                      
+Ôá╝ |   4     31 | cox_model                                                      
+Ôáª |   4     33 | cox_model                                                      
+Ôáº |   4     34 | cox_model                                                      
+Ô£ö |   4     34 | cox_model [4.5s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-cox_model.R:31:3'): cox_model returns the documented structure
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-cox_model.R:31:3
+
+Warning ('test-cox_model.R:58:3'): cox_model gene coefficients match the gene-only signature fit
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-cox_model.R:58:3
+
+Warning ('test-cox_model.R:68:3'): cox_model includes design terms recorded in the signature
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-cox_model.R:68:3
+
+Warning ('test-cox_model.R:76:3'): cox_model flags missing covariate values and estimates by complete cases
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-cox_model.R:76:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | design_audit                                                   
+Ôáï |          1 | design_audit                                                   
+Ôáª |          7 | design_audit                                                   
+ÔáÖ |         12 | design_audit                                                   
+Ôá╣ |         13 | design_audit                                                   
+Ôá© |         24 | design_audit                                                   
+Ôáª |         27 | design_audit                                                   
+Ôáº |         28 | design_audit                                                   
+ÔáÖ |         32 | design_audit                                                   
+Ôá┤ |         36 | design_audit                                                   
+ÔáÅ |         40 | design_audit                                                   
+Ôá© |         44 | design_audit                                                   
+Ô£ö |         44 | design_audit [1.8s]
+
+ÔáÅ |          0 | generate_report                                                
+Ôáï |          1 | generate_report                                                
+Ôá╣ |   1      2 | generate_report                                                
+Ôá© |   1      3 | generate_report                                                
+Ôá┤ |   2      4 | generate_report                                                
+Ôáª |   2      5 | generate_report                                                
+Ôáº |   2      6 | generate_report                                                
+Ôáç |   2      7 | generate_report                                                
+Ô£ö |   2      7 | generate_report [12.3s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-generate_report.R:16:3'): generate_report renders a pipeline report
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-generate_report.R:16:3
+
+Warning ('test-generate_report.R:36:3'): generate_report renders the pipeline assumptions section
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-generate_report.R:36:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | km_curve                                                       
+Ôá© |          4 | km_curve                                                       
+Ôá┤ |   1      5 | km_curve                                                       
+Ôáï |   1     10 | km_curve                                                       
+Ôáº |   2     16 | km_curve                                                       
+Ôáç |   2     17 | km_curve                                                       
+Ôá╝ |   2     23 | km_curve                                                       
+Ôáª |   3     24 | km_curve                                                       
+Ôáç |   3     26 | km_curve                                                       
+Ôáï |   3     28 | km_curve                                                       
+Ô£ö |   3     30 | km_curve [2.7s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-km_curve.R:34:3'): km_curve returns the documented structure on a built signature
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-km_curve.R:34:3
+
+Warning ('test-km_curve.R:53:3'): km_curve re-applies a discovery cutpoint to a new cohort
+Only 35 event(s) for a 10-gene signature (3.5 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-km_curve.R:53:3
+
+Warning ('test-km_curve.R:75:3'): km_curve separates high-risk from low-risk survival
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-km_curve.R:75:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | load_counts                                                    
+Ôá┤ |          6 | load_counts                                                    
+Ôáï |         11 | load_counts                                                    
+Ôá╝ |         15 | load_counts                                                    
+ÔáÅ |         20 | load_counts                                                    
+Ô£ö |         23 | load_counts
+
+ÔáÅ |          0 | lock_signature                                                 
+Ôáª |          7 | lock_signature                                                 
+Ôá╝ |         15 | lock_signature                                                 
+ÔáÖ |         22 | lock_signature                                                 
+Ôá© |         24 | lock_signature                                                 
+Ôáª |         27 | lock_signature                                                 
+Ô£ö |         31 | lock_signature [1.9s]
+
+ÔáÅ |          0 | pca_audit                                                      
+Ôáº |          8 | pca_audit                                                      
+ÔáÖ |         12 | pca_audit                                                      
+Ôá© |         14 | pca_audit                                                      
+ÔáÅ |         20 | pca_audit                                                      
+ÔáÖ |         22 | pca_audit                                                      
+Ôáº |         28 | pca_audit                                                      
+Ôá╣ |         33 | pca_audit                                                      
+Ôá┤ |         36 | pca_audit                                                      
+ÔáÅ |         40 | pca_audit                                                      
+Ô£ö |         41 | pca_audit [3.2s]
+
+ÔáÅ |          0 | qc_explore                                                     
+ÔáÖ |          2 | qc_explore                                                     
+Ôáº |          8 | qc_explore                                                     
+ÔáÅ |         10 | qc_explore                                                     
+Ô£ö |         10 | qc_explore
+
+ÔáÅ |          0 | run_rnaSentry                                                  
+Ôáï |   1      0 | run_rnaSentry                                                  
+ÔáÖ |   1      1 | run_rnaSentry                                                  
+ÔáÅ |   2      8 | run_rnaSentry                                                  
+Ôáï |   2      9 | run_rnaSentry                                                  
+Ôá╝ |   2     13 | run_rnaSentry                                                  
+Ô£ö |   2     13 | run_rnaSentry [3.3s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-run_rnaSentry.R:18:3'): run_rnaSentry runs the full pipeline and renders a report
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::run_rnaSentry(...) at test-run_rnaSentry.R:18:3
+ 2.   ÔööÔöÇrnaSentry::build_signature(...) at rnaSentry/R/run_rnaSentry.R:139:3
+
+Warning ('test-run_rnaSentry.R:39:3'): run_rnaSentry can skip the report and the design audit
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::run_rnaSentry(...) at test-run_rnaSentry.R:39:3
+ 2.   ÔööÔöÇrnaSentry::build_signature(...) at rnaSentry/R/run_rnaSentry.R:139:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | sex_check                                                      
+Ôá╝ |          5 | sex_check                                                      
+Ôáç |          9 | sex_check                                                      
+Ôá╣ |         13 | sex_check                                                      
+Ô£ö |         13 | sex_check
+
+ÔáÅ |          0 | statistical_parity                                             
+Ôáï |   1      0 | statistical_parity                                             
+Ôá╣ |   2      1 | statistical_parity                                             
+Ôá© |   2      2 | statistical_parity                                             
+Ôá┤ |   2      4 | statistical_parity                                             
+Ôáº |   3      5 | statistical_parity                                             
+ÔáÅ |   3      7 | statistical_parity                                             
+Ôá© |   4     10 | statistical_parity                                             
+Ôáª |   4     13 | statistical_parity                                             
+Ôáº |   5     13 | statistical_parity                                             
+ÔáÖ |   6     16 | statistical_parity                                             
+Ôá╣ |   6     17 | statistical_parity                                             
+Ôá© |   6     28 | statistical_parity                                             
+Ôá┤ |   7     29 | statistical_parity                                             
+Ô£ö |   7     33 | statistical_parity [5.6s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-statistical_parity.R:10:3'): km_curve log-rank p matches survival::survdiff on the same split
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:10:3
+
+Warning ('test-statistical_parity.R:24:3'): validate_external log-rank p matches survival::survdiff
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:24:3
+
+Warning ('test-statistical_parity.R:61:3'): cox_model hazard ratios and CIs match an independent survival::coxph
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:61:3
+
+Warning ('test-statistical_parity.R:89:3'): cox_model Schoenfeld table matches survival::cox.zph
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:89:3
+
+Warning ('test-statistical_parity.R:110:3'): cox_model concordance is the risk-score direction (independently recomputed)
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:110:3
+
+Warning ('test-statistical_parity.R:130:3'): survival_parametric AIC/loglik/npar match stats::AIC on the same fits
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:130:3
+
+Warning ('test-statistical_parity.R:152:3'): build_signature fold concordance matches concordance on the same folds
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-statistical_parity.R:152:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | survival_parametric                                            
+Ôá© |          4 | survival_parametric                                            
+Ôá╝ |   1      4 | survival_parametric                                            
+Ôáº |   1      7 | survival_parametric                                            
+Ôá╝ |   1     24 | survival_parametric                                            
+Ôáª |   2     25 | survival_parametric                                            
+Ôáç |   2     27 | survival_parametric                                            
+Ôáï |   2     29 | survival_parametric                                            
+Ô£ö |   2     32 | survival_parametric [1.9s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-survival_parametric.R:18:3'): survival_parametric returns the documented structure
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-survival_parametric.R:18:3
+
+Warning ('test-survival_parametric.R:44:3'): survival_parametric score matches the km_curve risk score
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-survival_parametric.R:44:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔáÅ |          0 | validate_external                                              
+Ôáº |   1      7 | validate_external                                              
+Ôáç |   1      8 | validate_external                                              
+Ôá© |   2     12 | validate_external                                              
+Ôá╝ |   2     13 | validate_external                                              
+Ôáª |   3     24 | validate_external                                              
+Ôáº |   3     25 | validate_external                                              
+ÔáÅ |   4     26 | validate_external                                              
+Ôáï |   4     27 | validate_external                                              
+ÔáÖ |   5     27 | validate_external                                              
+Ôá╣ |   5     28 | validate_external                                              
+Ôáº |   5     33 | validate_external                                              
+ÔáÅ |   5     35 | validate_external                                              
+Ôá╣ |   6     37 | validate_external                                              
+Ôá© |   6     38 | validate_external                                              
+Ô£ö |   6     39 | validate_external [5.8s]
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Warning ('test-validate_external.R:25:3'): validate_external never recomputes cutpoint from external data
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:25:3
+
+Warning ('test-validate_external.R:44:3'): validate_external returns the documented structure
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:44:3
+
+Warning ('test-validate_external.R:76:3'): validate_external concordance uses the risk-score direction
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:76:3
+
+Warning ('test-validate_external.R:100:3'): validate_external errors strictly on missing genes by default
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:100:3
+
+Warning ('test-validate_external.R:112:3'): validate_external drops missing genes only when opted in
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:112:3
+
+Warning ('test-validate_external.R:157:3'): validate_external flags an already-log-scaled external cohort
+Only 34 event(s) for a 10-gene signature (3.4 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.
+Backtrace:
+    Ôûå
+ 1. ÔööÔöÇrnaSentry::build_signature(...) at test-validate_external.R:157:3
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+ÔòÉÔòÉ Results ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+Duration: 73.4 s
+
+[ FAIL 0 | WARN 32 | SKIP 0 | PASS 457 ]

@@ -1,0 +1,55 @@
+==== 21_future_case_studies: official future case-study roster (docs-only) ======
+Round scope: formally designate the three next case studies (A/B/C) as part of
+the package's case-study roster in paper_qa_summary.md, with data sources
+verified by web research. Docs-only: no R code or tests -> Gate 1
+(147/457/0/0/32) and every other gate number stands, re-verified below.
+
+[DESIGN] Case study A - clinical-covariate trap (BRCA): bundled GSE20685
+  (327 tumors, time/event/age/subtype already in colData). Zero new data.
+  Angle: naive signature significant univariately, loses significance after
+  cox_model adjustment for age + subtype; design_audit flags covariates
+  pre-modelling. Source evidence: literature-standard TCGA-BRCA/GSE20685
+  adjust-for-stage/age workflow (PLOS ONE 2020 6-gene signature; Sci Rep 2017
+  CA20 stage/age confounding).
+[DESIGN] Case study C - batch catastrophe: GSE31210 (n=246, GPL570) +
+  GSE30219 (n=293, GPL570), identical platform, different studies -> batch-only
+  signal; ~50 "prognostic" genes track study/batch; design_audit
+  batch_associated_pc + Cramér's V expose it. The GSE30219+GSE37745+GSE50081
+  merge is a standard ComBat workflow (AGING 2022 203310/203974; JTD 2025).
+[DESIGN] Case study B - cross-histology false transfer (LUAD -> LUSC):
+  GSE30219 single cohort with both histologies + survival. Run last (nearest
+  overlap with the existing LUAD GSE31210 -> GSE50081 honest negative).
+  Held-back alternatives: TCGA-LUAD (~585) / TCGA-LUSC (~504) via UCSC Xena.
+  Backups surveyed: GSE68465 (HG-U133A, ~334 curated LUAD), GSE13213 (117),
+  GSE157009 (248 LUSC).
+[STRATEGY] Sequencing A -> C -> B (A zero-download fastest; C strongest
+  design_audit/batch demo; B last to avoid reviewer redundancy with the
+  existing honest negative). Experiments run only as dev scripts under
+  gitignored validation/cache/; nothing built/committed/pushed until the
+  submission verdict; v0.99.0 stays locked.
+
+[GATES re-verified 2026-08-05, docs-only]
+  tests       logs/21_test.txt              147 blocks / 457 passed / 0 failed /
+                                            0 error / 32 warnings / 0 skipped
+  as-cran     logs/21_as_cran.txt           0 ERROR / 0 WARNING / 3 NOTES, all
+                                            environmental (tidy missing;
+                                            transient "unable to verify current
+                                            time" network note - precedent
+                                            logs/09_as_cran.txt; build_signature
+                                            example-timing ~7.4 s). qpdf + pandoc
+                                            restored on PATH for round-16/17
+                                            parity.
+  BiocCheck   logs/21_bioccheck.txt         1 ERROR (support-site email 404) /
+  (source)                                  0 WARNING / 8 NOTES
+  BiocCheck   logs/21_bioccheck_tarball.txt 1 ERROR (support-site email 404) /
+  (tarball)                                 0 WARNING / 8 NOTES
+  BiocCheck   logs/21_bioccheck_gitclone.txt 0 ERROR / 1 WARNING (CITATION doi) /
+  (gitclone)                                0 NOTES
+  simulation  logs/21_simulation.txt        15 PASS / 0 FAIL of 15 targets
+  tarball     rnaSentry_0.99.0.tar.gz       90 files, no .github (rebuilt clean)
+[STATE] Working tree clean except new logs; local main == origin/main ==
+  9671ad3; origin/gh-pages == cdeff7c (CI-built live site).
+[CLEANUP] Removed stale gitignored build artifacts that BiocCheck gitclone
+  flagged: vignettes/*.html (6 files) and rnaSentry/rnaSentry.Rcheck/.
+  as-cran NOTE count would otherwise drift (qpdf/pandoc off PATH, stray .Rcheck
+  inside repo, rendered vignette HTMLs).

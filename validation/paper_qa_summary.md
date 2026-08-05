@@ -2,7 +2,9 @@
 
 Single source for the supplementary-methods numbers. Every figure below is
 traceable to files under `validation/` and logs under `validation/logs/`.
-Last updated 2026-08-05 (getting-started CSV->SE bridge round; also CI auto-deploy + site-sync).
+Last updated 2026-08-05 (future case-study roster round: official A/B/C
+designation; prior: getting-started CSV->SE bridge round; CI auto-deploy +
+site-sync).
 
 ## Method summary
 
@@ -78,7 +80,9 @@ decisions.
 - Run command (Windows/R 4.5.2): `Rscript <temp>/run_tests_parity.R` (the
   dev-only parity runner, same path as in `maintainer_testing_guide.md`) with
    `RSTUDIO_PANDOC` set. Logs: `validation/logs/00.1_test.txt`,
-   `validation/logs/17_test.txt` (2026-08-05, post-BiocParallel round).
+   `validation/logs/17_test.txt` (2026-08-05, post-BiocParallel round),
+   `validation/logs/21_test.txt` (2026-08-05, docs-only round — re-confirmed
+   identical).
 - Evidence: `validation/test_audit.md`, `validation/maintainer_testing_guide.md`.
 
 ## Simulation study (Gate 3)
@@ -93,7 +97,9 @@ decisions.
   0.275 -> 0.842 over ~35 -> ~300 events); power < 0.30 at ~35 events
   (small-cohort trap) and >= 0.80 at ~300 events for the moderate tier.
 - Evidence: `validation/simulation_study.md`, `validation/logs/03_simulation.txt`,
-  `validation/logs/13_simulation.txt`, `validation/simulate_study.R`.
+  `validation/logs/13_simulation.txt`, `validation/simulate_study.R`
+  (re-confirmed at `validation/logs/21_simulation.txt`, 2026-08-05,
+  docs-only round — 15/15 unchanged).
 
 ## Case-study vignettes and bundled data (Phase 3)
 
@@ -125,6 +131,47 @@ decisions.
 - Gate 4's dataset label corrected: GSE20685 is **not** TCGA-BRCA (it is
   Li et al., 2010, Affymetrix GPL570); the old "TCGA-BRCA GSE20685" wording
   was removed from this file.
+
+## Future case studies (official roster — builds staged post-submission)
+
+Three additional case studies are formally part of the package's case-study
+roster (paper narrative + eventual vignettes). They are **designed and
+data-sourced now**; the experiments will be run and built only after the
+current Bioconductor submission of v0.99.0 is resolved, keeping the submitted
+codebase locked. When built they will follow the existing vignette
+conventions (three-tier naive-vs-guarded narrative, offline-safe,
+`case-study-<topic>.Rmd` naming).
+
+Novelty framing (identical to the existing roster): each failure mode is
+already documented in the clinical/meta-analysis literature — rnaSentry's
+contribution is that its guardrails catch it **automatically** at audit time
+and block it from reaching downstream signature/validation stages. None of
+these case studies claim discovery.
+
+| Case study | Data source | Facts (verified 2026-08-05) | Design |
+|---|---|---|---|
+| A — clinical-covariate trap (BRCA) | bundled `inst/extdata/gse20685_case_study.rds` (GSE20685, Affymetrix GPL570) | 327 tumors; `time/event/age/subtype` already in colData; zero new downloads | naive 10-gene signature significant univariately, loses significance after `cox_model` adjustment for `age` + `subtype`; `design_audit` flags the covariates pre-modelling |
+| C — batch catastrophe (identical-platform merge) | **GSE31210** (n = 246, GPL570) + **GSE30219** (n = 293, GPL570), both lung cancer, different studies | same platform, same disease area → batch-only signal; the GSE30219+GSE37745+GSE50081 merge is a standard ComBat workflow in the literature | naive merge → ~50 "prognostic" genes track study/batch; `design_audit` `batch_associated_pc` flag + Cramér's V expose it pre-modelling; honest-negative panel |
+| B — cross-histology false transfer (LUAD → LUSC) | **GSE30219** (single cohort, both histologies + survival) | 293 mixed NSCLC; same GPL570 pipeline as the existing case studies | discovery on LUAD, transfer across the histology boundary blocked as honest negative; run last (nearest overlap with the existing LUAD GSE31210→GSE50081 honest negative) |
+
+Sequencing rationale: **A → C → B**. A is zero-download (bundled data) and
+the fastest to a manuscript-ready demo; C is the strongest demonstration of
+`design_audit` catching a batch effect (subtle: same platform, batch only); B
+is placed last because it is closest to the existing LUAD honest-negative
+case study and risks reviewer redundancy unless the cross-histology dimension
+is clearly differentiated.
+
+Data notes: GSE30219 (293, GPL570) and GSE31210 (246, GPL570) are both
+series matrices downloadable with the existing `repro_live_geo.R` pattern;
+TCGA-LUAD (~585 tumors) / TCGA-LUSC (~504) via UCSC Xena (HTSeq-Counts +
+clinical) are the held-back alternatives for B. GSE68465 (HG-U133A; ~334
+curated LUAD with stage/age/sex annotation) and GSE13213 (117 LUAD) /
+GSE157009 (248 LUSC) were also surveyed as backup sources.
+
+Strategic constraint (locked 2026-08-05): experiments run only as dev scripts
+under gitignored `validation/cache/`; nothing is built, committed, or pushed
+until the submission verdict. Round record:
+`validation/logs/21_future_case_studies.txt`.
 
 ## Site, CI deployment, and cross-environment build (2026-08-05)
 
@@ -212,6 +259,13 @@ decisions.
 - `logs/16_as_cran.txt` (2026-08-05, Phase-1 BiocCheck-prep round — withr-
   scoped seeding, `seq_len()`, runnable examples): **0 ERROR / 0 WARNING /
   1 NOTE** (`qpdf` installed; the residual HTML `tidy` NOTE environmental).
+- `logs/21_as_cran.txt` (2026-08-05, future-case-study roster round,
+  docs-only): **0 ERROR / 0 WARNING / 3 NOTES**, all environmental — the
+  usual HTML `tidy` NOTE, a transient `unable to verify current time` note
+  (network; first seen at `09_as_cran.txt`), and the `build_signature`
+  example-timing note (~7.4 s, same table as every recent gate). qpdf and
+  pandoc were restored on PATH for the run to match the round-16/17
+  environment.
 - BiocCheck (`logs/13_bioccheck.txt`, re-confirmed at `logs/14_bioccheck.txt`,
   `logs/15_bioccheck.txt`, and `logs/16_bioccheck.txt`):
   1 environmental ERROR (support-site
@@ -221,6 +275,10 @@ decisions.
   BiocCheck-prep round by scoping reproducibility with `withr::with_seed()`),
   8 advisory NOTES (down from 13) — all explained in
   `logs/notes_documented.md`.
+- BiocCheck re-confirmed at `logs/21_bioccheck.txt` (source),
+  `21_bioccheck_tarball.txt`, and `21_bioccheck_gitclone.txt` (2026-08-05,
+  docs-only round): source + tarball **1 E / 0 W / 8 N**, GitClone
+  **0 E / 1 W / 0 N** (CITATION doi) — unchanged from round 17.
 - BiocCheck equivalent run locally via `validation/docker_check.sh` when a
   Docker-capable machine is available (see `validation/cross_platform.md`).
 

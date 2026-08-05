@@ -217,6 +217,24 @@ described in prose. Each fires only on a specific, test-pinned condition.
   section. The sweep was re-run with no allow-list change — the new text
   avoids all six swept patterns. CI must compile the new vignette on
   Bioc-release Linux. Log: `logs/19_getting_started.txt`.
+- Future case-study roster round (2026-08-05): **docs-only again** — no R
+  code or test changes, so Gate 1 (147/457/0/0/32) and every other gate
+  number stands. `paper_qa_summary.md` gains an official future case-study
+  roster (A clinical-covariate trap on bundled GSE20685, C batch catastrophe
+  on the GSE31210 + GSE30219 identical-platform merge, B cross-histology
+  LUAD→LUSC transfer on GSE30219), designed/data-sourced now but built only
+  post-submission. Gates re-run and unchanged: tests `logs/21_test.txt`
+  (147/457/0/0/32), as-cran `logs/21_as_cran.txt` (0 E / 0 W / 3 N, all
+  environmental: tidy, transient time-verify, build_signature example
+  timing; qpdf + pandoc restored on PATH), BiocCheck source/tarball
+  `logs/21_bioccheck*.txt` (1 E / 0 W / 8 N), GitClone
+  `logs/21_bioccheck_gitclone.txt` (0 E / 1 W / 0 N), simulation
+  `logs/21_simulation.txt` (15/15), tarball rebuilt clean of `.github`;
+  stale build artifacts (`vignettes/*.html`, `rnaSentry.Rcheck/`) cleaned.
+  Sweep re-run: **70 files / 29 hits / exit 0**, no allow-list change (rounds
+  19-20 recorded "69 files", the pre-getting-started total; the true count
+  after `vignettes/getting-started.Rmd` is 70). Log:
+  `logs/21_future_case_studies.txt`.
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation
   suite **15/15 falsifiable targets PASS** (Sims 1-5 + Sim 6 external-transfer
   power analysis; `logs/13_simulation.txt`); three offline case-study
