@@ -4,7 +4,10 @@ Date: 2026-08-05 | BiocCheck 1.44.2 (Bioc 3.21) | R 4.5.2 | Windows 11
 (gate logs: `16_bioccheck_tarball.txt`, `16_bioccheck.txt`,
 `16_bioccheck_gitclone.txt`, `16_as_cran.txt` — the Phase-3 "Ultimate
 Pre-Flight" round, run after the `withr::with_seed()` seeding refactor,
-the `seq_len()`/`\donttest` fixes, and the local install of the qpdf CLI)
+the `seq_len()`/`\donttest` fixes, and the local install of the qpdf CLI;
+re-confirmed unchanged at `17_bioccheck_tarball.txt`, `17_bioccheck.txt`,
+`17_bioccheck_gitclone.txt`, `17_as_cran.txt` — the Phase-1 BiocParallel
+opt-in round, 2026-08-05)
 
 This document records every BiocCheck ERROR / WARNING / NOTE that the gate
 does not (or cannot) resolve, with a justification for each. This is the
@@ -125,3 +128,29 @@ instead of emitting the unconditional as-cran warning.
 - The examples now run cleanly under `--run-donttest` (self-contained
   fixtures; report output is directed to `tempdir()` so no stray HTML is
   left in the check directory).
+
+## BiocParallel opt-in (Phase-1 BiocParallel round, 2026-08-05)
+
+`build_signature()` / `run_rnaSentry()` gained a `BPPARAM` argument so large
+cross-validation loops can run in parallel without disturbing reproducibility.
+Design decisions, all verified at `logs/17_test.txt`
+(147 files / 457 expectations / 0 fail / 0 error / 32 expected guardrail
+warnings):
+
+- **Strictly opt-in, serial default.** `BPPARAM = NULL` (the default) runs
+  the existing serial `lapply` path unchanged; parallelism only engages when
+  the caller supplies a `BiocParallelParam` object. Tests pin that the
+  default is bit-identical to an explicit `BiocParallel::SerialParam()`.
+- **RNG confinement preserved.** All fold partitioning stays inside the
+  existing `withr::with_seed()` scope; per-fold evaluation (Cox fit +
+  `survival::concordance`) makes no RNG calls, so a parallel run is
+  **bit-identical to serial** (pinned by `expect_identical` on
+  `cv_results`/`cv_summary`/`genes`/`coefficients`/`flags`), and the caller's
+  `.Random.seed` is untouched after a parallel run.
+- **Suggests-only, guard-railed.** `BiocParallel` is in `Suggests` only (no
+  `Imports`/`NAMESPACE` import); every call is `BiocParallel::`-qualified
+  behind a `requireNamespace()` guard that errors with "BiocParallel is not
+  installed; set BPPARAM = NULL to run serially." The 4 new tests
+  `skip_if_not(requireNamespace("BiocParallel"))`, so the suite stays green on
+  installs without BiocParallel. BiocCheck reports no new item for this
+  (re-confirmed at `17_bioccheck.txt`, still 1 ERROR / 0 WARNING / 8 NOTES).

@@ -59,13 +59,16 @@ decisions.
 
 ## Test suite (Gate 1)
 
-- **143 test blocks / 445 expectations / 0 failures / 0 errors** (32
+- **147 test blocks / 457 expectations / 0 failures / 0 errors** (32
   warnings, all expected: the `events_per_parameter` guardrail firing on
   deliberately small synthetic fixtures).
 - Layers:
   1. Unit tests per stage (`tests/testthat/test-*.R`).
   2. Statistical-parity tests: independent recomputation of published rules
-     (e.g. `sex_check` XIST-vs-Y rank rule) pinned by `expect_identical`.
+     (e.g. `sex_check` XIST-vs-Y rank rule) pinned by `expect_identical`;
+     serial↔parallel equivalence for `build_signature` cross-validation
+     (2026-08-05, `BPPARAM` opt-in — parallel runs are bit-identical to
+     serial).
   3. Adversarial pass (2026-08-03): ~90 degenerate inputs probed; 78+ rejected
      or flagged; 3 bug families + 4 soft-warnings found and fixed, all pinned
      by regression tests.
@@ -74,7 +77,8 @@ decisions.
      section.
 - Run command (Windows/R 4.5.2): `Rscript <temp>/run_tests_parity.R` (the
   dev-only parity runner, same path as in `maintainer_testing_guide.md`) with
-  `RSTUDIO_PANDOC` set. Log: `validation/logs/00.1_test.txt`.
+   `RSTUDIO_PANDOC` set. Logs: `validation/logs/00.1_test.txt`,
+   `validation/logs/17_test.txt` (2026-08-05, post-BiocParallel round).
 - Evidence: `validation/test_audit.md`, `validation/maintainer_testing_guide.md`.
 
 ## Simulation study (Gate 3)

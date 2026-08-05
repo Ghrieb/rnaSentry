@@ -42,7 +42,13 @@ BiocCheck: 1 environmental ERROR (support-site email 404 — register the
 maintainer email on https://support.bioconductor.org), 0 WARNINGs, 8 advisory
 NOTEs at the `16_bioccheck.txt`/`16_bioccheck_tarball.txt` run (2026-08-05
 Ultimate Pre-Flight; the `set.seed` WARNING and the R-version / `Avoid 1:` /
-`\dontrun` NOTEs were resolved in the same round). Every item
+`\dontrun` NOTEs were resolved in the same round). The Phase-1 BiocParallel
+round (2026-08-05) re-ran the whole gate unchanged: `17_as_cran.txt` is
+0 ERROR / 0 WARNING / 1 NOTE (`tidy` only) and
+`17_bioccheck.txt`/`17_bioccheck_tarball.txt` are 1 ERROR (support-site
+email 404, environmental) / 0 WARNING / 8 advisory NOTES; the GitClone
+re-run `17_bioccheck_gitclone.txt` is 0 ERROR / 1 WARNING (CITATION `doi`) /
+0 NOTES. Every item
 is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
@@ -82,13 +88,16 @@ $env:RSTUDIO_PANDOC = "C:\Program Files\RStudio\resources\app\bin\quarto\bin\too
 Rscript <temp>/run_tests_parity.R   # devtools::test() with load_all
 ```
 
-Expected: **143 blocks / 445 passed / 0 failed / 0 error / 32 warnings**.
+Expected: **147 blocks / 457 passed / 0 failed / 0 error / 32 warnings**.
 The 32 warnings are the `events_per_parameter` guardrail firing on
 deliberately small synthetic fixtures used by tests that exercise other
 behavior; each guardrail has a dedicated test that asserts its own firing
 (see Gate 3 and `test_audit.md`). The suite must be run via
 `devtools::test()` (loading environment differs from a plain `test_dir`).
-Log: `logs/00.1_test.txt`.
+Logs: `logs/00.1_test.txt`; the suite grew to 147/457 with the 2026-08-05
+BiocParallel opt-in round (4 new blocks in `test-build_signature.R`: serial
+default == explicit `SerialParam`, parallel == serial bit-identical, RNG
+state preserved, non-`BPPARAM` backend rejected) — log `logs/17_test.txt`.
 
 ## Gate 2 — adversarial review
 
@@ -116,9 +125,10 @@ before/after correction narrative), exit 0. After the `load_counts()` +
 enforceable-lock round it scans 58 files (19 hits, same narrative), exit 0.
 After the CV-optimism reframe round it scans 60 files (19 hits, same
 narrative), exit 0. After the Phase-3 case-study/power round (2026-08-04) it
-scans **157 files (20 hits, same narrative), exit 0**. After the Phase-1
-BiocCheck-prep round (2026-08-05) it scans **67 files (20 hits, same
-narrative), exit 0**.
+scans **157 files (20 hits, same narrative), exit 0**. After the Phase-1 BiocCheck-prep round (2026-08-05) it scans **67 files (20 hits, same
+narrative), exit 0**. After the Phase-1 BiocParallel round (2026-08-05) it
+scans **68 files (20 hits, same narrative), exit 0** — the one additional
+file is the new `validation/make_logo.R` logo generator (no stale patterns).
 
 ## Gate 3 — statistical parity
 
@@ -145,6 +155,14 @@ package with an independent reference implementation and asserts equality:
   `test_audit.md`).
 - `sex_check` rank score ↔ the documented XIST-vs-Y rule re-derived from the
   assay (closes parity item 7).
+- `build_signature` serial↔parallel equivalence (2026-08-05 BiocParallel
+  opt-in): an explicit `BiocParallel::SerialParam()` run is bit-identical to
+  the default, a `BiocParallel::SnowParam(2)` run is bit-identical to the
+  serial run (same seeded folds; per-fold evaluation is deterministic Cox fit
+  + `survival::concordance`), the caller's RNG state is left untouched, and a
+  non-`BPPARAM` backend errors cleanly. These live in
+  `test-build_signature.R` and are skipped automatically when BiocParallel is
+  not installed.
 
 Gate 3 also covers the two runtime guardrails added 2026-08-04: a fixture
 with deliberately pre-logged, non-integer `counts` must fire
@@ -175,7 +193,8 @@ to effective C = 0.608 / 0.654; power monotone in external events, < 0.30 at
 ~35 events, >= 0.80 at ~300 events for the moderate tier). Expected:
 **15 targets / 15 PASS**. Results and interpretation:
 `simulation_study.md`. Logs: `logs/03_simulation.txt` (Sims 1-5),
-`logs/13_simulation.txt` (full suite).
+`logs/13_simulation.txt` (full suite); re-run unchanged 2026-08-05 after the
+BiocParallel round — `logs/17_simulation.txt`.
 
 ## Gate 5 — real-data face validity (GSE20685)
 
@@ -269,10 +288,15 @@ the only outstanding "ready to submit" criterion (see
    the sole NOTE is the deliberately-skipped `tidy`). Remember to export
    `RSTUDIO_PANDOC`, `R_QPDF`, `_R_CHECK_DOC_SIZES_=true`, and
    `_R_CHECK_CRAN_INCOMING_=false`.
-2. Gate 1 suite (143/445; 32 expected guardrail warnings on small fixtures).
+2. Gate 1 suite (147/457; 32 expected guardrail warnings on small fixtures).
 3. If statistics/tests changed: Gate 3 parity suite, Gate 4 simulation
    (15/15).
 4. If feature/annotation handling changed: Gate 5 GSE20685 repro.
 5. If vignettes or bundled data changed: Gate 5c offline vignette build.
 6. Gate 2 stale-number sweep (`validation/grep_stale_numbers.ps1`).
-7. Commit logs with the change at a logical checkpoint.
+7. If the DESCRIPTION URL, `_pkgdown.yml`, or the logo changed: re-run
+   `pkgdown::build_site()` (with `RSTUDIO_PANDOC` set) and confirm the sitrep
+   is clean (`URLs ok`, `Favicons ok`). The site lives in `docs/` (excluded
+   from the tarball via `.Rbuildignore`); the logo is regenerated from
+   `validation/make_logo.R` (base R only).
+8. Commit logs with the change at a logical checkpoint.

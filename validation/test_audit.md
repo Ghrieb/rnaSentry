@@ -1,6 +1,6 @@
 # rnaSentry test-suite audit
 
-Scope: the 15 `tests/testthat/` files (445 expectations across 143 test
+Scope: the 15 `tests/testthat/` files (457 expectations across 147 test
 blocks per `devtools::test()`) reviewed for what they actually verify,
 against the documented guarantees in `man/`. This audit feeds (a) the Step-1
 adversarial pass and (b) the Step-2 statistical-parity tests.
@@ -9,7 +9,7 @@ adversarial pass and (b) the Step-2 statistical-parity tests.
 
 | File | expect_ calls | Verifies |
 |---|---|---|
-| test-build_signature.R | 59 | input type/col guards, option ranges, signature shape, `top_n`/`p_value` selection, fewer-genes flag, collinear-drop flag, fixed-seed reproducibility, design-adjusted screening exclusion, `min_events_per_parameter` validation, `possibly_log_scaled` flag on pre-logged assays, `events_per_parameter` flag on low-event cohorts, print |
+| test-build_signature.R | 71 | input type/col guards, option ranges, signature shape, `top_n`/`p_value` selection, fewer-genes flag, collinear-drop flag, fixed-seed reproducibility, design-adjusted screening exclusion, `min_events_per_parameter` validation, `possibly_log_scaled` flag on pre-logged assays, `events_per_parameter` flag on low-event cohorts, print, **serial↔parallel equivalence (BPPARAM opt-in, 2026-08-05): default == explicit `SerialParam`, `SnowParam` == serial bit-identical, caller RNG state preserved, non-`BPPARAM` backend rejected** |
 | test-cox_model.R | 34 | input/confounder guards, table schema, HR<=CI bounds, gene coefficients == signature coefficients, design-term inclusion, NA covariate complete-cases, lock state, print/plot |
 | test-design_audit.R | 44 | type/range guards, formula text, confounder-table schema + BH, lm-vs-factor test dispatch, single-level untested, fully-missing flag, redundant numeric drop, PC clamp, single-PC interaction skip, print |
 | test-validate_external.R | 39 | input guards, cutpoint never recomputed from external data, structure, log-rank finite, **concordance == survival::concordance**, strict missing-gene default, `drop_missing` opt-in + overlap frac, `possibly_log_scaled` flag on a pre-logged external cohort, lock state, print/plot |
@@ -90,6 +90,25 @@ Item 7 is now closed: `test-sex_check.R` re-derives the documented rule
 ambiguous) independently from the assay and asserts `sex_check()` reproduces
 the inference on a fixture spanning all three branches.
 
+## Parallel-equivalence coverage (2026-08-05 BiocParallel opt-in)
+
+`build_signature()` / `run_rnaSentry()` now accept `BPPARAM` (Bioc-native,
+strictly opt-in; `NULL` keeps the serial default). Because all fold
+partitioning stays inside `withr::with_seed()` and per-fold evaluation is a
+deterministic Cox fit + `survival::concordance` with no RNG calls, parallel
+fold evaluation is bit-identical to serial. `test-build_signature.R` pins
+this:
+
+- serial default `==` explicit `BiocParallel::SerialParam()` run
+  (`expect_identical` across `cv_results`/`cv_summary`/`genes`/`coefficients`/`flags`);
+- `BiocParallel::SnowParam(2)` run `==` serial run (same five fields);
+- caller's `.Random.seed` is untouched after a parallel run;
+- a non-`BPPARAM` backend errors cleanly.
+
+These tests `skip_if_not(requireNamespace("BiocParallel"))`, so the suite is
+green without BiocParallel installed. `BiocParallel` is Suggests-only and all
+calls are namespace-qualified behind a `requireNamespace()` guard.
+
 ## Guardrail coverage (2026-08-04 additions)
 
 Two runtime guardrails were added so misuse is caught at run time, not just
@@ -119,12 +138,13 @@ described in prose. Each fires only on a specific, test-pinned condition.
 
 ## Verification status (gate logs, see logs/)
 
-- tests: **143 blocks / 445 passed / 0 failed / 0 error / 32 warnings**
+- tests: **147 blocks / 457 passed / 0 failed / 0 error / 32 warnings**
   (2026-08-04, after the `load_counts()` intake wrapper + enforceable-lock
   round and the Batch C lock-targeted-unlock + concordance-flag round;
-  re-confirmed byte-identical on 2026-08-05 at `logs/16_test.txt` after the
-  Phase-1 BiocCheck-prep round — withr-scoped seeding, `seq_len()`, runnable
-  examples). The
+  re-confirmed at `logs/17_test.txt` on 2026-08-05 after the Phase-1
+  BiocCheck-prep + BiocParallel rounds — withr-scoped seeding, `seq_len()`,
+  runnable examples, plus the 4 new serial↔parallel blocks that took the
+  suite from 143/445 to 147/457). The
   32 warnings are the
   `events_per_parameter` guardrail firing on deliberately small synthetic
   fixtures in tests that exercise other behavior; each guardrail's own
@@ -142,7 +162,10 @@ described in prose. Each fires only on a specific, test-pinned condition.
   justified `set.seed` WARNING is gone — reproducibility is now scoped with
   `withr::with_seed()` (`logs/16_bioccheck.txt`: 1 ERROR (support-site email,
   environmental) / 0 WARNING / 8 advisory NOTES); GitClone 0 ERROR / 1 WARNING
-  (CITATION doi) — all explained in `logs/notes_documented.md`
+  (CITATION doi) — all explained in `logs/notes_documented.md`;
+  re-confirmed unchanged at the BiocParallel round
+  (`logs/17_bioccheck.txt`, `logs/17_bioccheck_tarball.txt`,
+  `logs/17_bioccheck_gitclone.txt`)
 - `--as-cran`: 0 ERROR / 1 WARNING (qpdf, environmental) / 1 NOTE (tidy,
   environmental) (05/06/07, post sign-convention fix; 08 after the
   2026-08-04 guardrail + docs round; 09 after the `load_counts()` +
@@ -155,11 +178,14 @@ described in prose. Each fires only on a specific, test-pinned condition.
   `min_events_per_parameter` forwarding, `concordance_na` flag, flags `stage`
   column docs) — all clean 0 ERROR / 1 WARNING / 1 NOTE; 16 after the
   Phase-1 BiocCheck-prep round — `qpdf` now installed, so 0 ERROR / 0
-  WARNING / 1 NOTE, the residual HTML `tidy` NOTE environmental)
+  WARNING / 1 NOTE, the residual HTML `tidy` NOTE environmental;
+  re-confirmed at the BiocParallel round — `logs/17_as_cran.txt`,
+  0 ERROR / 0 WARNING / 1 NOTE (`tidy` only))
 - stale-number sweep (2026-08-04; re-run 2026-08-05): `validation/grep_stale_numbers.ps1` scans
   `.R`/`.Rmd`/`.md`/`.Rd` for `0.217`/`0.424`/`0.510`/`0.160` and the old
-  "poor generalization" / "winner's curse" phrasing — 20 hits (67 files
-  scanned at the re-run), all inside `validation/` (the intentional
+  "poor generalization" / "winner's curse" phrasing — 20 hits (68 files
+  scanned at the 2026-08-05 BiocParallel round, +1 from the new
+  `validation/make_logo.R`), all inside `validation/` (the intentional
   correction narrative), 0 in code, `@examples`, the vignette, the report
   template, or the man pages (PASS, exit 0)
 - Phase-3 case-study/power gate (2026-08-04, commit `b7e080d`): simulation

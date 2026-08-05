@@ -267,3 +267,48 @@ test_that("build_signature does not flag adequate event counts", {
   expect_false(any(sig$flags$check == "events_per_parameter"))
   expect_false(any(sig$flags$check == "possibly_log_scaled"))
 })
+
+test_that("serial default is identical to an explicit SerialParam", {
+  se <- make_survival_se()
+  a <- build_signature(se, "time", "event", top_n = 5, repeats = 2, folds = 3,
+                       seed = 42)
+  b <- build_signature(se, "time", "event", top_n = 5, repeats = 2, folds = 3,
+                       seed = 42, BPPARAM = BiocParallel::SerialParam())
+  expect_identical(a$cv_results, b$cv_results)
+  expect_identical(a$cv_summary, b$cv_summary)
+  expect_identical(a$genes, b$genes)
+  expect_identical(a$coefficients, b$coefficients)
+  expect_identical(a$flags, b$flags)
+})
+
+test_that("parallel fold evaluation is bit-identical to serial", {
+  skip_if_not(requireNamespace("BiocParallel", quietly = TRUE))
+  se <- make_survival_se()
+  serial <- build_signature(se, "time", "event", top_n = 5, repeats = 2,
+                            folds = 3, seed = 42)
+  par <- build_signature(se, "time", "event", top_n = 5, repeats = 2,
+                         folds = 3, seed = 42,
+                         BPPARAM = BiocParallel::SnowParam(2))
+  expect_identical(par$cv_results, serial$cv_results)
+  expect_identical(par$cv_summary, serial$cv_summary)
+  expect_identical(par$genes, serial$genes)
+  expect_identical(par$coefficients, serial$coefficients)
+  expect_identical(par$flags, serial$flags)
+})
+
+test_that("parallel evaluation leaves the caller's RNG state untouched", {
+  skip_if_not(requireNamespace("BiocParallel", quietly = TRUE))
+  se <- make_survival_se()
+  set.seed(1234)
+  before <- .Random.seed
+  build_signature(se, "time", "event", top_n = 5, repeats = 1, folds = 2,
+                  seed = 42, BPPARAM = BiocParallel::SnowParam(2))
+  expect_identical(.Random.seed, before)
+})
+
+test_that("build_signature rejects a non-BPPARAM backend", {
+  expect_error(build_signature(make_survival_se(), "time", "event", top_n = 5,
+                               repeats = 1, folds = 2, seed = 1,
+                               BPPARAM = "not_a_param"),
+               "BPPARAM")
+})

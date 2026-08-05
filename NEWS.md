@@ -29,6 +29,21 @@
 - `build_signature()` and `run_rnaSentry()` examples are now self-contained
   and runnable (`\donttest`).
 
+### Opt-in parallel cross-validation (2026-08-05)
+
+- `build_signature()` and `run_rnaSentry()` gain a `BPPARAM` argument
+  (Bioc-native, `BiocParallelParam`). Cross-validation stays **strictly
+  serial by default** (`BPPARAM = NULL`); parallel evaluation is opt-in and
+  only engaged when a `BiocParallelParam` object (e.g.
+  `BiocParallel::SnowParam(2)`) is supplied.
+- Reproducibility is preserved under parallelism: the documented `seed`
+  continues to scope all fold partitioning inside `withr::with_seed()`, so
+  per-fold evaluation is deterministic and a parallel run is **bit-identical**
+  to the serial run (pinned by dedicated tests in `test-build_signature.R`).
+- `BiocParallel` is a **Suggests-only** dependency: all calls are
+  namespace-qualified behind a `requireNamespace()` guard, so the package
+  works unchanged on installations without BiocParallel.
+
 ### Power analysis gate
 
 - `validation/simulate_study.R` gains **Sim 6**, an external-transfer power
@@ -49,7 +64,7 @@
   preventing silent gene-set re-selection after survival analysis.
 - External validation never recomputes the cutpoint from external data; the
   discovery cutpoint is applied unchanged.
-- Validation dossier: statistical-parity suite (143 blocks / 445
+- Validation dossier: statistical-parity suite (147 blocks / 457
   expectations), adversarial pass with regression tests, simulation study,
   real-data face validity, and a live GEO cross-cohort gate (GSE31210 ->
   GSE50081), including the documented CV-optimism (selection-leakage) finding.

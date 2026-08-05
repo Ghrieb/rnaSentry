@@ -97,6 +97,17 @@
 #'   it is a defensible middle choice, not a guarantee of estimability. Raise
 #'   it to \code{10} for the stricter convention, or lower it to suppress the
 #'   warning on small but well-behaved cohorts.
+#' @param BPPARAM Optional \code{BiocParallelParam} from the \pkg{BiocParallel}
+#'   package (for example \code{BiocParallel::SnowParam(2)}). When \code{NULL}
+#'   (the default) the repeated cross-validation is evaluated serially. When a
+#'   non-\code{NULL} backend is supplied, the per-fold evaluations are
+#'   distributed with \code{BiocParallel::bplapply()}; \pkg{BiocParallel} is
+#'   only a suggested package and is loaded on demand. Parallelism is
+#'   strictly opt-in and is bit-identical to the serial path: all randomness
+#'   is confined to the fold assignment (seeded with \code{seed}), and the
+#'   per-fold Cox fits and concordance scores use no random numbers, so the
+#'   returned signature, cross-validation table, and flag ledger are
+#'   unchanged regardless of backend.
 #'
 #' @section Assumptions and limitations:
 #' The signature is a linear Cox risk score (larger score = earlier event).
@@ -168,7 +179,8 @@ build_signature <- function(se, time_col, event_col,
                              p_threshold = 0.05, repeats = 5, folds = 5,
                              seed = NULL, design_terms = character(0),
                              adjust_for_design = TRUE,
-                             min_events_per_parameter = 5) {
+                             min_events_per_parameter = 5,
+                             BPPARAM = NULL) {
   if (!methods::is(se, "SummarizedExperiment")) {
     stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
   }
@@ -222,6 +234,12 @@ build_signature <- function(se, time_col, event_col,
       length(min_events_per_parameter) != 1 ||
       is.na(min_events_per_parameter) || min_events_per_parameter <= 0) {
     stop("'min_events_per_parameter' must be a single positive number.",
+         call. = FALSE)
+  }
+  if (!is.null(BPPARAM) &&
+      requireNamespace("BiocParallel", quietly = TRUE) &&
+      !methods::is(BPPARAM, "BiocParallelParam")) {
+    stop("'BPPARAM' must be NULL or a BiocParallelParam object (for example BiocParallel::SnowParam(2)).",
          call. = FALSE)
   }
 
@@ -427,7 +445,6 @@ build_signature <- function(se, time_col, event_col,
     stop(sprintf("'folds' (%d) must be smaller than the number of samples (%d); leave-one-out cross-validation cannot estimate a concordance index on single-sample test folds.",
                  folds, n), call. = FALSE)
   }
-  cv_rows <- list()
   flag_fold <- function(flags, check, detail) {
     .add_flag(flags, check, "warning", detail)
   }
@@ -452,79 +469,102 @@ build_signature <- function(se, time_col, event_col,
   } else {
     withr::with_seed(seed, make_all_folds())
   }
-  for (r in seq_len(repeats)) {
+  # Per-fold evaluation is deterministic: given a fold assignment it fits a
+  # Cox model on the training rows and scores the held-out rows, and it uses
+  # no random numbers. That is what makes the opt-in parallel path
+  # (BPPARAM) bit-identical to the serial path - the RNG call sequence is
+  # confined to make_all_folds() and is therefore unchanged regardless of
+  # backend. Each element returns its cv row plus any guardrail flags so the
+  # ledger merges in grid order, exactly reproducing the nested-loop order.
+  eval_fold <- function(r, f) {
     fold_ids <- all_fold_ids[[r]]
-    for (f in seq_len(folds)) {
-      train <- which(fold_ids != f)
-      test <- which(fold_ids == f)
-      ci <- NA_real_
-      if (length(train) < 5 || length(test) < 2 ||
-          sum(event_vec[train]) < 2 || sum(event_vec[test]) < 1) {
-        flags <- flag_fold(flags, "cv_fold_skipped",
-                           sprintf("Fold %d of repeat %d skipped: too few samples or events.",
-                                   f, r))
+    train <- which(fold_ids != f)
+    test <- which(fold_ids == f)
+    ci <- NA_real_
+    fl <- list()
+    if (length(train) < 5 || length(test) < 2 ||
+        sum(event_vec[train]) < 2 || sum(event_vec[test]) < 1) {
+      fl <- list(c("cv_fold_skipped",
+                   sprintf("Fold %d of repeat %d skipped: too few samples or events.",
+                           f, r)))
+    } else {
+      d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
+                         t(as.matrix(mat[genes, train, drop = FALSE])),
+                         check.names = FALSE)
+      fit_tr <- tryCatch(
+        suppressWarnings(
+          survival::coxph(survival::Surv(time, event) ~ ., data = d_tr)
+        ),
+        error = function(e) NULL
+      )
+      if (is.null(fit_tr)) {
+        fl <- list(c("cv_fold_failed",
+                     sprintf("Cox model failed to fit on fold %d of repeat %d.",
+                             f, r)))
       } else {
-        d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
-                           t(as.matrix(mat[genes, train, drop = FALSE])),
-                           check.names = FALSE)
-        fit_tr <- tryCatch(
-          suppressWarnings(
-            survival::coxph(survival::Surv(time, event) ~ ., data = d_tr)
-          ),
-          error = function(e) NULL
-        )
-        if (is.null(fit_tr)) {
-          flags <- flag_fold(flags, "cv_fold_failed",
-                             sprintf("Cox model failed to fit on fold %d of repeat %d.",
-                                     f, r))
+        b <- stats::coef(fit_tr)
+        names(b) <- .strip_backticks(names(b))
+        if (length(b) == 0 || any(!is.finite(b))) {
+          fl <- list(c("cv_fold_failed",
+                       sprintf("Non-finite coefficients on fold %d of repeat %d.",
+                               f, r)))
         } else {
-          b <- stats::coef(fit_tr)
-          names(b) <- .strip_backticks(names(b))
-          if (length(b) == 0 || any(!is.finite(b))) {
-            flags <- flag_fold(flags, "cv_fold_failed",
-                               sprintf("Non-finite coefficients on fold %d of repeat %d.",
-                                       f, r))
+          gn <- names(b)
+          score_test <- as.vector(t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
+          if (isTRUE(stats::sd(score_test) == 0)) {
+            fl <- list(c("cv_fold_failed",
+                         sprintf("Constant risk score on fold %d of repeat %d.",
+                                 f, r)))
           } else {
-            gn <- names(b)
-            score_test <- as.vector(t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
-            if (isTRUE(stats::sd(score_test) == 0)) {
-              flags <- flag_fold(flags, "cv_fold_failed",
-                                 sprintf("Constant risk score on fold %d of repeat %d.",
-                                         f, r))
-            } else {
-              # Risk score: larger = higher hazard = shorter survival, so the
-              # concordance must use reverse = TRUE (survival::concordance's
-              # default means "larger x => longer survival"). Regression guard:
-              # test-statistical_parity.R ("survival::concordance reverse
-              # convention satisfies C + C_rev = 1") fails if this is reverted.
-              conc <- tryCatch(
-                suppressWarnings(
-                  survival::concordance(
-                    survival::Surv(time_vec[test], event_vec[test]) ~ score_test,
-                    reverse = TRUE
-                  )
-                ),
-                error = function(e) NULL
-              )
-              ci <- if (is.null(conc)) NA_real_ else
-                as.numeric(conc$concordance[1])
-              if (!is.finite(ci)) {
-                ci <- NA_real_
-                flags <- flag_fold(flags, "cv_fold_failed",
-                                   sprintf("Concordance undefined on fold %d of repeat %d.",
-                                           f, r))
-              }
+            # Risk score: larger = higher hazard = shorter survival, so the
+            # concordance must use reverse = TRUE (survival::concordance's
+            # default means "larger x => longer survival"). Regression guard:
+            # test-statistical_parity.R ("survival::concordance reverse
+            # convention satisfies C + C_rev = 1") fails if this is reverted.
+            conc <- tryCatch(
+              suppressWarnings(
+                survival::concordance(
+                  survival::Surv(time_vec[test], event_vec[test]) ~ score_test,
+                  reverse = TRUE
+                )
+              ),
+              error = function(e) NULL
+            )
+            ci <- if (is.null(conc)) NA_real_ else
+              as.numeric(conc$concordance[1])
+            if (!is.finite(ci)) {
+              ci <- NA_real_
+              fl <- list(c("cv_fold_failed",
+                           sprintf("Concordance undefined on fold %d of repeat %d.",
+                                   f, r)))
             }
           }
         }
       }
-      cv_rows[[length(cv_rows) + 1]] <- data.frame(
-        repeat_id = r, fold = f, c_index = ci
-      )
     }
+    list(cv_row = data.frame(repeat_id = r, fold = f, c_index = ci),
+         flags = fl)
   }
+
+  grid <- expand.grid(r = seq_len(repeats), f = seq_len(folds))
+  run_fold <- function(i) eval_fold(grid$r[i], grid$f[i])
+  fold_out <- if (is.null(BPPARAM)) {
+    lapply(seq_len(nrow(grid)), run_fold)
+  } else {
+    if (!requireNamespace("BiocParallel", quietly = TRUE)) {
+      stop("BiocParallel is not installed; set BPPARAM = NULL to run serially.",
+           call. = FALSE)
+    }
+    BiocParallel::bplapply(seq_len(nrow(grid)), run_fold, BPPARAM = BPPARAM)
+  }
+  cv_rows <- lapply(fold_out, function(elt) elt$cv_row)
   cv_results <- do.call(rbind, cv_rows)
   rownames(cv_results) <- NULL
+  for (elt in fold_out) {
+    for (flag in elt$flags) {
+      flags <- flag_fold(flags, flag[1], flag[2])
+    }
+  }
   ci_vals <- cv_results$c_index
   if (all(!is.finite(ci_vals))) {
     stop("Cross-validation could not produce a single concordance value; the model may be degenerate.",

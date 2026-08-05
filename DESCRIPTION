@@ -29,6 +29,7 @@ Imports:
     stats,
     graphics
 Suggests:
+    BiocParallel,
     BiocStyle,
     ggplot2,
     knitr,
@@ -38,5 +39,5 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 biocViews: Software, GeneExpression, RNASeq, DifferentialExpression,
     Survival, QualityControl, BatchEffect, Normalization
-URL: https://github.com/Ghrieb/rnaSentry
+URL: https://ghrieb.github.io/rnaSentry/, https://github.com/Ghrieb/rnaSentry
 BugReports: https://github.com/Ghrieb/rnaSentry/issues

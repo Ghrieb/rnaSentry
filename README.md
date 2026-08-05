@@ -40,6 +40,12 @@ se <- load_counts(counts, coldata)
 run <- run_rnaSentry(se, time_col = "time", event_col = "event",
                      design_vars = c("batch", "age"))
 
+# Optional: parallelize the repeated cross-validation folds.
+# run <- run_rnaSentry(se, time_col = "time", event_col = "event",
+#                      design_vars = c("batch", "age"),
+#                      BPPARAM = BiocParallel::SnowParam(2))
+
+
 # Validate the signature against an independent cohort.
 val <- validate_external(run$stages$build_signature, external_se,
                          cutpoint = run$stages$km_curve$cutpoint)
@@ -124,8 +130,11 @@ out-of-sample estimate.
 - **No correction step.** Confounders such as batch are flagged, and
   screening can be adjusted for design terms, but the pipeline never
   corrects or removes effects itself.
-- **CPU-only and single-threaded.** Screening runs are sequential; memory,
-  not parallelism, is the usual binding constraint on large cohorts.
+- **Serial by default; parallelism opt-in.** Screening runs are sequential
+  unless you pass a `BiocParallelParam` (e.g. `BiocParallel::SnowParam(2)`)
+  to `run_rnaSentry()`/`build_signature()` via `BPPARAM`. Parallel fold
+  evaluation is bit-identical to serial (same seeded folds), and memory is
+  usually the binding constraint on large cohorts regardless.
 
 ## Case studies
 

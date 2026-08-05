@@ -17,7 +17,8 @@ build_signature(
   seed = NULL,
   design_terms = character(0),
   adjust_for_design = TRUE,
-  min_events_per_parameter = 5
+  min_events_per_parameter = 5,
+  BPPARAM = NULL
 )
 }
 \arguments{
@@ -84,6 +85,18 @@ the 5-9 events-per-variable range that Vittinghoff and McCulloch
 it is a defensible middle choice, not a guarantee of estimability. Raise
 it to \code{10} for the stricter convention, or lower it to suppress the
 warning on small but well-behaved cohorts.}
+
+\item{BPPARAM}{Optional \code{BiocParallelParam} from the \pkg{BiocParallel}
+package (for example \code{BiocParallel::SnowParam(2)}). When \code{NULL}
+(the default) the repeated cross-validation is evaluated serially. When a
+non-\code{NULL} backend is supplied, the per-fold evaluations are
+distributed with \code{BiocParallel::bplapply()}; \pkg{BiocParallel} is
+only a suggested package and is loaded on demand. Parallelism is
+strictly opt-in and is bit-identical to the serial path: all randomness
+is confined to the fold assignment (seeded with \code{seed}), and the
+per-fold Cox fits and concordance scores use no random numbers, so the
+returned signature, cross-validation table, and flag ledger are
+unchanged regardless of backend.}
 }
 \value{
 An object of class \code{"rnaSentry_signature"} (a list) with

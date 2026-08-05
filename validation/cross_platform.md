@@ -13,12 +13,15 @@ blocked, and exactly how to finish it.
   resolves it).
 - `R CMD check --as-cran` on the fresh tarball → **0 ERROR, 0 WARNING,
   1 NOTE (HTML `tidy` missing, external tool)**. The former `qpdf` WARNING
-  is gone — `qpdf` was installed 2026-08-05. Log: `logs/16_as_cran.txt`.
-- Full `devtools::test()` → **143 blocks / 445 passed / 0 failed / 0 error**
+  is gone — `qpdf` was installed 2026-08-05. Logs: `logs/16_as_cran.txt`
+  (Ultimate Pre-Flight), re-confirmed at the BiocParallel round
+  `logs/17_as_cran.txt`.
+- Full `devtools::test()` → **147 blocks / 457 passed / 0 failed / 0 error**
   (32 expected warnings from the `events_per_parameter` guardrail on
   deliberately small fixtures; includes the `load_counts()` intake and
-  enforceable-lock tests added 2026-08-04; byte-identical re-run 2026-08-05
-  after the withr-scoped seeding refactor). Log: `logs/16_test.txt`.
+  enforceable-lock tests added 2026-08-04, the withr-scoped seeding refactor
+  of 2026-08-05, and the 4 serial↔parallel `BPPARAM` blocks added in the
+  same round). Logs: `logs/00.1_test.txt`, re-run `logs/17_test.txt`.
 
 ## Blocked (needs a Docker-capable machine or remote service)
 

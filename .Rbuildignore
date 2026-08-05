@@ -10,3 +10,6 @@
 ^validation$
 ^PROJECT_DESCRIPTION\.md$
 ^chk[0-9]+$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

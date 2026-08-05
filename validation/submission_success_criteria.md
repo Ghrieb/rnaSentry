@@ -18,7 +18,7 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | S3 | No winner's-curse inversion on null data | Simulation study: null-data CV concordance ≈ 0.5 (mean 0.576 full-pipeline on nulls, random-gene control 0.490 on simulated nulls), direction guarded by `reverse = TRUE` convention | PASS (Gate 4, 15/15 falsifiable targets incl. Sim 6) |
 | S4 | Real data discriminates beyond chance | GSE20685: held-out CV C = 0.783 vs random-gene control 0.582 (6.3 SD above control, logged CV sd 0.032); log-rank p = 3.8e-17; MKI67 HR > 1, ESR1 HR < 1 (literature directions); `design_audit` flags subtype (eta² = 0.76) | PASS (Gate 5; extended live test below) |
 | S5 | External validation is honest | `validate_external()` never recomputes the cutpoint from external data (test-pinned); discovery cutpoint applied unchanged; external C reported on an independent cohort | PASS (Gate 5 + live GEO pair, Phase 3) |
-| S6 | Results are reproducible | Fixed seed ⇒ identical `cv_results`/`coefficients` (test-pinned); the enforceable lock prevents silent gene-set re-selection after survival analysis; `run_rnaSentry()` refuses a second run until `lock_signature(lock = FALSE)` | PASS (Gate 1) |
+| S6 | Results are reproducible | Fixed seed ⇒ identical `cv_results`/`coefficients` (test-pinned); the enforceable lock prevents silent gene-set re-selection after survival analysis; `run_rnaSentry()` refuses a second run until `lock_signature(lock = FALSE)`; `BPPARAM` parallel fold evaluation is **bit-identical to serial** (test-pinned, 2026-08-05) | PASS (Gate 1) |
 | S7 | Degenerate inputs are rejected or flagged, never silently wrong | Adversarial pass: ~90 probes; REAL-BUG A/B/C + 4 soft-warns found and fixed, pinned by regression tests; NAs/Inf/zero-variance/single-sample/fold degeneracies covered | PASS (Gate 2, 2026-08-03) |
 | S8 | The audit trail is complete | Every automated decision carries `(check, severity, detail, stage)`; report renders the full flag ledger and the pipeline-assumptions section | PASS (Gate 1 `test-generate_report.R`) |
 | S9 | Power/transfer behaviour is quantified and falsifiable | Sim 6: external-transfer power monotone in external events; < 0.30 at ~35 events (small-cohort trap); >= 0.80 at ~300 events for a C≈0.65 signature | PASS (Gate 4, 15/15 targets) |
@@ -66,8 +66,8 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 | # | Rule | Current status |
 |---|---|---|
 | B1 | `R CMD build` produces a clean tarball | PASS — vignette compiles, `inst/doc` present |
-| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; log 16 (`16_as_cran.txt`, 2026-08-05 Ultimate Pre-Flight) is **0 ERROR / 0 WARNING / 1 NOTE** — the `qpdf` WARNING cleared after installing the qpdf CLI 12.3.2 and running with `R_QPDF` + `_R_CHECK_DOC_SIZES_=true`; the sole remaining NOTE is `tidy` (HTML validation), deliberately skipped per maintainer decision |
-| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); at `16_bioccheck.txt`/`16_bioccheck_tarball.txt` (2026-08-05 Ultimate Pre-Flight) **0 WARNING / 8 advisory NOTES** — the `set.seed` WARNING (→ `withr::with_seed()` refactor), the R-version NOTE (→ `R >= 4.5.0`), the `Avoid 1:` NOTE (→ `seq_len()`), and the two `\dontrun`/runnable-examples NOTES (→ self-contained `\donttest`) are all resolved; the remaining 8 are justified in `logs/notes_documented.md`; GitClone `16_bioccheck_gitclone.txt` is **0 ERROR / 1 WARNING (CITATION `doi`, kept by decision) / 0 NOTES** |
+| B2 | `R CMD check --as-cran` ≤ 1 WARNING / 1 NOTE, both environmental (`qpdf`, `tidy`) | PASS — 0 ERROR throughout logs 05–15; log 16 (`16_as_cran.txt`, 2026-08-05 Ultimate Pre-Flight) is **0 ERROR / 0 WARNING / 1 NOTE** — the `qpdf` WARNING cleared after installing the qpdf CLI 12.3.2 and running with `R_QPDF` + `_R_CHECK_DOC_SIZES_=true`; the sole remaining NOTE is `tidy` (HTML validation), deliberately skipped per maintainer decision; re-confirmed unchanged at `17_as_cran.txt` (2026-08-05 BiocParallel round) |
+| B3 | BiocCheck: no package errors; only documented items | 1 environmental ERROR (support-site email 404 → fixed by registering `ghriebabdelkarimhani@gmail.com` on https://support.bioconductor.org); at `16_bioccheck.txt`/`16_bioccheck_tarball.txt` (2026-08-05 Ultimate Pre-Flight) **0 WARNING / 8 advisory NOTES** — the `set.seed` WARNING (→ `withr::with_seed()` refactor), the R-version NOTE (→ `R >= 4.5.0`), the `Avoid 1:` NOTE (→ `seq_len()`), and the two `\dontrun`/runnable-examples NOTES (→ self-contained `\donttest`) are all resolved; the remaining 8 are justified in `logs/notes_documented.md`; re-confirmed unchanged at the BiocParallel round (`17_bioccheck.txt`/`17_bioccheck_tarball.txt`); GitClone `16_bioccheck_gitclone.txt` is **0 ERROR / 1 WARNING (CITATION `doi`, kept by decision) / 0 NOTES**, re-confirmed at `17_bioccheck_gitclone.txt` |
 | B4 | Cross-platform (devel: Linux + macOS + Windows, R-devel) | Gate 6 — **SKIPPED by maintainer decision 2026-08-05** (Phase 4 / rhub was cancelled; no Docker on this machine); local Windows/R 4.5.2 is green; see `cross_platform.md` |
 | B5 | Vignette builds and is informative | PASS — `inst/doc/rnaSentry.html` builds, plus three offline case-study vignettes (`case-study-brca`, `case-study-confounder-audit`, `case-study-small-cohort`); covers intake, QC, sex check, pipeline, external validation, lock, limitations, case studies |
 | B6 | NEWS is complete and truthful | PASS — covers all features incl. `load_counts()` and the enforceable lock |
@@ -80,10 +80,10 @@ updated as gates are re-run. Maintained alongside `maintainer_testing_guide.md`
 
 | Gate | What it runs | Expected | Artifact |
 |---|---|---|---|
-| Gate 1 | Full test suite | 143 blocks / 445 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt`; re-confirmed 2026-08-05 post-`withr` refactor |
-| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; hits inside (correction narrative), 157 files scanned | `test_audit.md`, `grep_stale_numbers.ps1`; sweep re-run 2026-08-05: 67 files / 20 hits, all inside `validation/`, exit 0 |
-| Gate 3 | Statistical parity | items 1–7 closed | `test-statistical_parity.R` |
-| Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt`, `logs/16_simulation.txt` (re-run 2026-08-05) |
+| Gate 1 | Full test suite | 147 blocks / 457 expectations / 0 fail / 0 error (32 expected guardrail warnings) | `logs/00.1_test.txt`; re-confirmed 2026-08-05 at `logs/17_test.txt` (post-`withr` refactor + BiocParallel opt-in round) |
+| Gate 2 | Adversarial review + stale-number sweep | 0 stale numbers outside `validation/`; hits inside (correction narrative) | `test_audit.md`, `grep_stale_numbers.ps1`; sweep re-run 2026-08-05 (BiocParallel round): **68 files / 20 hits**, all inside `validation/`, exit 0 |
+| Gate 3 | Statistical parity | items 1–7 closed + serial↔parallel `BPPARAM` equivalence (2026-08-05) | `test-statistical_parity.R`, `test-build_signature.R` |
+| Gate 4 | Simulation study | 15/15 falsifiable targets PASS (Sims 1-5 + Sim 6 power) | `simulation_study.md`, `logs/03_simulation.txt`, `logs/13_simulation.txt`, `logs/16_simulation.txt`, `logs/17_simulation.txt` (re-run 2026-08-05) |
 | Gate 5 | Real-data face validity | discrimination beyond chance, correct biology, honest external check | `face_validity_review.md`, `logs/04_face_validity.txt` |
 | Gate 5b | Live GEO pair (Phase 3) | see Section A acceptance gate | `repro_live_geo.R`, `logs/11_live_geo.txt` |
 | Gate 5c | Case-study vignettes + bundled data (Phase 3) | offline build; numbers match documented values | `repro_gse20685.R`, `inst/extdata/gse20685_case_study.rds`, `vignettes/case-study-*.Rmd` |
@@ -100,3 +100,27 @@ rhub cancelled), so submission readiness depends on either a later
 non-Windows check (rhub/win-builder/Docker) or an explicit decision to
 accept that risk. At that point the GitHub push and the Contributions issue
 (`Bioconductor/Contributions#...`, title `rnaSentry`) can be opened.
+
+## Step-5 closure (local verification fully closed, 2026-08-05)
+
+The Phase-1 BiocCheck-prep + BiocParallel go-live round re-ran **every** gate
+on this machine and committed fresh logs (`17_*`), so the "verify before
+Step 5 is closed" criterion is met in full:
+
+- `R CMD check --as-cran` on a fresh tarball: 0 ERROR / 0 WARNING / 1 NOTE
+  (`tidy` only) — `logs/17_as_cran.txt`.
+- Full `devtools::test()`: 147 files / 457 expectations / 0 fail / 0 error /
+  32 expected guardrail warnings / 0 skipped — `logs/17_test.txt`
+  (serial↔parallel bit-identical parity pinned in `test-build_signature.R`).
+- BiocCheck source + tarball: 1 ERROR (support-site email 404, environmental)
+  / 0 WARNING / 8 advisory NOTES — `logs/17_bioccheck.txt`,
+  `logs/17_bioccheck_tarball.txt`; GitClone 0 ERROR / 1 WARNING (CITATION
+  `doi`) / 0 NOTES — `logs/17_bioccheck_gitclone.txt`.
+- Simulation study: 15/15 falsifiable targets PASS — `logs/17_simulation.txt`.
+- Stale-number sweep: 68 files scanned, 20 hits, all inside `validation/`,
+  exit 0.
+
+The remaining items before submission are **user actions only**, none of them
+code gates: register the maintainer email on the Bioconductor Support Site
+(clears the last BiocCheck ERROR), enable GitHub Pages / verify the pushed
+site, and open the Contributions issue.
