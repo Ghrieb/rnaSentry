@@ -57,7 +57,7 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 |---|---|---|
 | 0 | Hygiene + check | `R CMD build`, `R CMD check --as-cran` on the tarball (expect 0 ERROR / 0 WARNING / 1 NOTE - the residual NOTE is the HTML `tidy` external tool; the `qpdf` WARNING cleared 2026-08-05), `BiocCheck` |
 | 1 | Full test suite | `Rscript <temp>/run_tests_parity.R` (devtools::test) — 147 blocks / 457 expectations / 0 fail / 0 error / 32 expected guardrail warnings |
-| 2 | Adversarial review + stale-number sweep | `powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1` (0 hits outside `validation/`) |
+| 2 | Adversarial review + stale-number sweep | `powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1` (0 hits outside the allow-list: `validation/*`, `vignettes/case-study-brca.Rmd`, `vignettes/case-study-impact.Rmd`) |
 | 3 | Statistical parity | every statistic re-implemented independently and asserted equal (log-rank, Cramér's V, Cox HR/CI/p, Schoenfeld, AIC/loglik, fold CV C, `C + C_rev = 1`) |
 | 4 | Simulation study | `Rscript validation/simulate_study.R` — **15 falsifiable targets / 15 PASS** (Sims 1-5 + Sim 6 power analysis) |
 | 5 | Real-data face validity | `Rscript validation/repro_gse20685.R` (bundled subset) and the live GEO pair (Gate 5b) |
