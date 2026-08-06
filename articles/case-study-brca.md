@@ -4,9 +4,9 @@
 
 This case study is an illustrative walkthrough of `rnaSentry` on a
 public dataset, provided to show how the pipeline behaves on real data.
-It is *not* peer-reviewed and the signature reported here is provisional
-until a preprint is published. Treat every number below as a
-demonstration, not a clinical claim.
+It is *not* peer-reviewed and the signature reported here is
+provisional. Treat every number below as a demonstration, not a clinical
+claim.
 
 The narrative follows the *three-tier* structure used across the case
 studies: a **naive analysis** first, then **rnaSentry standing guard**,
@@ -18,8 +18,8 @@ without the guardrails, and what the guarded analysis actually recovers.
 We use a bundled subset of GSE20685 (Li *et al.*, 2010), an Affymetrix
 GPL570 (U133 Plus 2.0) microarray series of 327 primary breast tumors
 with overall-survival follow-up. The series matrix was downloaded from
-GEO and processed in `validation/repro_gse20685.R` (dev-only script, not
-shipped):
+GEO and processed by the repository’s validation script
+`validation/repro_gse20685.R`:
 
 - probe-level log2 intensities from the MAS5-summarized series matrix,
 - probe-to-gene collapse by largest mean expression,
@@ -161,14 +161,13 @@ and concludes “below chance, poor generalization, the signature is a
 failure.”
 
 This is not hypothetical. The first real-data face-validity run of this
-very cohort reported CV concordance **0.217** and the review initially
-rationalized it as extreme selection-induced winner’s curse; the correct
+very cohort reported CV concordance **0.217** and a naive reading would
+rationalize it as extreme selection-induced winner’s curse; the correct
 value is `1 - 0.217 = 0.783`, a strong held-out result in the
 biologically expected direction. The full diagnosis, including the
-`C + C_rev = 1` invariant you can see holding above, is recorded in
-`validation/face_validity_review.md`. The parity test suite now asserts
-that invariant on every fold so the convention cannot silently flip
-again.
+`C + C_rev = 1` invariant you can see holding above, is recorded in the
+repository’s validation dossier. The parity test suite now asserts that
+invariant on every fold so the convention cannot silently flip again.
 
 Even read in the correct direction, a naive analyst stops at the cross-
 validated mean and treats it as an out-of-sample estimate. As the LUAD

@@ -15,15 +15,13 @@
   [`run_rnaSentry()`](https://ghrieb.github.io/rnaSentry/reference/run_rnaSentry.md)).
   README gains the same block under “Getting started with your own
   data”.
-- The pkgdown site (<https://ghrieb.github.io/rnaSentry/>) is rebuilt
-  and deployed automatically on every push to `main` by
-  `.github/workflows/pkgdown.yaml` (Bioc release in CI); `docs/` stays
-  local-only and `.github/` is excluded from the source tarball. The
-  case-study impact article is live on the site.
+- The pkgdown site (<https://ghrieb.github.io/rnaSentry/>) is deployed
+  automatically on every push to `main`; the case-study vignettes are
+  live on the site.
 - New bundled case-study data: `inst/extdata/gse20685_case_study.rds`, a
   3000-gene x 327-sample subset of GSE20685 (Li et al., 2010; Affymetrix
-  GPL570) with overall-survival metadata, built by the dev-only repro
-  script `validation/repro_gse20685.R`.
+  GPL570) with overall-survival metadata, built by the repository’s
+  validation script `validation/repro_gse20685.R`.
 - Three new offline-safe vignettes: `case-study-brca` (full pipeline on
   the bundled breast-cancer subset), `case-study-confounder-audit`
   (planted batch/region redundancy recovered as a minimal design), and
@@ -43,15 +41,14 @@
   positioning/prior-art section (asuri, signifinder, SurvMarker,
   mRNAsi), and a Contributing pointer. Added `CONTRIBUTING.md` and
   `NEWS.md`.
-- README gains a prominent `## Case study roadmap` section: three
-  planned case studies (A clinical-covariate trap on the bundled
-  GSE20685 subset with zero new downloads; C batch catastrophe on the
-  GSE31210 + GSE30219 identical-GPL570 merge; B cross-histology LUAD -\>
-  LUSC transfer on GSE30219), sequenced A -\> C -\> B. They are designed
-  and data-sourced now but built only after the Bioconductor submission,
-  so v0.99.0 stays locked; no numbers ship until the experiments run.
+- README gains an “Upcoming case studies” section listing three planned
+  case studies: a clinical-covariate trap on the bundled GSE20685
+  subset, a batch catastrophe on the GSE31210 + GSE30219
+  identical-GPL570 merge, and a cross-histology LUAD -\> LUSC transfer
+  on GSE30219. They will ship as new vignettes once the analyses are
+  finalized.
 
-#### Engine reproducibility and check hygiene (2026-08-05)
+#### Engine reproducibility
 
 - Reproducibility is now scoped with
   [`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
@@ -70,7 +67,7 @@
   [`run_rnaSentry()`](https://ghrieb.github.io/rnaSentry/reference/run_rnaSentry.md)
   examples are now self-contained and runnable (`\donttest`).
 
-#### Opt-in parallel cross-validation (2026-08-05)
+#### Opt-in parallel cross-validation
 
 - [`build_signature()`](https://ghrieb.github.io/rnaSentry/reference/build_signature.md)
   and
@@ -91,14 +88,13 @@
   [`requireNamespace()`](https://rdrr.io/r/base/ns-load.html) guard, so
   the package works unchanged on installations without BiocParallel.
 
-#### Power analysis gate
+#### Power analysis
 
-- `validation/simulate_study.R` gains **Sim 6**, an external-transfer
-  power analysis: two signal tiers calibrated to effective concordance
-  0.608 / 0.654 show transfer power monotone in external event count, \<
-  0.30 at ~35 events (the small-cohort trap), and \>= 0.80 at ~300
-  events for the moderate tier. The simulation suite is now 15
-  falsifiable targets, all passing.
+- The simulation study gains a power analysis of external-cohort
+  transfer: two signal tiers calibrated to effective concordance 0.608 /
+  0.654 show transfer power monotone in external event count, \< 0.30 at
+  ~35 events (the small-cohort trap), and \>= 0.80 at ~300 events for
+  the moderate tier. All 15 simulation targets pass.
 
 #### Earlier in the 0.99.0 cycle
 
@@ -116,11 +112,10 @@
   silent gene-set re-selection after survival analysis.
 - External validation never recomputes the cutpoint from external data;
   the discovery cutpoint is applied unchanged.
-- Validation dossier: statistical-parity suite (147 blocks / 457
-  expectations), adversarial pass with regression tests, simulation
-  study, real-data face validity, and a live GEO cross-cohort gate
-  (GSE31210 -\> GSE50081), including the documented CV-optimism
-  (selection-leakage) finding.
+- Validation: a statistical-parity suite (147 blocks / 457
+  expectations), regression tests, a simulation study, real-data face
+  validity, and a live GEO cross-cohort run (GSE31210 -\> GSE50081),
+  including the documented CV-optimism (selection-leakage) finding.
 - Sign-convention fix: concordance now consistently uses
   `reverse = TRUE` (higher score = higher hazard), pinned by parity
   tests and the `C + C_rev = 1` invariant.

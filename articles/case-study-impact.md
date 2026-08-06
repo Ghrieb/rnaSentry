@@ -125,20 +125,19 @@ c(c_default = c_default, c_reverse = c_reverse, sum = c_default + c_reverse)
 #> 0.4876938 0.5123062 1.0000000
 ```
 
-The first real-data run of this package reported 0.217 and the review
-briefly rationalized it as winner’s curse; `1 - 0.217 = 0.783` was the
-correct, biologically expected value all along (full diagnosis in
-`validation/face_validity_review.md`). The same class of error has
-appeared in published survival literature; rnaSentry pins the convention
-in code, in parity tests, and in the rendered report.
+A naive reading of the default concordance convention reports 0.217 and
+would rationalize it as winner’s curse; `1 - 0.217 = 0.783` is the
+correct, biologically expected value all along. The same class of error
+has appeared in published survival literature; rnaSentry pins the
+convention in code, in parity tests, and in the rendered report.
 
 ## The LUAD honest negative (GSE31210 -\> GSE50081)
 
 The fourth failure mode is demonstrated on independent GEO cohorts in
-the README and main vignette; the numbers are reproduced by the dev-only
-script `validation/repro_live_geo.R`. Because the data are downloaded
-live, the walkthrough is narrative here rather than a build-time
-vignette:
+the README and main vignette; the numbers are reproduced by the
+repository’s validation script `validation/repro_live_geo.R`. Because
+the data are downloaded live, the walkthrough is narrative here rather
+than a build-time vignette:
 
 - **Discovery** GSE31210 (LUAD, 35 deaths), **external validation**
   GSE50081 (n = 128, 52 deaths).
@@ -149,24 +148,20 @@ vignette:
 - External validation: **C = 0.540, log-rank p = 0.266** – transfer was
   *not* demonstrated, and the tool reports an honest negative rather
   than a “validated signature.”
-- The power analysis (`validation/simulate_study.R`, Sim 6) quantifies
-  why: transfer power \< 0.30 at ~35 discovery events, and \>= 0.80 only
-  near ~300 events for a C ~ 0.65 signature.
+- A power analysis (see the validation dossier) quantifies why: transfer
+  power \< 0.30 at ~35 discovery events, and \>= 0.80 only near ~300
+  events for a C ~ 0.65 signature.
 
 ## Reading this package’s claims
 
-- **Every number above is pinned.** The case-study vignettes build
-  offline and their outputs match the values recorded in the validation
-  dossier (`validation/paper_qa_summary.md`); the stale-number sweep
-  (`validation/grep_stale_numbers.ps1`) fails the build if a superseded
-  number leaks back into shipped docs outside the allowed correction
-  narrative.
-- **The guardrails are falsifiable.** Each flag in the report’s audit
-  trail is a `(check, severity, detail, stage)` record backed by a
-  statistic, and each has a regression test asserting the condition that
-  fires it.
+- **Every number above is reproducible.** The case-study vignettes build
+  offline from the bundled data, and the live-GEO numbers are reproduced
+  by the repository’s validation scripts.
+- **The guardrails are testable.** Each flag in the report’s audit trail
+  is a `(check, severity, detail, stage)` record backed by a statistic,
+  and each has a regression test asserting the condition that fires it.
 - **This is a demonstration, not a clinical claim.** All signatures are
-  provisional until a preprint is published.
+  provisional.
 
 ## Session info
 
