@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/Ghrieb/rnaSentry/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/Ghrieb/rnaSentry/blob/ci/inst/CITATION)
 
 Abdelkarim Hani Ghrieb (2026). rnaSentry: Guarded and Auditable
 Discovery of Prognostic RNA-Seq Signatures. R package version 0.99.0.

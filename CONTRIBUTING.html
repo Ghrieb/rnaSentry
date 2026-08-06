@@ -28,7 +28,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="logo.png" class="logo" alt=""><h1>Contributing to rnaSentry</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/main/CONTRIBUTING.md" class="external-link"><code>CONTRIBUTING.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/ci/CONTRIBUTING.md" class="external-link"><code>CONTRIBUTING.md</code></a></small>
     </div>
 
 <div id="contributing-to-rnasentry" class="section level1">
@@ -116,7 +116,8 @@
 </ol></div>
 <div class="section level2">
 <h2 id="site-deployment">Site deployment<a class="anchor" aria-label="anchor" href="#site-deployment"></a></h2>
-<p>The pkgdown site (<a href="https://ghrieb.github.io/rnaSentry/" class="uri">https://ghrieb.github.io/rnaSentry/</a>) is rebuilt and deployed <strong>automatically</strong> by <code>.github/workflows/pkgdown.yaml</code> on every push to <code>main</code>: it installs the package with its Bioconductor dependencies, runs <code><a href="https://pkgdown.r-lib.org/reference/build_site_github_pages.html" class="external-link">pkgdown::build_site_github_pages()</a></code>, and pushes the result to the <code>gh-pages</code> branch. You do <strong>not</strong> need to touch <code>docs/</code> or <code>gh-pages</code> manually — a normal commit to <code>main</code> syncs the site. <code>docs/</code> stays gitignored (local preview only); the workflow is the single source of truth for what is published.</p>
+<p>The pkgdown site (<a href="https://ghrieb.github.io/rnaSentry/" class="uri">https://ghrieb.github.io/rnaSentry/</a>) is rebuilt and deployed by <code>.github/workflows/pkgdown.yaml</code>, which lives on the <strong><code>ci</code></strong> branch and triggers on every push to <code>ci</code> or on manual <code>workflow_dispatch</code>: it installs the package with its Bioconductor dependencies, runs <code><a href="https://pkgdown.r-lib.org/reference/build_site_github_pages.html" class="external-link">pkgdown::build_site_github_pages()</a></code>, and pushes the result to the <code>gh-pages</code> branch. <code>ci</code> stays in sync with <code>main</code> (merge <code>main</code> into <code>ci</code> whenever the package changes). You do <strong>not</strong> need to touch <code>docs/</code> or <code>gh-pages</code> manually. <code>docs/</code> stays gitignored (local preview only); the workflow is the single source of truth for what is published.</p>
+<p>The default branch (<code>main</code>) deliberately holds only package code (no <code>.github/</code>), per the Bioconductor contribution requirements; all repository CI lives on <code>ci</code>.</p>
 </div>
 </div>
 

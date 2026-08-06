@@ -100,11 +100,17 @@ Full instructions and expected values are in
 ## Site deployment
 
 The pkgdown site (<https://ghrieb.github.io/rnaSentry/>) is rebuilt and
-deployed **automatically** by `.github/workflows/pkgdown.yaml` on every
-push to `main`: it installs the package with its Bioconductor
+deployed by `.github/workflows/pkgdown.yaml`, which lives on the
+**`ci`** branch and triggers on every push to `ci` or on manual
+`workflow_dispatch`: it installs the package with its Bioconductor
 dependencies, runs
 [`pkgdown::build_site_github_pages()`](https://pkgdown.r-lib.org/reference/build_site_github_pages.html),
-and pushes the result to the `gh-pages` branch. You do **not** need to
-touch `docs/` or `gh-pages` manually — a normal commit to `main` syncs
-the site. `docs/` stays gitignored (local preview only); the workflow is
-the single source of truth for what is published.
+and pushes the result to the `gh-pages` branch. `ci` stays in sync with
+`main` (merge `main` into `ci` whenever the package changes). You do
+**not** need to touch `docs/` or `gh-pages` manually. `docs/` stays
+gitignored (local preview only); the workflow is the single source of
+truth for what is published.
+
+The default branch (`main`) deliberately holds only package code (no
+`.github/`), per the Bioconductor contribution requirements; all
+repository CI lives on `ci`.
