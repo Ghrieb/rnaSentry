@@ -149,6 +149,19 @@ counterfactual quotes in `case-study-brca.Rmd` and `case-study-impact.Rmd`,
 plus 1 new quote in the four-vignette section of `private_dossier/paper_qa_summary.md`),
 build-artifact directories (`*.Rcheck/`, `chk*/`) are now excluded from the
 scan, and the README and the other two case-study vignettes stay clean.
+After the case-study-roadmap round (2026-08-05) it scans **70 files
+(29 hits), exit 0** (one new README hit line, same narrative). After the
+round-23 public-surface cleanup (2026-08-06) it scans **64 files / 22 hits,
+exit 0** — the 6 `.md` files moved into `private_dossier/` (notably
+`paper_qa_summary.md`, which carried 7 of the hits) left the scan scope with
+the files, so no allow-list change was needed. Round 24 (docs-verification,
+2026-08-06) is unchanged: **64 files / 22 hits, exit 0**.
+> [History anomaly, flagged 2026-08-06: the "157 files (20 hits)" count
+> recorded above for the 2026-08-04 Phase-3 round is inconsistent with the
+> surrounding progression (60 -> 67 -> 68 -> ...) and with the actual run set
+> at that time. The entry is left as written — no history rewrite per
+> maintainer decision — but treat "157 files" as a clerical error; the
+> corresponding hit narrative is the same 20-hit one.]
 
 ## Gate 3 — statistical parity
 

@@ -33,7 +33,7 @@ guardrails, and what the guarded analysis actually recovers.
 We use a bundled subset of GSE20685 (Li *et al.*, 2010), an Affymetrix
 GPL570 (U133 Plus 2.0) microarray series of 327 primary breast tumors with
 overall-survival follow-up. The series matrix was downloaded from GEO and
-processed by the repository's validation script `validation/repro_gse20685.R`:
+processed as follows:
 
 - probe-level log2 intensities from the MAS5-summarized series matrix,
 - probe-to-gene collapse by largest mean expression,
@@ -185,7 +185,7 @@ any differential-expression or signature work.
 | Events per parameter | not reported | 4.2 < 5, warned in the ledger |
 | Design | ad-hoc | `subtype` flagged and adjusted for |
 
-**What a guarded manuscript can claim:** on the full-cohort face-validity run
+**What a guarded analysis can claim:** on the full-cohort face-validity run
 of this dataset rnaSentry reports a directionally correct held-out concordance
 of 0.783 against a 0.582 random-gene control (and a 0.490 simulated null) --
 genuine survival signal, not a 0.22 collapse -- while the naive pipeline

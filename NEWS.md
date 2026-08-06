@@ -13,8 +13,7 @@
   on the site.
 - New bundled case-study data: `inst/extdata/gse20685_case_study.rds`, a
   3000-gene x 327-sample subset of GSE20685 (Li et al., 2010; Affymetrix
-  GPL570) with overall-survival metadata, built by the repository's validation
-  script `validation/repro_gse20685.R`.
+  GPL570) with overall-survival metadata, built from public GSE20685 data.
 - Three new offline-safe vignettes: `case-study-brca` (full pipeline on the
   bundled breast-cancer subset), `case-study-confounder-audit` (planted
   batch/region redundancy recovered as a minimal design), and
