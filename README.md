@@ -11,11 +11,10 @@ transparent, reproducible, and reviewable end to end.
 
 ## Status
 
-This package and repository are the working artifacts of an in-progress
-manuscript and Bioconductor submission. Results are **illustrative and
-provisional** — not peer-reviewed — and may change before a preprint is
-published. Treat all case-study numbers as demonstrations, not clinical
-claims.
+rnaSentry 0.99.0 is a development release under active development. The
+case-study numbers in this README and the package vignettes are illustrative
+walkthroughs of the pipeline on public datasets. They are **not peer-reviewed**
+and should be treated as demonstrations, not clinical claims.
 
 ## Installation
 
@@ -222,8 +221,8 @@ audit flags `subtype` (eta-squared = 0.78) and recommends adjusting for it.
 The narrative contrasts this with the naive default-convention concordance
 read (C ~ 0.2, i.e. "below chance"), which the `reverse = TRUE` convention
 and the `C + C_rev = 1` parity test prevent -- the exact mechanism behind the
-historical concordance-inversion bug documented in
-`validation/face_validity_review.md`. The signature is provisional:
+historical concordance-inversion bug this convention was designed against.
+The signature is provisional:
 at 83 events for 20 genes the `events_per_parameter` guardrail fires
 (4.2 < 5), so this demonstrates the pipeline, not a validated biomarker.
 There is no independent breast-cohort validation here; external validation is
@@ -257,32 +256,24 @@ negative rather than a tool failure. The companion finding is the
 **screening-internal CV optimism**: on this ~21k-gene panel even
 survival-permuted data yields a null CV C ~ 0.8 (not 0.5), so CV concordance
 must be read relative to a matched null and only `validate_external()` is
-fully out-of-sample (see "Reading the CV concordance"). The power analysis
-(`validation/simulate_study.R`, Sim 6) quantifies why a 35-event external
-cohort is structurally underpowered for weak real signatures: transfer power
+fully out-of-sample (see "Reading the CV concordance"). A power analysis
+(see the validation dossier) quantifies why a 35-event external cohort is
+structurally underpowered for weak real signatures: transfer power
 < 0.30 at ~35 events, and >= 0.80 only near ~300 events for a C ~ 0.65
 signature.
 
-## Case study roadmap
+## Upcoming case studies
 
-The three next failure modes on the roster are **planned** — designed and
-data-sourced now, built into vignettes after the Bioconductor submission so
-`v0.99.0` stays locked. No numbers ship until the experiments run; the
-table below shows exactly what each one will demonstrate.
+The following case studies are in preparation and will ship as new vignettes.
+Each demonstrates a failure mode that rnaSentry's guardrails detect
+automatically at audit time. Results will be added once the analyses are
+finalized.
 
-| ID | Planned case study | Data (public GEO) | What it demonstrates |
-|---|---|---|---|
-| **A** | Clinical-covariate trap (BRCA) | bundled `gse20685_case_study.rds` (GSE20685, 327 tumors) | a naive 10-gene signature looks significant univariately, then loses significance after `cox_model` adjustment for `age` + `subtype`; `design_audit` flags the covariates pre-modelling — **zero new downloads** |
-| **C** | Batch catastrophe (identical-platform merge) | **GSE31210** (n = 246, GPL570) + **GSE30219** (n = 293, GPL570) | same platform, different studies → a batch-only signal; ~50 "prognostic" genes track study/batch; `design_audit` `batch_associated_pc` + Cramér's V expose it before modelling |
-| **B** | Cross-histology false transfer (LUAD → LUSC) | GSE30219 (single cohort, both histologies + survival) | discovery on LUAD, transfer across the histology boundary blocked as an honest negative |
-
-Sequencing **A → C → B**: A is the fastest path to a manuscript-ready demo
-(zero downloads); C is the strongest demonstration of `design_audit` catching
-a batch effect (subtle: same platform, batch only); B runs last because it is
-closest to the existing LUAD honest-negative case study. The framing matches
-the shipped roster: each failure mode is already documented in the
-clinical/meta-analysis literature, and rnaSentry's guardrails catch it
-**automatically** at audit time — these case studies claim no discoveries.
+| Planned case study | Data (public GEO) | What it will demonstrate |
+|---|---|---|
+| Clinical-covariate trap (BRCA) | bundled `gse20685_case_study.rds` (GSE20685, 327 tumors) | a naive 10-gene signature looks significant univariately but loses significance after adjusting for `age` + `subtype`; `design_audit()` flags the covariates before modeling |
+| Batch catastrophe (identical-platform merge) | GSE31210 (n = 246, GPL570) + GSE30219 (n = 293, GPL570) | merging two same-platform studies creates a batch-only signal; ~50 "prognostic" genes track study/batch; `design_audit()` exposes the association before modeling |
+| Cross-histology false transfer (LUAD → LUSC) | GSE30219 (single cohort, both histologies + survival) | a signature discovered on LUAD fails to transfer across the histology boundary, reported as an honest negative |
 
 ## Positioning and prior art
 
@@ -308,7 +299,7 @@ Two prior-art anchors for the single-sample scoring approach itself:
 **SurvMarker** (Gammune & Gu, 2025, DOI 10.64898/2025.12.31.697184) uses
 PCA-based weighted scoring, and the **mRNAsi** stemness index (Malta *et al.*,
 *Cell* 2018;173:338-354.e15) uses OCLR-based scoring. Full profiles and a
-comparison table live in `validation/related_tools.md`.
+comparison table are in the validation dossier.
 
 ## Contributing
 
@@ -325,9 +316,9 @@ the developer workflow, and the gate suite that every change must pass.
   `vignette("case-study-confounder-audit")`, and
   `vignette("case-study-small-cohort")` are the bundled case studies.
 - Function reference: `help(package = "rnaSentry")`
-- Validation dossier (sign-convention fix, parity tests, audit table,
-  simulation incl. the power analysis, face validity, maintainer testing
-  guide): see the `validation/` directory of the source package.
+- Validation dossier (statistical-parity tests, simulation study, power
+  analysis, real-data reproduction): see the `validation/` directory of the
+  GitHub repository.
 
 ## Reporting issues
 

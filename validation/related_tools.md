@@ -1,15 +1,14 @@
 # rnaSentry — related tools and comparison notes
 
-Living notes for the paper's "related work" section. Each tool gets a
-short profile; the table summarises the comparison. New tools found during
-the project should be added as a row here (with date and source) so the
-paper reflects the full landscape.
+Comparison notes for the related-work section of the documentation. Each tool
+gets a short profile; the table summarises the comparison. New tools found
+should be added as a row here (with date and source).
 
 Reviewed 2026-08-04.
 
 ## Comparison table
 
-| | **rnaSentry** (0.99.0, submitting) | **asuri** (Bioc 3.23, v1.0.0) | **signifinder** (Bioc 3.16, v1.6.0) | **SurvMarker** (2025) | **mRNAsi** (2018) |
+| | **rnaSentry** (0.99.0) | **asuri** (Bioc 3.23, v1.0.0) | **signifinder** (Bioc 3.16, v1.6.0) | **SurvMarker** (2025) | **mRNAsi** (2018) |
 |---|---|---|---|---|---|
 | Purpose | Discover a new prognostic signature from the user's cohort | Discover survival marker genes + risk score from the user's cohort | Apply 60+ published cancer signatures as single-sample scores | Single-sample scoring of survival markers (PCA-weighted) | Pan-cancer mRNA stemness index (OCLR) |
 | Selection method | Univariate Cox screen + joint multivariate Cox fit; repeated stratified CV | Subsampling glmnet (Lasso) + univariate Cox | GSVA-based scoring of literature signatures | PCA-based weighted scoring | One-class logistic regression trained on a stem-cell reference |
@@ -96,7 +95,7 @@ Reviewed 2026-08-04.
   the scoring idea predates the survival-marker tooling.
 - Cite: Malta T.M. et al., *Cell* 2018;173(2):338-354.e15.
 
-## Positioning narrative for the paper
+## Positioning narrative
 
 - Distinct niche claimed: **signature discovery with an enforced audit trail
   and honest failure modes**. Neither asuri nor signifinder treats

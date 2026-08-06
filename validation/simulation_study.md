@@ -2,8 +2,7 @@
 
 Runnable: `Rscript validation/simulate_study.R` (loads the package from source,
 prints one `[PASS]`/`[FAIL]` line per falsifiable target, exits non-zero if any
-target fails). Logged at `validation/logs/03_simulation.txt` (Sims 1-5) and
-`validation/logs/13_simulation.txt` (full suite with Sim 6).
+target fails). Run records are kept in the maintainer's private dossier.
 
 Status on final code:
 
@@ -169,7 +168,7 @@ power moderate (C~0.65):    0.275 0.425 0.500 0.658 0.775 0.842
 
 ## How to read the results
 
-The 15 targets exercise six behaviors that must hold for submission:
+The 15 targets exercise six behaviors that must always hold:
 swap detection (`sex_check`), redundancy flagging (`design_audit`), honest null
 behavior + calibrated CV (`build_signature`), PH-violation detection
 (`cox_model`), unlocked-signature validation (`validate_external`), and

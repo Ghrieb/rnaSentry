@@ -61,7 +61,7 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 | 3 | Statistical parity | every statistic re-implemented independently and asserted equal (log-rank, Cramér's V, Cox HR/CI/p, Schoenfeld, AIC/loglik, fold CV C, `C + C_rev = 1`) |
 | 4 | Simulation study | `Rscript validation/simulate_study.R` — **15 falsifiable targets / 15 PASS** (Sims 1-5 + Sim 6 power analysis) |
 | 5 | Real-data face validity | `Rscript validation/repro_gse20685.R` (bundled subset) and the live GEO pair (Gate 5b) |
-| 5c | Case-study vignettes | `vignettes/case-study-*.Rmd` must build offline with numbers matching `validation/paper_qa_summary.md` |
+| 5c | Case-study vignettes | `vignettes/case-study-*.Rmd` must build offline with numbers matching the validation dossier's recorded values |
 
 ### Rules that make the gates meaningful
 

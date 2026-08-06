@@ -1,8 +1,19 @@
 # rnaSentry — maintainer testing guide
 
 How to reproduce every validation gate for the rnaSentry Bioconductor
-submission, in order. Each gate has a script, an expected result, and the
-committed log that records the passing run.
+submission, in order. Each gate has a script, an expected result, and a run
+record kept in the maintainer's private dossier (see below).
+
+## Where the run records live
+
+Run records (`private_dossier/logs/`) and the submission-tracker and audit
+documents (`private_dossier/submission_success_criteria.md`,
+`private_dossier/test_audit.md`, `private_dossier/paper_qa_summary.md`,
+`private_dossier/cross_platform.md`,
+`private_dossier/notes_documented.md`) live in the maintainer's **private
+dossier** — a sibling folder of the repository root
+(`<repo-parent>/private_dossier/`) — not in the repository. Throughout this
+guide, a `private_dossier/` prefix means that location.
 
 Environment used by the gate: Windows 11, R 4.5.2 at
 `C:\Program Files\R\R-4.5.2`, pandoc via RStudio at
@@ -34,7 +45,7 @@ Rscript -e "BiocCheck::BiocCheckGitClone()"   # run on a tree with the
 
 Expected: `R CMD check --as-cran` → 0 ERROR, 0 WARNING, 1 NOTE
 (`tidy`; the HTML-validator binary is deliberately not installed — see
-`logs/notes_documented.md`). The `qpdf` WARNING of prior gates cleared after
+`private_dossier/logs/notes_documented.md`). The `qpdf` WARNING of prior gates cleared after
 the 2026-08-05 qpdf CLI install (`R_QPDF` + `_R_CHECK_DOC_SIZES_=true`). The
 previous run without `--no-build-vignettes`
 also verifies the compiled vignette (`inst/doc`) and `browseVignettes`.
@@ -49,7 +60,7 @@ round (2026-08-05) re-ran the whole gate unchanged: `17_as_cran.txt` is
 email 404, environmental) / 0 WARNING / 8 advisory NOTES; the GitClone
 re-run `17_bioccheck_gitclone.txt` is 0 ERROR / 1 WARNING (CITATION `doi`) /
 0 NOTES. Every item
-is explained in `logs/notes_documented.md`. Logs: `logs/00.2_check.txt`,
+is explained in `private_dossier/logs/notes_documented.md`. Logs: `private_dossier/logs/00.2_check.txt`,
 `00.3_bioccheck.txt`, `00.3_bioccheck_gitclone.txt`, `00.5_bioccheck_tarball.txt`,
 `00.4_as_cran.txt`, `00.6_as_cran.txt`, `05_as_cran.txt`, `06_as_cran.txt`,
 `07_as_cran.txt` (post sign-convention fix; 06 re-run after the
@@ -92,16 +103,16 @@ Expected: **147 blocks / 457 passed / 0 failed / 0 error / 32 warnings**.
 The 32 warnings are the `events_per_parameter` guardrail firing on
 deliberately small synthetic fixtures used by tests that exercise other
 behavior; each guardrail has a dedicated test that asserts its own firing
-(see Gate 3 and `test_audit.md`). The suite must be run via
+(see Gate 3 and `private_dossier/test_audit.md`). The suite must be run via
 `devtools::test()` (loading environment differs from a plain `test_dir`).
-Logs: `logs/00.1_test.txt`; the suite grew to 147/457 with the 2026-08-05
+Logs: `private_dossier/logs/00.1_test.txt`; the suite grew to 147/457 with the 2026-08-05
 BiocParallel opt-in round (4 new blocks in `test-build_signature.R`: serial
 default == explicit `SerialParam`, parallel == serial bit-identical, RNG
-state preserved, non-`BPPARAM` backend rejected) — log `logs/17_test.txt`.
+state preserved, non-`BPPARAM` backend rejected) — log `private_dossier/logs/17_test.txt`.
 
 ## Gate 2 — adversarial review
 
-The `test_audit.md` document lists every check that failed or passed only after
+The `private_dossier/test_audit.md` document lists every check that failed or passed only after
 deliberate fixes (seeds, fold stratification, edge cases like `n_pcs == 1`,
 non-syntactic gene symbols). After any change to `R/*.R`, re-run Gate 1 and
 `R CMD check --as-cran` before proceeding.
@@ -135,7 +146,7 @@ file is the new `validation/make_logo.R` logo generator (no stale patterns).
 After the three-tier case-study round (2026-08-05) it scans **69 files
 (29 hits), exit 0** — the vignette allow-list above was added (8 naive-tier
 counterfactual quotes in `case-study-brca.Rmd` and `case-study-impact.Rmd`,
-plus 1 new quote in the four-vignette section of `paper_qa_summary.md`),
+plus 1 new quote in the four-vignette section of `private_dossier/paper_qa_summary.md`),
 build-artifact directories (`*.Rcheck/`, `chk*/`) are now excluded from the
 scan, and the README and the other two case-study vignettes stay clean.
 
@@ -161,7 +172,7 @@ package with an independent reference implementation and asserts equality:
   reverse = TRUE) = 1`. These tests were added after a reviewer caught a
   sign-convention bug in `build_signature()` and `validate_external()` that
   had reported `1 − Harrell's C` (see `face_validity_review.md` and
-  `test_audit.md`).
+  `private_dossier/test_audit.md`).
 - `sex_check` rank score ↔ the documented XIST-vs-Y rule re-derived from the
   assay (closes parity item 7).
 - `build_signature` serial↔parallel equivalence (2026-08-05 BiocParallel
@@ -201,9 +212,9 @@ the Phase-3 **external-transfer power analysis** (Sim 6: two tiers calibrated
 to effective C = 0.608 / 0.654; power monotone in external events, < 0.30 at
 ~35 events, >= 0.80 at ~300 events for the moderate tier). Expected:
 **15 targets / 15 PASS**. Results and interpretation:
-`simulation_study.md`. Logs: `logs/03_simulation.txt` (Sims 1-5),
-`logs/13_simulation.txt` (full suite); re-run unchanged 2026-08-05 after the
-BiocParallel round — `logs/17_simulation.txt`.
+`simulation_study.md`. Logs: `private_dossier/logs/03_simulation.txt` (Sims 1-5),
+`private_dossier/logs/13_simulation.txt` (full suite); re-run unchanged 2026-08-05 after the
+BiocParallel round — `private_dossier/logs/17_simulation.txt`.
 
 ## Gate 5 — real-data face validity (GSE20685)
 
@@ -226,8 +237,8 @@ events/parameter, below the ~10 rule of thumb) — see the "Known limitation"
 note in `face_validity_review.md`. As of 2026-08-04 `build_signature()`
 *catches this automatically*: 4.2 < `min_events_per_parameter` (default 5),
 so a re-run of the repro flags `events_per_parameter` and the report audit
-trail surfaces it. Log: `logs/04_face_validity.txt`, report:
-`logs/face_validity_report.html`.
+trail surfaces it. Log: `private_dossier/logs/04_face_validity.txt`, report:
+`private_dossier/logs/face_validity_report.html`.
 
 ## Gate 5b — live GEO cross-cohort test (Phase 3)
 `validation/repro_live_geo.R` downloads (or reads from the local cache under
@@ -257,10 +268,10 @@ selection happens on the full cohort before the CV split, so the CV
 concordance is screening-internal and even survival-permuted data yields a
 high null (≈0.8) on this ~21k-gene panel; the package's gates calibrate
 against it and `validate_external()` is the only fully out-of-sample
-estimate. Log: `validation/logs/11_live_geo.txt`, report:
-`validation/logs/live_geo_discovery_report.html`. Result write-up:
+estimate. Log: `private_dossier/logs/11_live_geo.txt`, report:
+`private_dossier/logs/live_geo_discovery_report.html`. Result write-up:
 `face_validity_review.md` (live GEO section),
-`submission_success_criteria.md` (Section A gate).
+`private_dossier/submission_success_criteria.md` (Section A gate).
 
 ## Gate 5c — case-study vignettes and bundled data (Phase 3)
 
@@ -274,7 +285,7 @@ The three case-study vignettes (`vignettes/case-study-brca.Rmd`,
 `case-study-confounder-audit.Rmd`, `case-study-small-cohort.Rmd`) must build
 **offline** via `rmarkdown::render()` (or, as part of Gate 0, inside
 `R CMD build`). Their inline numbers are pinned in
-`validation/paper_qa_summary.md`:
+`private_dossier/paper_qa_summary.md`:
 BRCA subset CV C = 0.797 (sd 0.027), log-rank p = 2.99e-15, recommended
 formula `~ age + subtype`; confounder case Cramer's V = 0.82 with recommended
 `~ batch`; small-cohort case 23 events / 5 genes (4.6 < 5, guardrail fires),
@@ -287,8 +298,8 @@ container: build + BiocCheck + `--as-cran` + tests), or rhub/win-builder
 (needs a GitHub token / an email address). Phase 4 (rhub) was explicitly
 cancelled by the maintainer on 2026-08-05; Gate 6 is therefore NOT met and is
 the only outstanding "ready to submit" criterion (see
-`submission_success_criteria.md`, Section D). Status and instructions:
-`cross_platform.md`. If a later run happens, append the per-platform
+`private_dossier/submission_success_criteria.md`, Section D). Status and instructions:
+`private_dossier/cross_platform.md`. If a later run happens, append the per-platform
 `Status:` lines to that file and to the submission notes.
 
 ## Full regression loop after any code change

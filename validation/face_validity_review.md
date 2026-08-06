@@ -2,9 +2,8 @@
 
 Pipeline: `Rscript validation/simulate_study.R` is the simulation gate; this
 review covers the real-data run. Reproduction script (data download, processing,
-pipeline, evidence extraction) and full log are in
-`validation/logs/04_face_validity.txt`; the rendered report is
-`validation/logs/face_validity_report.html`.
+pipeline, evidence extraction) is `validation/repro_gse20685.R`; the run record
+and rendered report are kept in the maintainer's private dossier.
 
 ## Dataset
 
@@ -21,9 +20,9 @@ pipeline, evidence extraction) and full log are in
 
 `run_rnaSentry(se, "time", "event", outcome_col = "overall_survival",
 design_vars = c("age", "subtype"), top_n = 20, repeats = 3, folds = 3,
-seed = 42, render_report = TRUE)` completed end-to-end and wrote
-`face_validity_report.html`. The signature is reproducible: same 20 genes under
-the same seed before and after the concordance fix below.
+seed = 42, render_report = TRUE)` completed end-to-end and wrote the rendered
+report (kept in the private dossier). The signature is reproducible: same 20
+genes under the same seed before and after the concordance fix below.
 
 ## Four-point face-validity checklist
 
@@ -45,7 +44,7 @@ tight sd is not noise, `1 − 0.217 = 0.783` is exactly the biologically expecte
 value, and the parity tests could not catch a sign error because they replayed
 the same call.
 
-Diagnosis (recorded in `validation/logs/04_face_validity.txt`):
+Diagnosis (run record kept in the private dossier):
 `survival::concordance(Surv ~ x)` defaults to **"larger x ⇒ longer survival"**
 (reverse = FALSE). A Cox risk score (larger = higher hazard = shorter survival)
 must be passed with `reverse = TRUE`. Both risk-score call sites in the package
@@ -115,15 +114,15 @@ The package processes a real breast-cancer cohort end-to-end, recovers the
 expected survival-signature behavior (risk groups separate, ESR1 protective,
 MKI67 adverse), flags plausible confounders, surfaces its own limitations in
 the report, and now reports a directionally correct, strong held-out
-concordance (0.783). Submission gate: **PASS** for real-data face validity.
+concordance (0.783). Verdict: **PASS** for real-data face validity.
 
 ---
 
 # Live GEO test: GSE31210 → GSE50081 (LUAD), honest-negative result
 
 Second independent real-data gate. Reproduction script
-`validation/repro_live_geo.R`; full log `validation/logs/11_live_geo.txt`;
-rendered discovery report `validation/logs/live_geo_discovery_report.html`.
+`validation/repro_live_geo.R`; run record and rendered discovery report are
+kept in the maintainer's private dossier.
 
 ## Design
 

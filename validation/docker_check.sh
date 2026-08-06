@@ -17,14 +17,15 @@
 #     * R CMD BiocCheck <tarball>          (CLI, Linux container)
 #     * R CMD check  --as-cran <tarball>
 #     * the full test suite
-# All output is written to validation/logs/docker/.
+# All output is written to the private dossier logs
+# (<repo-parent>/private_dossier/logs/docker/).
 #
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PKG_DIR="$REPO_ROOT/rnaSentry"
 IMAGE="${IMAGE:-bioconductor/bioconductor_docker:devel}"
-LOGDIR="$PKG_DIR/validation/logs/docker"
+LOGDIR="$REPO_ROOT/private_dossier/logs/docker"
 mkdir -p "$LOGDIR"
 
 echo "== rnaSentry Docker gate =="
@@ -61,4 +62,4 @@ docker run --rm -v "$REPO_ROOT:/mnt/pkg:ro" -w /mnt/pkg/rnaSentry "$IMAGE" bash 
 
 echo
 echo "Done. Full container log: $LOGDIR/container_run.log"
-echo "Copy these into validation/cross_platform.md and the submission notes."
+echo "Copy these into the private dossier (cross_platform.md) and the submission notes."

@@ -1,7 +1,8 @@
 ## Live GEO test for rnaSentry — LUAD discovery (GSE31210) -> external
 ## validation (GSE50081), exercising load_counts(), run_rnaSentry(), the
 ## session lock, and validate_external() on independent real cohorts.
-## Logs to validation/logs/11_live_geo.txt and renders the discovery report.
+## Renders the discovery report (live_geo_discovery_report.html); the run
+## record is kept in the maintainer's private dossier.
 ##
 ## Data handling: GSE31210's deposited matrix is RMA-linear despite the
 ## paper's "log2" wording, so it is log2'd at the probe level; both cohorts
