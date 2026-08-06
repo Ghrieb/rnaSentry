@@ -8,9 +8,10 @@
   bridge for your own data (read `counts.csv` + `clinical.csv`, intersect
   sample IDs, `load_counts()`, `design_audit()`, then `run_rnaSentry()`).
   README gains the same block under "Getting started with your own data".
-- The pkgdown site (https://ghrieb.github.io/rnaSentry/) is deployed
-  automatically on every push to `main`; the case-study vignettes are live
-  on the site.
+- The pkgdown site (https://ghrieb.github.io/rnaSentry/) is deployed from
+  the `ci` branch (push or manual dispatch) so that `main` holds only
+  package code, per the Bioconductor submission requirements; the
+  case-study vignettes are live on the site.
 - New bundled case-study data: `inst/extdata/gse20685_case_study.rds`, a
   3000-gene x 327-sample subset of GSE20685 (Li et al., 2010; Affymetrix
   GPL570) with overall-survival metadata, built via
