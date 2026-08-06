@@ -241,6 +241,73 @@ Both variables are flagged as associated with the expression surrogate:
 `batch` with eta-squared 0.97, `region` with epsilon-squared 0.55 (it
 leaks the same signal through its overlap with `batch`).
 
+#### What the surrogate gradient looks like
+
+The surrogate the confounder scan tests against is the leading principal
+component of the expression data.
+[`pca_audit()`](https://ghrieb.github.io/rnaSentry/reference/pca_audit.md)
+performs the same scan against a single batch variable, one PC at a
+time:
+
+``` r
+
+pa <- pca_audit(se, batch_col = "batch")
+pa$batch_tests
+#>    pc test    statistic     df       p_value effect_size effect_size_type
+#> 1 PC1  aov 2577.9733053 2, 177 1.285386e-131 0.966810093      eta_squared
+#> 2 PC2  aov    1.4053241 2, 177  2.480108e-01 0.015631155      eta_squared
+#> 3 PC3  aov    0.1040554 2, 177  9.012304e-01 0.001174387      eta_squared
+#> 4 PC4  aov    0.2356731 2, 177  7.902864e-01 0.002655900      eta_squared
+#> 5 PC5  aov    0.2489179 2, 177  7.799165e-01 0.002804743      eta_squared
+#>   flagged         adj_p
+#> 1    TRUE 6.426932e-131
+#> 2   FALSE  6.200270e-01
+#> 3   FALSE  9.012304e-01
+#> 4   FALSE  9.012304e-01
+#> 5   FALSE  9.012304e-01
+```
+
+`batch` is flagged as associated with the leading PCs. Plotting the
+scores makes the structure visible: the three batches separate along
+PC1, which is exactly the surrogate gradient
+[`design_audit()`](https://ghrieb.github.io/rnaSentry/reference/design_audit.md)
+measures:
+
+``` r
+
+plot_pca_audit(pa, color_by = "batch")
+```
+
+![PC1-PC2 scatter of the batch-confounded cohort, colored by batch. The
+three batch clusters separate along PC1 (the surrogate gradient); this
+is the structure the confounder scan
+detects.](case-study-confounder-audit_files/figure-html/pca-batch-plot-1.png)
+
+PC1-PC2 scatter of the batch-confounded cohort, colored by batch. The
+three batch clusters separate along PC1 (the surrogate gradient); this
+is the structure the confounder scan detects.
+
+Coloring the same scores by `region` gives a nearly identical picture,
+because `batch` is a noisy copy of `region`:
+
+``` r
+
+plot_pca_audit(pa, color_by = "region")
+```
+
+![The same PC1-PC2 scatter colored by region. The near-identical
+structure is why the redundancy scan reports Cramer's V = 0.82 and the
+recommended formula drops
+\`region\`.](case-study-confounder-audit_files/figure-html/pca-region-plot-1.png)
+
+The same PC1-PC2 scatter colored by region. The near-identical structure
+is why the redundancy scan reports Cramer’s V = 0.82 and the recommended
+formula drops `region`.
+
+The two candidate variables track the same expression structure, so the
+redundancy scan collapses them: keeping only `batch` in the design
+captures the shared confound without double-counting collinear terms.
+
 #### Recovered design
 
 ``` r
@@ -360,17 +427,22 @@ sessionInfo()
 #> [13] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Matrix_1.7-5        jsonlite_2.0.0      compiler_4.6.1     
-#>  [4] BiocManager_1.30.27 jquerylib_0.1.4     splines_4.6.1      
-#>  [7] systemfonts_1.3.2   textshaping_1.0.5   yaml_2.3.12        
-#> [10] fastmap_1.2.0       lattice_0.22-9      XVector_0.52.0     
-#> [13] R6_2.6.1            S4Arrays_1.12.0     knitr_1.51         
-#> [16] htmlwidgets_1.6.4   DelayedArray_0.38.2 bookdown_0.47      
-#> [19] desc_1.4.3          bslib_0.12.0        rlang_1.3.0        
-#> [22] cachem_1.1.0        xfun_0.60           fs_2.1.0           
-#> [25] sass_0.4.10         otel_0.2.0          SparseArray_1.12.2 
-#> [28] cli_3.6.6           withr_3.0.3         pkgdown_2.2.1.9000 
-#> [31] grid_4.6.1          digest_0.6.39       lifecycle_1.0.5    
-#> [34] evaluate_1.0.5      ragg_1.5.2          abind_1.4-8        
-#> [37] rmarkdown_2.31      tools_4.6.1         htmltools_0.5.9
+#>  [1] sass_0.4.10         SparseArray_1.12.2  lattice_0.22-9     
+#>  [4] magrittr_2.0.5      digest_0.6.39       RColorBrewer_1.1-3 
+#>  [7] evaluate_1.0.5      grid_4.6.1          bookdown_0.47      
+#> [10] fastmap_1.2.0       jsonlite_2.0.0      Matrix_1.7-5       
+#> [13] BiocManager_1.30.27 scales_1.4.0        textshaping_1.0.5  
+#> [16] jquerylib_0.1.4     abind_1.4-8         cli_3.6.6          
+#> [19] rlang_1.3.0         XVector_0.52.0      splines_4.6.1      
+#> [22] withr_3.0.3         cachem_1.1.0        DelayedArray_0.38.2
+#> [25] yaml_2.3.12         otel_0.2.0          S4Arrays_1.12.0    
+#> [28] tools_4.6.1         dplyr_1.2.1         ggplot2_4.0.3      
+#> [31] vctrs_0.7.3         R6_2.6.1            lifecycle_1.0.5    
+#> [34] fs_2.1.0            htmlwidgets_1.6.4   ragg_1.5.2         
+#> [37] pkgconfig_2.0.3     desc_1.4.3          pillar_1.11.1      
+#> [40] pkgdown_2.2.1.9000  bslib_0.12.0        gtable_0.3.6       
+#> [43] glue_1.8.1          systemfonts_1.3.2   tidyselect_1.2.1   
+#> [46] tibble_3.3.1        xfun_0.60           knitr_1.51         
+#> [49] farver_2.1.2        htmltools_0.5.9     labeling_0.4.3     
+#> [52] rmarkdown_2.31      compiler_4.6.1      S7_0.2.2
 ```

@@ -345,6 +345,26 @@ portability check:</p>
 <span><span class="co">#&gt; Cutpoint 55.5 (custom, from discovery).</span></span>
 <span><span class="co">#&gt; Log-rank p = 0.8303. Concordance = 0.485.</span></span>
 <span><span class="co">#&gt; Signature not locked.</span></span></code></pre></div>
+<p>The portability check is also visual: scoring the held-out samples
+against the locked discovery cutpoint, without re-estimating anything
+from the external data, splits the external cohort into risk groups
+whose curves can be compared on truly held-out data:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">val</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="rnaSentry_files/figure-html/intro-ext-km-1.png" class="r-plt" alt="External-cohort Kaplan-Meier curves for the low- and high-risk groups, scored against the locked discovery cutpoint without re-estimation. The log-rank p-value tests the split on held-out data." width="672"><p class="caption">
+External-cohort Kaplan-Meier curves for the low- and high-risk groups,
+scored against the locked discovery cutpoint without re-estimation. The
+log-rank p-value tests the split on held-out data.
+</p>
+</div>
+<p>On this synthetic external half the split is <strong>not</strong>
+statistically separated (log-rank p and concordance printed above): with
+48 held-out samples the toy cohort is far too small to demonstrate
+transfer. The honest-negative pattern is the point – an out-of-sample
+split that does not separate is reported as such, and a real transfer
+claim requires an independent cohort with enough events to detect the
+effect.</p>
 <p>A real discovery-to-external transfer on independent GEO cohorts —
 where transfer was <em>not</em> demonstrated and the reasons (low event
 count, CV-optimism) are quantified — is documented in the README’s case
@@ -408,7 +428,7 @@ first signature first.</li>
 log-transformed but stored under a <code>counts</code>-named assay,
 every downstream stage sees a double-logged matrix. The pipeline catches
 this and warns:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prelogged</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">se_all</span>, <span class="st">"counts"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">se_wrong</span> <span class="op">&lt;-</span> <span class="va">se_all</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">se_wrong</span>, <span class="st">"counts"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">prelogged</span></span>
@@ -427,7 +447,7 @@ pipeline uses as-is without a second transform.</p>
 <p>Second, underpowered discovery. On a small cohort,
 <code><a href="../reference/build_signature.html">build_signature()</a></code> warns that the event count per signature
 gene is low:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">small</span> <span class="op">&lt;-</span> <span class="va">se_all</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/build_signature.html">build_signature</a></span><span class="op">(</span><span class="va">small</span>, <span class="st">"time"</span>, <span class="st">"event"</span>, top_n <span class="op">=</span> <span class="fl">10</span>, repeats <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                folds <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
@@ -448,7 +468,7 @@ trail.</p>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

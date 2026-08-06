@@ -316,6 +316,32 @@ val
 #> Signature not locked.
 ```
 
+The portability check is also visual: scoring the held-out samples
+against the locked discovery cutpoint, without re-estimating anything
+from the external data, splits the external cohort into risk groups
+whose curves can be compared on truly held-out data:
+
+``` r
+
+plot(val)
+```
+
+![External-cohort Kaplan-Meier curves for the low- and high-risk groups,
+scored against the locked discovery cutpoint without re-estimation. The
+log-rank p-value tests the split on held-out
+data.](rnaSentry_files/figure-html/intro-ext-km-1.png)
+
+External-cohort Kaplan-Meier curves for the low- and high-risk groups,
+scored against the locked discovery cutpoint without re-estimation. The
+log-rank p-value tests the split on held-out data.
+
+On this synthetic external half the split is **not** statistically
+separated (log-rank p and concordance printed above): with 48 held-out
+samples the toy cohort is far too small to demonstrate transfer. The
+honest-negative pattern is the point – an out-of-sample split that does
+not separate is reported as such, and a real transfer claim requires an
+independent cohort with enough events to detect the effect.
+
 A real discovery-to-external transfer on independent GEO cohorts — where
 transfer was *not* demonstrated and the reasons (low event count,
 CV-optimism) are quantified — is documented in the README’s case study 4

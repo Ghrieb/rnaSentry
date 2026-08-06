@@ -258,7 +258,60 @@ km$log_rank_p
 ```
 
 The discovered signature separates the cohort into risk groups whose
-survival curves differ dramatically at the discovery cutpoint.
+survival curves differ dramatically at the discovery cutpoint:
+
+``` r
+
+plot(run$stages$km_curve)
+```
+
+![Kaplan-Meier survival curves for the low- and high-risk groups at the
+discovery cutpoint, with the log-rank p-value annotated. The risk groups
+diverge sharply.](case-study-brca_files/figure-html/brca-km-1.png)
+
+Kaplan-Meier survival curves for the low- and high-risk groups at the
+discovery cutpoint, with the log-rank p-value annotated. The risk groups
+diverge sharply.
+
+### Adjusted hazard ratios
+
+The adjusted Cox model re-estimates each signature gene’s association
+with survival jointly with the other signature genes, so the forest plot
+below shows which genes carry their effect even after adjustment for the
+rest of the signature:
+
+``` r
+
+plot(run$stages$cox_model)
+```
+
+![Adjusted Cox forest plot for the signature genes: log hazard ratio
+with 95% confidence interval, ordered by p-value. The vertical dashed
+line marks no effect (log HR =
+0).](case-study-brca_files/figure-html/brca-forest-1.png)
+
+Adjusted Cox forest plot for the signature genes: log hazard ratio with
+95% confidence interval, ordered by p-value. The vertical dashed line
+marks no effect (log HR = 0).
+
+### Parametric survival model
+
+The parametric stage fits a parametric survival model (exponential and
+Weibull) to the same risk groups and overlays it on the Kaplan-Meier
+curves, providing a smooth estimate of the survival function when a
+parametric shape is a reasonable description:
+
+``` r
+
+plot(run$stages$survival_parametric)
+```
+
+![Kaplan-Meier curves with parametric survival-model overlay for the
+low- and high-risk
+groups.](case-study-brca_files/figure-html/brca-parametric-1.png)
+
+Kaplan-Meier curves with parametric survival-model overlay for the low-
+and high-risk groups.
 
 ### Design audit
 
@@ -281,6 +334,26 @@ large eta-squared) and the recommended design formula therefore keeps
 it, so that univariate gene screening is adjusted for subtype. `age` is
 not flagged. This is exactly the kind of design decision `rnaSentry` is
 meant to surface before any differential-expression or signature work.
+
+Coloring the PCA audit scores by subtype shows the same structure the
+surrogate scan detects: the breast-cancer subtypes occupy distinct
+regions of expression space, which is why omitting `subtype` from the
+design would let subtype-driven expression masquerade as survival
+association:
+
+``` r
+
+plot_pca_audit(run$stages$pca_audit, color_by = "subtype")
+```
+
+![PC1-PC2 scatter of the GSE20685 subset colored by breast-cancer
+subtype. The subtypes separate along the leading PCs, mirroring the
+design audit's surrogate-association flag for
+\`subtype\`.](case-study-brca_files/figure-html/brca-pca-subtype-1.png)
+
+PC1-PC2 scatter of the GSE20685 subset colored by breast-cancer subtype.
+The subtypes separate along the leading PCs, mirroring the design
+audit’s surrogate-association flag for `subtype`.
 
 ## Tier 3: the counterfactual
 
@@ -351,17 +424,22 @@ sessionInfo()
 #> [13] BiocStyle_2.40.0           
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Matrix_1.7-5        jsonlite_2.0.0      compiler_4.6.1     
-#>  [4] BiocManager_1.30.27 jquerylib_0.1.4     splines_4.6.1      
-#>  [7] systemfonts_1.3.2   textshaping_1.0.5   yaml_2.3.12        
-#> [10] fastmap_1.2.0       lattice_0.22-9      XVector_0.52.0     
-#> [13] R6_2.6.1            S4Arrays_1.12.0     knitr_1.51         
-#> [16] htmlwidgets_1.6.4   DelayedArray_0.38.2 bookdown_0.47      
-#> [19] desc_1.4.3          bslib_0.12.0        rlang_1.3.0        
-#> [22] cachem_1.1.0        xfun_0.60           fs_2.1.0           
-#> [25] sass_0.4.10         otel_0.2.0          SparseArray_1.12.2 
-#> [28] cli_3.6.6           withr_3.0.3         pkgdown_2.2.1.9000 
-#> [31] grid_4.6.1          digest_0.6.39       lifecycle_1.0.5    
-#> [34] evaluate_1.0.5      ragg_1.5.2          abind_1.4-8        
-#> [37] rmarkdown_2.31      tools_4.6.1         htmltools_0.5.9
+#>  [1] sass_0.4.10         SparseArray_1.12.2  lattice_0.22-9     
+#>  [4] magrittr_2.0.5      digest_0.6.39       RColorBrewer_1.1-3 
+#>  [7] evaluate_1.0.5      grid_4.6.1          bookdown_0.47      
+#> [10] fastmap_1.2.0       jsonlite_2.0.0      Matrix_1.7-5       
+#> [13] BiocManager_1.30.27 scales_1.4.0        textshaping_1.0.5  
+#> [16] jquerylib_0.1.4     abind_1.4-8         cli_3.6.6          
+#> [19] rlang_1.3.0         XVector_0.52.0      splines_4.6.1      
+#> [22] withr_3.0.3         cachem_1.1.0        DelayedArray_0.38.2
+#> [25] yaml_2.3.12         otel_0.2.0          S4Arrays_1.12.0    
+#> [28] tools_4.6.1         dplyr_1.2.1         ggplot2_4.0.3      
+#> [31] vctrs_0.7.3         R6_2.6.1            lifecycle_1.0.5    
+#> [34] fs_2.1.0            htmlwidgets_1.6.4   ragg_1.5.2         
+#> [37] pkgconfig_2.0.3     desc_1.4.3          pillar_1.11.1      
+#> [40] pkgdown_2.2.1.9000  bslib_0.12.0        gtable_0.3.6       
+#> [43] glue_1.8.1          systemfonts_1.3.2   tidyselect_1.2.1   
+#> [46] tibble_3.3.1        xfun_0.60           knitr_1.51         
+#> [49] farver_2.1.2        htmltools_0.5.9     labeling_0.4.3     
+#> [52] rmarkdown_2.31      compiler_4.6.1      S7_0.2.2
 ```

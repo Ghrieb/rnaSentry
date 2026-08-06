@@ -185,6 +185,26 @@ estimates are nearly coin flips, and the standard deviation (0.14) is
 enormous relative to the mean. A signature like this is unstable and
 should be treated as hypothesis-generating only.
 
+``` r
+
+set.seed(30)
+cv <- sig$cv_results
+stripchart(cv$c_index, method = "jitter", jitter = 0.12, pch = 19, cex = 1.1,
+           ylim = c(0, 1.05), ylab = "Cross-validated C-index (per fold)",
+           main = sprintf("Per-fold C-index: mean %.2f, sd %.2f",
+                          mean(cv$c_index), stats::sd(cv$c_index)))
+abline(v = mean(cv$c_index), lty = 2, col = "grey40")
+```
+
+![Per-fold cross-validated concordance across repeats and folds (one
+point per fold). The vertical dashed line marks the mean; the spread
+from 0.50 to 1.00 is the instability the mean
+hides.](case-study-small-cohort_files/figure-html/small-fold-spread-1.png)
+
+Per-fold cross-validated concordance across repeats and folds (one point
+per fold). The vertical dashed line marks the mean; the spread from 0.50
+to 1.00 is the instability the mean hides.
+
 ## Tier 3: the counterfactual
 
 |  | Naive analysis (Tier 1) | rnaSentry (Tier 2) |
