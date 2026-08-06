@@ -21,7 +21,7 @@ goes wrong – are covered by the case studies:
 
 ## The master impact table
 
-| Failure mode | Naive headline | Guarded headline | Guardrails that fired | What a guarded manuscript can claim |
+| Failure mode | Naive headline | Guarded headline | Guardrails that fired | What a guarded analysis can claim |
 |----|----|----|----|----|
 | Wrong direction (GSE20685) | “CV C = 0.217, signature fails to generalize (winner’s curse)” | held-out C = **0.783**, direction correct, far above the 0.582 random-gene control | `reverse = TRUE` convention; `C + C_rev = 1` parity tests; direction-sensitive regression tests | the signature is not a 0.22 collapse but a strong, directionally correct held-out signal |
 | Confounded design (synthetic batch cohort) | “six batch-driven genes are prognostic; batch and region are two independent risk factors” | `batch`/`region` flagged redundant (Cramer’s V = 0.82); `batch` surrogate eta-squared 0.97; minimal design `~ batch`; adjusted screening drops the batch-artifact genes | `redundant_variable`, surrogate-association flags, `adjusted_screening` | the discovered signature is not a batch echo |
@@ -134,10 +134,9 @@ convention in code, in parity tests, and in the rendered report.
 ## The LUAD honest negative (GSE31210 -\> GSE50081)
 
 The fourth failure mode is demonstrated on independent GEO cohorts in
-the README and main vignette; the numbers are reproduced by the
-repository’s validation script `validation/repro_live_geo.R`. Because
-the data are downloaded live, the walkthrough is narrative here rather
-than a build-time vignette:
+the README and main vignette; the numbers come from a live GEO
+reproduction. Because the data are downloaded live, the walkthrough is
+narrative here rather than a build-time vignette:
 
 - **Discovery** GSE31210 (LUAD, 35 deaths), **external validation**
   GSE50081 (n = 128, 52 deaths).

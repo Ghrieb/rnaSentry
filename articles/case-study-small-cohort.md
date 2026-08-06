@@ -193,16 +193,14 @@ should be treated as hypothesis-generating only.
 | Events per parameter | not computed | 4.6 \< 5, `events_per_parameter` warning in the ledger |
 | Scientific status | “a decent prognostic signature” | “hypothesis-generating only; unstable” |
 
-**What a guarded manuscript can claim:** the exact same cross-validated
+**What a guarded analysis can claim:** the exact same cross-validated
 concordance that a naive analysis would headline as 0.74 is shown by
 [`build_signature()`](https://ghrieb.github.io/rnaSentry/reference/build_signature.md)
 to be an average over near-coin-flip folds – and the guardrail warns
 rather than silently proceeding. This is the documented “small-cohort
-trap,” quantified in the simulation study
-(`validation/simulate_study.R`): with fewer than ~5 events per signature
-gene, neither the concordance nor the hazard ratios are trustworthy, and
-a *mean* C-index hides the instability that the fold-level table
-exposes.
+trap”: with fewer than ~5 events per signature gene, neither the
+concordance nor the hazard ratios are trustworthy, and a *mean* C-index
+hides the instability that the fold-level table exposes.
 
 ## Reading
 

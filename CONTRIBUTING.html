@@ -67,7 +67,7 @@
 </tr></thead><tbody><tr><td>0</td>
 <td>Hygiene + check</td>
 <td>
-<code>R CMD build</code>, <code>R CMD check --as-cran</code> on the tarball (expect 0 ERROR / 0 WARNING / 1 NOTE - the residual NOTE is the HTML <code>tidy</code> external tool; the <code>qpdf</code> WARNING cleared 2026-08-05), <code>BiocCheck</code>
+<code>R CMD build</code>, <code>R CMD check --as-cran</code> on the tarball (expect 0 ERROR / 0 WARNING / 1 NOTE - the residual NOTE is the HTML <code>tidy</code> external tool; the <code>qpdf</code> WARNING cleared after installing the qpdf CLI), <code>BiocCheck</code>
 </td>
 </tr><tr><td>1</td>
 <td>Full test suite</td>
@@ -83,7 +83,7 @@
 </tr><tr><td>4</td>
 <td>Simulation study</td>
 <td>
-<code>Rscript validation/simulate_study.R</code> — <strong>15 falsifiable targets / 15 PASS</strong> (Sims 1-5 + Sim 6 power analysis)</td>
+<code>Rscript validation/simulate_study.R</code> — <strong>15 falsifiable targets / 15 PASS</strong> (parity, null-data, and external-transfer power targets)</td>
 </tr><tr><td>5</td>
 <td>Real-data face validity</td>
 <td>

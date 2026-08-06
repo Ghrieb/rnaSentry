@@ -307,7 +307,7 @@ sig_guarded$flags
 | Surrogate association | never checked | `batch` eta-squared 0.97, `region` epsilon-squared 0.55 reported |
 | Ledger | none | `redundant_variable`, `adjusted_screening` recorded |
 
-**What a guarded manuscript can claim:** without
+**What a guarded analysis can claim:** without
 [`design_audit()`](https://ghrieb.github.io/rnaSentry/reference/design_audit.md),
 this cohort would produce a six-gene “prognostic” signature that is
 entirely a batch artifact, plus a model reporting two collinear
