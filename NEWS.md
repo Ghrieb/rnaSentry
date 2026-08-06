@@ -20,6 +20,13 @@
   batch/region redundancy recovered as a minimal design), and
   `case-study-small-cohort` (the `events_per_parameter` guardrail and
   fold-level instability).
+- The four pipeline vignettes now carry figures, all generated from bundled
+  offline data at build time (no network access needed): Kaplan-Meier risk
+  groups, an adjusted Cox hazard-ratio forest, a parametric survival overlay,
+  and a subtype-colored PCA audit scatter in `case-study-brca`; batch- and
+  region-colored PC1-PC2 scatters in `case-study-confounder-audit`; an
+  external-cohort Kaplan-Meier split in the main vignette; and a per-fold
+  cross-validated concordance stripchart in `case-study-small-cohort`.
 - The case-study vignettes were re-written as a three-tier naive-vs-guarded
   narrative (naive analysis -> rnaSentry standing guard -> counterfactual
   impact), and a landing page `case-study-impact` adds a master impact table
