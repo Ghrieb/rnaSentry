@@ -13,7 +13,8 @@
   on the site.
 - New bundled case-study data: `inst/extdata/gse20685_case_study.rds`, a
   3000-gene x 327-sample subset of GSE20685 (Li et al., 2010; Affymetrix
-  GPL570) with overall-survival metadata, built from public GSE20685 data.
+  GPL570) with overall-survival metadata, built via
+  `validation/repro_gse20685.R` in the GitHub repository.
 - Three new offline-safe vignettes: `case-study-brca` (full pipeline on the
   bundled breast-cancer subset), `case-study-confounder-audit` (planted
   batch/region redundancy recovered as a minimal design), and
@@ -65,11 +66,12 @@
 
 ### Power analysis
 
-- The simulation study gains a power analysis of external-cohort transfer:
-  two signal tiers calibrated to effective concordance 0.608 / 0.654 show
-  transfer power monotone in external event count, < 0.30 at ~35 events (the
-  small-cohort trap), and >= 0.80 at ~300 events for the moderate tier. All
-  15 simulation targets pass.
+- The simulation study (`validation/simulate_study.R`) gains a power
+  analysis of external-cohort transfer: two signal tiers calibrated to
+  effective concordance 0.608 / 0.654 show transfer power monotone in
+  external event count, < 0.30 at ~35 events (the small-cohort trap), and
+  >= 0.80 at ~300 events for the moderate tier. All 15 simulation targets
+  pass.
 
 ### Earlier in the 0.99.0 cycle
 
@@ -84,9 +86,10 @@
 - External validation never recomputes the cutpoint from external data; the
   discovery cutpoint is applied unchanged.
 - Validation: a statistical-parity suite (147 blocks / 457 expectations),
-  regression tests, a simulation study, real-data face validity, and a live
-  GEO cross-cohort run (GSE31210 -> GSE50081), including the documented
-  CV-optimism (selection-leakage) finding.
+  regression tests, the simulation study (`validation/simulate_study.R`),
+  real-data face validity (`validation/repro_gse20685.R`), and a live GEO
+  cross-cohort run (GSE31210 -> GSE50081, `validation/repro_live_geo.R`),
+  including the documented CV-optimism (selection-leakage) finding.
 - Sign-convention fix: concordance now consistently uses `reverse = TRUE`
   (higher score = higher hazard), pinned by parity tests and the
   `C + C_rev = 1` invariant.
