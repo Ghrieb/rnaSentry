@@ -159,7 +159,33 @@ km$log_rank_p
 ```
 
 The discovered signature separates the cohort into risk groups whose
-survival curves differ dramatically at the discovery cutpoint.
+survival curves differ dramatically at the discovery cutpoint:
+
+```{r brca-km, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "Kaplan-Meier survival curves for the low- and high-risk groups at the discovery cutpoint, with the log-rank p-value annotated. The risk groups diverge sharply."}
+plot(run$stages$km_curve)
+```
+
+## Adjusted hazard ratios
+
+The adjusted Cox model re-estimates each signature gene's association with
+survival jointly with the other signature genes, so the forest plot below
+shows which genes carry their effect even after adjustment for the rest of
+the signature:
+
+```{r brca-forest, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "Adjusted Cox forest plot for the signature genes: log hazard ratio with 95% confidence interval, ordered by p-value. The vertical dashed line marks no effect (log HR = 0)."}
+plot(run$stages$cox_model)
+```
+
+## Parametric survival model
+
+The parametric stage fits a parametric survival model (exponential and
+Weibull) to the same risk groups and overlays it on the Kaplan-Meier curves,
+providing a smooth estimate of the survival function when a parametric shape
+is a reasonable description:
+
+```{r brca-parametric, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "Kaplan-Meier curves with parametric survival-model overlay for the low- and high-risk groups."}
+plot(run$stages$survival_parametric)
+```
 
 ## Design audit
 
@@ -174,6 +200,15 @@ eta-squared) and the recommended design formula therefore keeps it, so that
 univariate gene screening is adjusted for subtype. `age` is not flagged. This
 is exactly the kind of design decision `rnaSentry` is meant to surface before
 any differential-expression or signature work.
+
+Coloring the PCA audit scores by subtype shows the same structure the
+surrogate scan detects: the breast-cancer subtypes occupy distinct regions of
+expression space, which is why omitting `subtype` from the design would let
+subtype-driven expression masquerade as survival association:
+
+```{r brca-pca-subtype, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "PC1-PC2 scatter of the GSE20685 subset colored by breast-cancer subtype. The subtypes separate along the leading PCs, mirroring the design audit's surrogate-association flag for `subtype`."}
+plot_pca_audit(run$stages$pca_audit, color_by = "subtype")
+```
 
 # Tier 3: the counterfactual
 

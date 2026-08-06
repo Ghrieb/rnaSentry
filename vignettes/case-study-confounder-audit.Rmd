@@ -132,6 +132,36 @@ Both variables are flagged as associated with the expression surrogate:
 `batch` with eta-squared 0.97, `region` with epsilon-squared 0.55 (it leaks
 the same signal through its overlap with `batch`).
 
+### What the surrogate gradient looks like
+
+The surrogate the confounder scan tests against is the leading principal
+component of the expression data. `pca_audit()` performs the same scan
+against a single batch variable, one PC at a time:
+
+```{r pca-batch-tests}
+pa <- pca_audit(se, batch_col = "batch")
+pa$batch_tests
+```
+
+`batch` is flagged as associated with the leading PCs. Plotting the scores
+makes the structure visible: the three batches separate along PC1, which is
+exactly the surrogate gradient `design_audit()` measures:
+
+```{r pca-batch-plot, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "PC1-PC2 scatter of the batch-confounded cohort, colored by batch. The three batch clusters separate along PC1 (the surrogate gradient); this is the structure the confounder scan detects."}
+plot_pca_audit(pa, color_by = "batch")
+```
+
+Coloring the same scores by `region` gives a nearly identical picture,
+because `batch` is a noisy copy of `region`:
+
+```{r pca-region-plot, fig.width = 7, fig.height = 5, fig.align = "center", fig.cap = "The same PC1-PC2 scatter colored by region. The near-identical structure is why the redundancy scan reports Cramer's V = 0.82 and the recommended formula drops `region`."}
+plot_pca_audit(pa, color_by = "region")
+```
+
+The two candidate variables track the same expression structure, so the
+redundancy scan collapses them: keeping only `batch` in the design captures
+the shared confound without double-counting collinear terms.
+
 ### Recovered design
 
 ```{r}
