@@ -289,9 +289,10 @@ tests, and in the rendered report.</p>
 <h2 id="the-luad-honest-negative-gse31210---gse50081">The LUAD honest negative (GSE31210 -&gt; GSE50081)<a class="anchor" aria-label="anchor" href="#the-luad-honest-negative-gse31210---gse50081"></a>
 </h2>
 <p>The fourth failure mode is demonstrated on independent GEO cohorts in
-the README and main vignette; the numbers come from a live GEO
-reproduction. Because the data are downloaded live, the walkthrough is
-narrative here rather than a build-time vignette:</p>
+the README and main vignette; the numbers are reproduced via
+<code>validation/repro_live_geo.R</code> in the GitHub repository.
+Because the data are downloaded live, the walkthrough is narrative here
+rather than a build-time vignette:</p>
 <ul>
 <li>
 <strong>Discovery</strong> GSE31210 (LUAD, 35 deaths),
@@ -303,9 +304,10 @@ matched null.</li>
 <li>External validation: <strong>C = 0.540, log-rank p = 0.266</strong>
 – transfer was <em>not</em> demonstrated, and the tool reports an honest
 negative rather than a “validated signature.”</li>
-<li>A power analysis (see the validation dossier) quantifies why:
-transfer power &lt; 0.30 at ~35 discovery events, and &gt;= 0.80 only
-near ~300 events for a C ~ 0.65 signature.</li>
+<li>A power analysis in the simulation study
+(<code>validation/simulate_study.R</code>) quantifies why: transfer
+power &lt; 0.30 at ~35 discovery events, and &gt;= 0.80 only near ~300
+events for a C ~ 0.65 signature.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -315,7 +317,8 @@ near ~300 events for a C ~ 0.65 signature.</li>
 <li>
 <strong>Every number above is reproducible.</strong> The case-study
 vignettes build offline from the bundled data, and the live-GEO numbers
-are reproduced by the repository’s validation scripts.</li>
+are reproduced by <code>validation/repro_live_geo.R</code> in the GitHub
+repository.</li>
 <li>
 <strong>The guardrails are testable.</strong> Each flag in the
 report’s audit trail is a <code>(check, severity, detail, stage)</code>

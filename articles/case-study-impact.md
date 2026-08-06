@@ -134,9 +134,10 @@ convention in code, in parity tests, and in the rendered report.
 ## The LUAD honest negative (GSE31210 -\> GSE50081)
 
 The fourth failure mode is demonstrated on independent GEO cohorts in
-the README and main vignette; the numbers come from a live GEO
-reproduction. Because the data are downloaded live, the walkthrough is
-narrative here rather than a build-time vignette:
+the README and main vignette; the numbers are reproduced via
+`validation/repro_live_geo.R` in the GitHub repository. Because the data
+are downloaded live, the walkthrough is narrative here rather than a
+build-time vignette:
 
 - **Discovery** GSE31210 (LUAD, 35 deaths), **external validation**
   GSE50081 (n = 128, 52 deaths).
@@ -147,15 +148,16 @@ narrative here rather than a build-time vignette:
 - External validation: **C = 0.540, log-rank p = 0.266** – transfer was
   *not* demonstrated, and the tool reports an honest negative rather
   than a “validated signature.”
-- A power analysis (see the validation dossier) quantifies why: transfer
-  power \< 0.30 at ~35 discovery events, and \>= 0.80 only near ~300
-  events for a C ~ 0.65 signature.
+- A power analysis in the simulation study
+  (`validation/simulate_study.R`) quantifies why: transfer power \< 0.30
+  at ~35 discovery events, and \>= 0.80 only near ~300 events for a C ~
+  0.65 signature.
 
 ## Reading this package’s claims
 
 - **Every number above is reproducible.** The case-study vignettes build
   offline from the bundled data, and the live-GEO numbers are reproduced
-  by the repository’s validation scripts.
+  by `validation/repro_live_geo.R` in the GitHub repository.
 - **The guardrails are testable.** Each flag in the report’s audit trail
   is a `(check, severity, detail, stage)` record backed by a statistic,
   and each has a regression test asserting the condition that fires it.

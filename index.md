@@ -249,7 +249,8 @@ documented here.
 
 A 3000-gene x 327-sample subset of GSE20685 (Li *et al.*, 2010;
 Affymetrix GPL570, 83 deaths) ships as
-`inst/extdata/gse20685_case_study.rds` and is walked through in
+`inst/extdata/gse20685_case_study.rds` (built via
+`validation/repro_gse20685.R`) and is walked through in
 [`vignette("case-study-brca")`](https://ghrieb.github.io/rnaSentry/articles/case-study-brca.md).
 On the bundled subset the pipeline finds a 20-gene signature with
 screening-internal CV C = 0.80 (sd 0.03) and log-rank p = 3.0e-15 at the
@@ -298,10 +299,10 @@ panel even survival-permuted data yields a null CV C ~ 0.8 (not 0.5), so
 CV concordance must be read relative to a matched null and only
 [`validate_external()`](https://ghrieb.github.io/rnaSentry/reference/validate_external.md)
 is fully out-of-sample (see “Reading the CV concordance”). A power
-analysis (see the validation dossier) quantifies why a 35-event external
-cohort is structurally underpowered for weak real signatures: transfer
-power \< 0.30 at ~35 events, and \>= 0.80 only near ~300 events for a C
-~ 0.65 signature.
+analysis in the simulation study (`validation/simulate_study.R`)
+quantifies why a 35-event external cohort is structurally underpowered
+for weak real signatures: transfer power \< 0.30 at ~35 events, and \>=
+0.80 only near ~300 events for a C ~ 0.65 signature.
 
 ## Upcoming case studies
 

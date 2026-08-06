@@ -198,9 +198,11 @@ concordance that a naive analysis would headline as 0.74 is shown by
 [`build_signature()`](https://ghrieb.github.io/rnaSentry/reference/build_signature.md)
 to be an average over near-coin-flip folds – and the guardrail warns
 rather than silently proceeding. This is the documented “small-cohort
-trap”: with fewer than ~5 events per signature gene, neither the
-concordance nor the hazard ratios are trustworthy, and a *mean* C-index
-hides the instability that the fold-level table exposes.
+trap,” quantified in our simulation analysis
+(`validation/simulate_study.R`): with fewer than ~5 events per signature
+gene, neither the concordance nor the hazard ratios are trustworthy, and
+a *mean* C-index hides the instability that the fold-level table
+exposes.
 
 ## Reading
 

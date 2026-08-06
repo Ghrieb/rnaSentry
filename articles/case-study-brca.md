@@ -18,7 +18,8 @@ without the guardrails, and what the guarded analysis actually recovers.
 We use a bundled subset of GSE20685 (Li *et al.*, 2010), an Affymetrix
 GPL570 (U133 Plus 2.0) microarray series of 327 primary breast tumors
 with overall-survival follow-up. The series matrix was downloaded from
-GEO and processed as follows:
+GEO and processed via `validation/repro_gse20685.R` in the GitHub
+repository:
 
 - probe-level log2 intensities from the MAS5-summarized series matrix,
 - probe-to-gene collapse by largest mean expression,
