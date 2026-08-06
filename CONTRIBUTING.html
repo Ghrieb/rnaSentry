@@ -76,7 +76,7 @@
 </tr><tr><td>2</td>
 <td>Adversarial review + stale-number sweep</td>
 <td>
-<code>powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1</code> (0 hits outside <code>validation/</code>)</td>
+<code>powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1</code> (0 hits outside the allow-list: <code>validation/*</code>, <code>vignettes/case-study-brca.Rmd</code>, <code>vignettes/case-study-impact.Rmd</code>)</td>
 </tr><tr><td>3</td>
 <td>Statistical parity</td>
 <td>every statistic re-implemented independently and asserted equal (log-rank, Cramér’s V, Cox HR/CI/p, Schoenfeld, AIC/loglik, fold CV C, <code>C + C_rev = 1</code>)</td>
