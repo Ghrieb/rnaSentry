@@ -2,19 +2,14 @@
 
 ![rnaSentry hex-sticker logo](reference/figures/logo.png)
 
-[![License:
-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE)
-![Bioconductor
-devel](https://img.shields.io/badge/Bioconductor-devel-6a5acd)![R \>=
-4.5” /\> \</p\> \<p\>Guarded and auditable discovery of prognostic
-RNA-seq signatures.\</p\> \<p\>\<code\>rnaSentry\</code\> orchestrates
-the statistical pipeline that goes from a raw bulk RNA-seq count matrix
-to a validated prognostic gene signature. Every automated decision is
-reported with the statistic that justified it, and the pipeline gates
-rather than silently degrades when its guardrails are not met. The
-package is designed to make a biomarker discovery workflow transparent,
-reproducible, and reviewable end to end.\</p\> \<div
-id=](https://img.shields.io/badge/R-%E2%89%A5_4.5-276dc3)
+Guarded and auditable discovery of prognostic RNA-seq signatures.
+
+`rnaSentry` orchestrates the statistical pipeline that goes from a raw
+bulk RNA-seq count matrix to a validated prognostic gene signature.
+Every automated decision is reported with the statistic that justified
+it, and the pipeline gates rather than silently degrades when its
+guardrails are not met. The package is designed to make a biomarker
+discovery workflow transparent, reproducible, and reviewable end to end.
 
 ## Status
 
