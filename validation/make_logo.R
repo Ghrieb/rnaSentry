@@ -17,6 +17,10 @@
 # whole composition top/bottom) and enlarged the emblem ~2x / text ~1.3x so
 # the shield + KM curve fill the hexagon instead of floating tiny inside it.
 #
+# Round 25.8: dropped the "GUARDED · AUDITABLE" tagline (subtitle) and reduced
+# the wordmark size 18.5 -> 17.5 so the title-only lockup sits lighter in the
+# lower hexagon.
+#
 # Output: man/figures/logo.png (1350 x 1500 px, transparent corners)
 
 library(ggplot2)
@@ -33,7 +37,6 @@ navy_bottom <- "#0D1319"
 paper       <- "#F5F6F4"
 line_white  <- "#EDEFEC"
 teal        <- "#4FC3C7"
-tagline_col <- "#8FA5A8"
 
 # ---- hexagon: perfect pointy-top hexagon, same vertices as the SVG -----
 hexagon <- data.frame(
@@ -84,9 +87,7 @@ p <- ggplot() +
             linewidth = 3.3 * scale_px, lineend = "round",
             linejoin = "round") +
   annotate("text", x = 450, y = 695, label = "rnaSentry",
-           family = "sans", fontface = "bold", size = 18.5, colour = paper) +
-  annotate("text", x = 450, y = 745, label = "GUARDED  \u00b7  AUDITABLE",
-           family = "mono", size = 5.7, colour = tagline_col)
+           family = "sans", fontface = "bold", size = 17.5, colour = paper)
 
 # ---- optional: subtle native gradient background (ggplot2 >= 3.5) -------
 # Replace the hex geom_polygon's `fill = navy_bottom` above with:
@@ -148,4 +149,4 @@ rr <- which(tl_ok, arr.ind = TRUE)
 stopifnot(nrow(rr) > 100,
           max(rr[, 2]) < (848 * 1.5) + 8, min(rr[, 2]) > (52 * 1.5) - 8,
           max(rr[, 1]) < (960 * 1.5) + 8, min(rr[, 1]) > (40 * 1.5) - 8)
-message("All logo assertions passed (round 25.7 orientation + scale).")
+message("All logo assertions passed (round 25.8 title-only lockup).")
