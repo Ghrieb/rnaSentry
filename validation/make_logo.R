@@ -21,6 +21,9 @@
 # the wordmark size 18.5 -> 17.5 so the title-only lockup sits lighter in the
 # lower hexagon.
 #
+# Round 25.9: reduced the wordmark size further 17.5 -> 16.5 (18.5 -> 16.5 in
+# total) so the title reads smaller against the enlarged emblem.
+#
 # Output: man/figures/logo.png (1350 x 1500 px, transparent corners)
 
 library(ggplot2)
@@ -87,7 +90,7 @@ p <- ggplot() +
             linewidth = 3.3 * scale_px, lineend = "round",
             linejoin = "round") +
   annotate("text", x = 450, y = 695, label = "rnaSentry",
-           family = "sans", fontface = "bold", size = 17.5, colour = paper)
+           family = "sans", fontface = "bold", size = 16.5, colour = paper)
 
 # ---- optional: subtle native gradient background (ggplot2 >= 3.5) -------
 # Replace the hex geom_polygon's `fill = navy_bottom` above with:
@@ -149,4 +152,4 @@ rr <- which(tl_ok, arr.ind = TRUE)
 stopifnot(nrow(rr) > 100,
           max(rr[, 2]) < (848 * 1.5) + 8, min(rr[, 2]) > (52 * 1.5) - 8,
           max(rr[, 1]) < (960 * 1.5) + 8, min(rr[, 1]) > (40 * 1.5) - 8)
-message("All logo assertions passed (round 25.8 title-only lockup).")
+message("All logo assertions passed (round 25.9 wordmark 16.5).")
