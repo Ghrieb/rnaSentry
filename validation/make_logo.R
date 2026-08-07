@@ -1,74 +1,148 @@
 # validation/make_logo.R
-# Generates the rnaSentry hex-sticker logo with base R graphics only (no
-# external packages), so the asset is fully reproducible offline. Output:
-# man/figures/logo.png (used by pkgdown and shown on the GitHub repo page).
+# Generates the rnaSentry hex-sticker logo: perfect regular hexagon, radial
+# electric-blue glow fading to deep navy, white hex frame line, minimalist
+# single-strand RNA curve through 4 glowing data nodes, professional layout.
+# Pure ggplot2 + ragg + grid (fully offline; no hexSticker needed).
+# Output: man/figures/logo.png (1732 x 2000 px, transparent corners).
 
-rounded_hex <- function(cx, cy, r, round_r = NULL, n_arc = 24) {
-  # Vertices of a pointy-top hexagon (corner at 90 deg), ordered counterclockwise.
-  ang <- pi / 180 * (90 + 60 * (0:5))
-  corners <- cbind(cx + r * cos(ang), cy + r * sin(ang))
-  if (is.null(round_r)) round_r <- 0.16 * r
-  rr <- min(round_r, 0.5 * r)
-  arcs <- vector("list", 6)
-  for (i in 0:5) {
-    p_in  <- corners[i %% 6 + 1L, ]     # previous corner
-    p_cor <- corners[(i + 1) %% 6 + 1L, ]  # corner being rounded
-    p_out <- corners[(i + 2) %% 6 + 1L, ]  # next corner
-    v1 <- p_in - p_cor
-    v2 <- p_out - p_cor
-    v1 <- v1 / sqrt(sum(v1^2))
-    v2 <- v2 / sqrt(sum(v2^2))
-    a0 <- atan2(v1[2], v1[1])
-    th <- seq(a0, a0 + pi / 3, length.out = n_arc)
-    arcs[[i + 1L]] <- cbind(p_cor[1] + rr * cos(th), p_cor[2] + rr * sin(th))
-  }
-  do.call(rbind, arcs)
+library(ggplot2)
+library(ragg)
+library(grid)
+
+pdf(NULL)   # metrics device; prevents a stray Rplots.pdf in the repo root
+
+# --- canvas / geometry -----------------------------------------------------
+px_per_unit <- 1000
+res         <- 300
+canvas_w    <- round(sqrt(3) * 1000)   # 1732
+canvas_h    <- 2000
+
+hex_pts <- function(r) {
+  th <- pi / 180 * (90 + 60 * (0:5))   # exact 6 vertices, no arcs
+  data.frame(x = r * cos(th), y = r * sin(th))
 }
+
+# --- radial gradient (electric blue centre -> deep navy edge, hex-masked) ----
+make_hex_gradient <- function(n = 800, from = "#8CCDF5", to = "#0B2A4A") {
+  m  <- round(n * 0.8660)
+  ys <- seq(1, -1, length.out = n)
+  xs <- seq(-0.8660, 0.8660, length.out = m)
+  g  <- expand.grid(x = xs, y = ys)
+  d  <- sqrt(g$x^2 + g$y^2)            # radial distance, 1 at top/bottom vertex
+  t  <- pmin(1, d)
+  t  <- t * t * (3 - 2 * t)            # smoothstep for smooth falloff
+  c1 <- col2rgb(from) / 255
+  c2 <- col2rgb(to)   / 255
+  col_r <- (1 - t) * c1[1] + t * c2[1]
+  col_g <- (1 - t) * c1[2] + t * c2[2]
+  col_b <- (1 - t) * c1[3] + t * c2[3]
+  absy <- abs(g$y)
+  hw   <- 0.8660 * ifelse(absy <= 0.5, 1, (1 - absy) / 0.5)
+  inside <- abs(g$x) <= hw
+  col   <- rgb(col_r, col_g, col_b, alpha = ifelse(inside, 1, 0))
+  as.raster(matrix(col, nrow = n, ncol = m, byrow = TRUE))
+}
+grad_raster <- make_hex_gradient()
+
+# --- text metrics -----------------------------------------------------------
+fit_size_pt <- function(txt, target_units, bold = FALSE) {
+  g <- grid::textGrob(txt, gp = grid::gpar(fontsize = 100, fontfamily = "sans",
+                                           fontface = if (bold) "bold" else "plain"))
+  w100 <- grid::convertWidth(grid::grobWidth(g), "pt", valueOnly = TRUE)
+  target_units * px_per_unit * 100 / (w100 * res / 72)
+}
+size_mm <- function(S_pt) S_pt / 2.845276
+
+w_pt <- fit_size_pt("rnaSentry",          0.55, bold = TRUE)
+s_pt <- fit_size_pt("guarded & auditable", 0.55)
+cat(sprintf("wordmark %.1f pt, subtitle %.1f pt\n", w_pt, s_pt))
+
+# --- palette ---------------------------------------------------------------
+white <- "#FFFFFF"
+ice   <- "#B8DCE6"
+cyan  <- "#7CCBE0"
+navy  <- "#0B2A4A"
+
+# --- shield (scaled down, held high) ----------------------------------------
+shield <- data.frame(
+  x = c(-0.26, -0.26, -0.15,  0.00,  0.15,  0.26,  0.26),
+  y = c( 0.72,  0.50,  0.34,  0.18,  0.34,  0.50,  0.72)
+)
+
+# --- single-strand RNA curve through 4 glowing nodes -------------------------
+xs_n <- c(-0.15, -0.05, 0.05, 0.15)
+y_n  <- 0.45 + 0.095 * cos(pi * xs_n / 0.30)     # gentle hump through nodes
+nodes <- data.frame(x = xs_n, y = y_n)
+
+xs_c <- seq(-0.17, 0.17, length.out = 121)       # smooth curve (same formula)
+curve_df <- data.frame(x = xs_c,
+                       y = 0.45 + 0.095 * cos(pi * xs_c / 0.30))
+
+node_r <- function(r_units) r_units * px_per_unit / (res / 25.4)   # mm diameter
+
+# --- build -------------------------------------------------------------------
+p <- ggplot() +
+  coord_fixed(xlim = c(-0.866, 0.866), ylim = c(-1, 1), expand = FALSE) +
+  theme_void() +
+  theme(plot.background  = element_rect(fill = "transparent", colour = NA),
+        panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.margin      = margin(0, 0, 0, 0)) +
+  # radial gradient face, masked to the perfect hexagon
+  annotation_custom(rasterGrob(grad_raster, interpolate = TRUE),
+                    xmin = -0.866, xmax = 0.866, ymin = -1, ymax = 1) +
+  # crisp white frame line
+  geom_polygon(data = hex_pts(1.0), aes(x, y), fill = NA,
+               colour = white, linewidth = 3.2) +
+  # shield (faint fill + clean white outline)
+  geom_polygon(data = shield, aes(x, y), fill = "#FFFFFF10",
+               colour = white, linewidth = 2.2) +
+  # soft glow under the RNA curve
+  geom_line(data = curve_df, aes(x, y), colour = cyan, alpha = 0.20,
+            linewidth = 6.5, lineend = "round") +
+  geom_line(data = curve_df, aes(x, y), colour = "#EAF6FB",
+            linewidth = 2.3, lineend = "round") +
+  # 4 glowing data nodes (outer glow + halo + white core)
+  geom_point(data = nodes, aes(x, y), colour = cyan,  alpha = 0.30,
+             size = node_r(0.034)) +
+  geom_point(data = nodes, aes(x, y), colour = cyan,  alpha = 0.55,
+             size = node_r(0.021)) +
+  geom_point(data = nodes, aes(x, y), colour = white, fill = white,
+             size = node_r(0.011), shape = 21, stroke = 0) +
+  # typography: title at the optical centre, subtitle tucked just below
+  annotate("text", x = 0, y = -0.05, label = "rnaSentry", family = "sans",
+           size = size_mm(w_pt), fontface = "bold", colour = white) +
+  annotate("text", x = 0, y = -0.30, label = "guarded & auditable",
+           family = "sans", size = size_mm(s_pt), fontface = "plain",
+           colour = ice)
 
 out <- file.path("man", "figures", "logo.png")
 dir.create(dirname(out), showWarnings = FALSE, recursive = TRUE)
-
-png(out, width = 2000, height = 2000, res = 500)
-par(mar = c(0, 0, 0, 0), bg = "transparent")
-plot.new()
-plot.window(xlim = c(-1.05, 1.05), ylim = c(-1.05, 1.05), asp = 1)
-
-# --- radial gradient background (deep navy edge -> teal core) ----------------
-edge <- "#081C33"
-core <- c("#0E3A5C", "#1282A2")
-pal <- colorRampPalette(c(edge, core[1], core[2]))(120)
-for (i in seq_along(pal)) {
-  r <- 1.00 * (1 - (i - 1) / length(pal))
-  polygon(rounded_hex(0, 0, r, round_r = 0.16 * 1.00), col = pal[i], border = NA)
-}
-
-# --- subtle inner rim --------------------------------------------------------
-polygon(rounded_hex(0, 0, 0.985), col = NA, border = "#FFFFFF40", lwd = 5)
-
-# --- shield (sentry / guardrail motif) ---------------------------------------
-shx <- c(-0.31, -0.31, -0.13,  0.00,  0.13,  0.31,  0.31)
-shy <- c( 0.46,  0.10, -0.24, -0.33, -0.24,  0.10,  0.46)
-shx <- shx * 0.92
-shy <- shy * 0.92 + 0.10
-polygon(shx, shy, col = "#FFFFFF12", border = "#F2F7FB", lwd = 7,
-        ljoin = "round")
-
-# guardrail notches across the shield's top edge
-notch_x <- seq(-0.16, 0.16, length.out = 7)
-segments(notch_x, rep(0.555, 7), notch_x, rep(0.555, 7) + 0.07,
-         col = "#F2F7FB", lwd = 4, lend = "butt")
-
-# --- RNA strand (A/C/G/U nodes) inside the shield ----------------------------
-base_cols <- c(A = "#4EC9B0", C = "#F45B69", G = "#FFC53D", U = "#64D2FF")
-nx <- c(-0.19, -0.07, 0.05, 0.17)
-ny <- c(0.20, 0.335, 0.18, 0.335)
-lines(nx, ny, col = "#FFFFFFB3", lwd = 5)
-points(nx, ny, pch = 21, cex = 4.2, bg = base_cols, col = "#FFFFFF", lwd = 2.5)
-
-# --- wordmark ----------------------------------------------------------------
-text(0, -0.52, "rnaSentry", col = "#FFFFFF", cex = 2.6, font = 2, family = "sans")
-text(0, -0.715, "guarded & auditable", col = "#B8DCE6", cex = 1.05,
-     font = 1, family = "sans")
-
+agg_png(out, width = canvas_w, height = canvas_h, units = "px", res = res,
+        background = "transparent")
+print(p)
 dev.off()
-message("Wrote ", out)
+
+# --- verification (programmatic) ---------------------------------------------
+mw <- function(txt, S, bold = FALSE) grid::convertWidth(grid::grobWidth(
+  grid::textGrob(txt, gp = grid::gpar(fontsize = S, fontfamily = "sans",
+                                      fontface = if (bold) "bold" else "plain"))),
+  "pt", valueOnly = TRUE)
+pt2u <- function(pt) pt * (res / 72) / px_per_unit
+
+sub_units <- pt2u(mw("guarded & auditable", s_pt))
+half      <- sub_units / 2
+edge_y    <- -1 + 0.5773503 * half
+line_s    <- pt2u(72.07 * s_pt / 100)          # subtitle line height
+sub_bot   <- -0.30 - line_s / 2
+gap_edge  <- sub_bot - edge_y
+line_w    <- pt2u(72.07 * w_pt / 100)
+title_bot <- -0.05 + line_w / 2
+gap_t_s   <- title_bot - (-0.30 - line_s / 2)   # title bottom - subtitle top
+cat(sprintf("subtitle half-width %.3f u, clear gap to hex edge %.3f u (>0.10 ok)\n",
+            half, gap_edge))
+cat(sprintf("title-to-subtitle gap %.3f u (>0.08 ok)\n", gap_t_s))
+stopifnot(gap_edge > 0.10, gap_t_s > 0.08, half < 0.866)
+# nodes must stay inside the shield
+stopifnot(all(abs(nodes$x) <= 0.26),
+          all(nodes$y <= 0.72), all(nodes$y >= 0.18))
+message("Wrote ", out, " (", canvas_w, " x ", canvas_h, " px)")

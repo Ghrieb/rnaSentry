@@ -1,5 +1,17 @@
 # rnaSentry
 
+<p align="center">
+  <img src="man/figures/logo.png" alt="rnaSentry hex-sticker logo" width="220" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT" />
+  </a>
+  <img src="https://img.shields.io/badge/Bioconductor-devel-6a5acd" alt="Bioconductor devel" />
+  <img src="https://img.shields.io/badge/R-%E2%89%A5_4.5-276dc3" alt="R >= 4.5" />
+</p>
+
 Guarded and auditable discovery of prognostic RNA-seq signatures.
 
 `rnaSentry` orchestrates the statistical pipeline that goes from a raw bulk
