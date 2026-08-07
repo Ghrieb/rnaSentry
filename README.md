@@ -1,8 +1,4 @@
-# rnaSentry
-
-<p align="right">
-  <img src="man/figures/logo.png" alt="rnaSentry hex-sticker logo" width="220" />
-</p>
+# rnaSentry <img align="right" src="man/figures/logo.png" alt="rnaSentry hex-sticker logo" width="220" />
 
 <!-- badges: start -->
 [![pkgdown](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml)
