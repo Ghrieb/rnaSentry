@@ -9,5 +9,6 @@
 rnaSentry.BiocCheck/
 validation/cache/
 docs/
-pkgdown/
+pkgdown/*
+!pkgdown/favicon/
 vignettes/*.html
