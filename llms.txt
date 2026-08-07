@@ -1,7 +1,5 @@
 # rnaSentry
 
-![rnaSentry hex-sticker logo](reference/figures/logo.png)
-
 Guarded and auditable discovery of prognostic RNA-seq signatures.
 
 `rnaSentry` orchestrates the statistical pipeline that goes from a raw
