@@ -1,16 +1,17 @@
 # rnaSentry
 
-<p align="center">
+<p align="right">
   <img src="man/figures/logo.png" alt="rnaSentry hex-sticker logo" width="220" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT" />
-  </a>
-  <img src="https://img.shields.io/badge/Bioconductor-devel-6a5acd" alt="Bioconductor devel" />
-  <img src="https://img.shields.io/badge/R-%E2%89%A5_4.5-276dc3" alt="R >= 4.5" />
-</p>
+<!-- badges: start -->
+[![pkgdown](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE)
+[![Bioconductor devel](https://img.shields.io/badge/Bioconductor-devel-6a5acd)](https://bioconductor.org/packages/devel/bioc/)
+[![R >= 4.5](https://img.shields.io/badge/R-%E2%89%A5_4.5-276dc3)](https://www.r-project.org/)
+[![GitHub stars](https://img.shields.io/github/stars/Ghrieb/rnaSentry?style=flat&color=yellow)](https://github.com/Ghrieb/rnaSentry/stargazers)
+<!-- badges: end -->
 
 Guarded and auditable discovery of prognostic RNA-seq signatures.
 
