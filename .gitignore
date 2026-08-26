@@ -7,8 +7,8 @@
 *.Rcheck/
 .DS_Store
 rnaSentry.BiocCheck/
-validation/cache/
+validation/
 docs/
-pkgdown/*
-!pkgdown/favicon/
+pkgdown/
+_pkgdown.yml
 vignettes/*.html
