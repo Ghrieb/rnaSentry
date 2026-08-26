@@ -1,3 +1,12 @@
+# rnaSentry 0.99.3 (development)
+
+## New in this release
+
+- Fix duplicate chunk label `setup` collision with `inst/report_template.Rmd`
+  that caused vignette `rnaSentry.Rmd` to fail during `R CMD build` (renamed
+  6 vignette setup chunks to unique labels; set `render_report = FALSE` in
+  the main vignette's pipeline call).
+
 # rnaSentry 0.99.2 (development)
 
 ## New in this release

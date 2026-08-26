@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
+```{r rnaSentry-setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -163,7 +163,8 @@ external <- se_all[, 73:120]
 run <- run_rnaSentry(discovery, time_col = "time", event_col = "event",
                      top_n = 5, repeats = 2, folds = 3, seed = 7,
                      design_vars = c("condition", "batch"),
-                     design_terms = "condition")
+                     design_terms = "condition",
+                     render_report = FALSE)
 run
 ```
 
