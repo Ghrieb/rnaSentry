@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -39,7 +39,7 @@ a batch-dependent factor. Finally, survival depends on the latent variable
 correlates) -- a realistic setting in which an unadjusted screen can mistake
 batch-driven genes for prognostic ones.
 
-```{r}
+```{r build-cohort}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
@@ -76,7 +76,7 @@ A naive analyst runs univariate Cox regressions for every gene against
 survival and takes the top hits -- without checking whether the candidate
 genes are driven by batch, and without auditing the design.
 
-```{r, warning = FALSE}
+```{r naive-screen, warning = FALSE}
 lg <- log2(counts + 1)
 stat <- do.call(rbind, lapply(rownames(lg), function(g) {
     s <- summary(coxph(Surv(cd$time, cd$event) ~ lg[g, ]))
@@ -95,7 +95,7 @@ these batch artifacts into a signature. A naive model that then includes both
 of the near-identical design variables compounds the problem by
 double-counting collinear terms:
 
-```{r}
+```{r double-count}
 summary(coxph(Surv(time, event) ~ batch + region, data = as.data.frame(cd)))
 ```
 
@@ -107,14 +107,14 @@ standard errors and produces unstable coefficients that look like two
 
 ## Design audit
 
-```{r}
+```{r design-audit}
 da <- design_audit(se, design_vars = c("batch", "region"),
                    redundant_effect_size = 0.5)
 ```
 
 ### Pairwise redundancy
 
-```{r}
+```{r pairwise-table}
 da$pairwise_table
 ```
 
@@ -124,7 +124,7 @@ nearly the same information.
 
 ### Confounder scan
 
-```{r}
+```{r confounder-table}
 da$confounder_table
 ```
 
@@ -164,7 +164,7 @@ the shared confound without double-counting collinear terms.
 
 ### Recovered design
 
-```{r}
+```{r recovered-design}
 da$formula_text
 ```
 
@@ -179,7 +179,7 @@ Armed with the recommended design, the guarded discovery run adjusts its
 univariate screening for `batch`. The batch-driven genes are no longer the
 top hits:
 
-```{r, warning = FALSE}
+```{r adj-screen, warning = FALSE}
 adj <- do.call(rbind, lapply(rownames(lg), function(g) {
     s <- summary(coxph(Surv(cd$time, cd$event) ~ lg[g, ] + batch,
                        data = as.data.frame(cd)))
@@ -195,7 +195,7 @@ data.frame(gene = rownames(guarded_top),
 Once `batch` is in the model, the planted genes lose their survival
 association. The pipeline records this decision in the flag ledger:
 
-```{r, warning = TRUE}
+```{r guarded-sig, warning = TRUE}
 sig_guarded <- build_signature(se, "time", "event", top_n = 6,
                                repeats = 3, folds = 3,
                                design_terms = "batch", seed = 12)
@@ -229,6 +229,6 @@ formula over an ad-hoc pick.
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

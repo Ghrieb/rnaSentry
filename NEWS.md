@@ -1,3 +1,12 @@
+# rnaSentry 0.99.2 (development)
+
+## New in this release
+
+- Expanded `Description` field in DESCRIPTION to meet BiocCheck's 3-sentence
+  minimum.
+- Added unique labels to all 51 previously unlabeled vignette code chunks
+  across 6 vignettes.
+
 # rnaSentry 0.99.1 (development)
 
 ## New in this release

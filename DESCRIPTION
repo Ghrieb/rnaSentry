@@ -1,7 +1,7 @@
 Package: rnaSentry
 Type: Package
 Title: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: person("Abdelkarim Hani", "Ghrieb",
     email = "ghriebabdelkarimhani@gmail.com",
     role = c("aut", "cre"))
@@ -14,7 +14,10 @@ Description: Orchestrates the statistical pipeline underlying prognostic
     and external validation against public cohorts. Every automated
     statistical decision is reported with its supporting statistic and a
     plain-language rationale, and validation stages are gated rather than
-    silently degraded when guardrail criteria are not met.
+    silently degraded when guardrail criteria are not met. The package
+    records all guardrail decisions, flag ledgers, and validation results
+    in a structured audit trail that can be rendered into a standalone HTML
+    report.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false

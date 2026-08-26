@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -52,7 +52,7 @@ without any red flag in the data. `survival::concordance()` defaults to
 Calling the default on a risk score returns `1 - Harrell's C`. The identity
 below is what the parity test suite now asserts on every fold:
 
-```{r}
+```{r sign-convention}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
@@ -106,6 +106,6 @@ build-time vignette:
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

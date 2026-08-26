@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -36,7 +36,7 @@ are meant to be read alongside this walkthrough:
 
 # Installation
 
-```{r, eval = FALSE}
+```{r install, eval = FALSE}
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("rnaSentry")
@@ -72,7 +72,7 @@ issues in a flag ledger in the object's metadata, so problems such as
 duplicate sample identifiers or non-integer counts are surfaced up front and
 carried into the rendered report's audit trail.
 
-```{r}
+```{r data-intake}
 library(rnaSentry)
 library(SummarizedExperiment)
 
@@ -99,7 +99,7 @@ issues are flagged as warnings and carried forward.
 for duplicate sample identifiers, missing metadata, non-integer count
 values, and library-size outliers.
 
-```{r}
+```{r qc-explore}
 set.seed(1)
 counts <- matrix(rpois(600, lambda = 200), nrow = 60, ncol = 10,
                   dimnames = list(paste0("gene", 1:60), paste0("S", 1:10)))
@@ -118,7 +118,7 @@ qc
 from XIST and Y-chromosome marker gene expression, to catch sample swaps
 or metadata errors before they propagate downstream.
 
-```{r}
+```{r sex-check}
 genes <- c("XIST", "RPS4Y1", "DDX3Y", "KDM5D")
 expr <- matrix(c(950, 5, 5, 5,   # sample looks female
                   5, 400, 380, 410),  # sample looks male
@@ -138,7 +138,7 @@ models. Here we build a synthetic cohort with an engineered survival
 signal, split it into discovery and validation halves, and run the pipeline
 on the discovery half.
 
-```{r}
+```{r run-pipeline}
 set.seed(1)
 n_genes <- 120
 n_samples <- 120
@@ -172,7 +172,7 @@ session, and a second call in the same session is refused until the lock is
 released. This is the reproducibility guardrail against silently
 re-selecting signature genes after survival analysis.
 
-```{r}
+```{r unlock-signature}
 # Release the lock so the pipeline can be run again in this session.
 run$stages$build_signature <-
   lock_signature(run$stages$build_signature, lock = FALSE)
@@ -181,7 +181,7 @@ run$stages$build_signature <-
 The result's `stages` list holds each stage's full result, including the
 `flags` data.frame that records every issue raised:
 
-```{r}
+```{r stage-flags}
 run$stages$build_signature$flags
 ```
 
@@ -191,7 +191,7 @@ The discovery cutpoint is recorded by the `km_curve` stage. Re-scoring the
 held-out samples against that same cutpoint, without re-estimating anything
 from the external data, gives an honest portability check:
 
-```{r}
+```{r ext-validate}
 val <- validate_external(run$stages$build_signature, external,
                          cutpoint = run$stages$km_curve$cutpoint)
 val
@@ -262,7 +262,7 @@ First, wrong input scale. If your expression matrix is already
 log-transformed but stored under a `counts`-named assay, every downstream
 stage sees a double-logged matrix. The pipeline catches this and warns:
 
-```{r, warning = TRUE}
+```{r wrong-scale, warning = TRUE}
 prelogged <- log2(as.matrix(assay(se_all, "counts")) + 1)
 se_wrong <- se_all
 assay(se_wrong, "counts") <- prelogged
@@ -276,7 +276,7 @@ without a second transform.
 Second, underpowered discovery. On a small cohort, `build_signature()`
 warns that the event count per signature gene is low:
 
-```{r, warning = TRUE}
+```{r underpowered, warning = TRUE}
 small <- se_all[, 1:40]
 build_signature(small, "time", "event", top_n = 10, repeats = 1,
                 folds = 2, seed = 7)
@@ -287,6 +287,6 @@ propagate into the rendered report's audit trail.
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

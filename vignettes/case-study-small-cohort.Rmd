@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -30,7 +30,7 @@ We build a 30-sample cohort with 23 events and a real (if weak) survival
 signal driven by five genes, then ask for a 5-gene signature. This is 4.6
 events per parameter -- below the guardrail of 5.
 
-```{r, warning = TRUE}
+```{r build-signature, warning = TRUE}
 library(rnaSentry)
 library(SummarizedExperiment)
 
@@ -56,7 +56,7 @@ sig <- build_signature(se, "time", "event", top_n = 5,
 A standard analysis reports the single number the summary returns and stops
 there:
 
-```{r}
+```{r naive-summary}
 sig$cv_summary
 ```
 
@@ -69,7 +69,7 @@ single mean is hiding.
 
 ## The guardrail fires
 
-```{r}
+```{r guardrail-flags}
 sig$flags
 ```
 
@@ -79,7 +79,7 @@ stage's flag ledger so it propagates into the rendered report.
 
 ## The mean hides the spread
 
-```{r}
+```{r per-fold-results}
 sig$cv_results
 ```
 
@@ -126,6 +126,6 @@ silently proceeding.
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

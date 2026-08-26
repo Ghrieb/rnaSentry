@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -42,7 +42,7 @@ processed via `validation/repro_gse20685.R` in the GitHub repository:
   plus `time` (years), `event` (1 = death), `age`, and `subtype` in the
   sample metadata.
 
-```{r}
+```{r load-data}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
@@ -61,7 +61,7 @@ lines: pick a few highly variable genes, screen them against survival with
 univariate Cox regressions, average the survivors into a risk score, and
 quote the concordance that R prints by default. Let us run exactly that.
 
-```{r, warning = FALSE}
+```{r naive-screen, warning = FALSE}
 lg <- assays(se)$logcounts
 vars <- apply(lg, 1, stats::var, na.rm = TRUE)
 cand <- names(sort(vars, decreasing = TRUE))[seq_len(200)]
@@ -111,7 +111,7 @@ groups. Because the cohort metadata records `age` and `subtype`, both are
 supplied as design variables so the audit can check them against the
 expression surrogate.
 
-```{r, warning = TRUE}
+```{r guarded-run, warning = TRUE}
 run <- run_rnaSentry(se, time_col = "time", event_col = "event",
                      outcome_col = "overall_survival",
                      design_vars = c("age", "subtype"),
@@ -128,7 +128,7 @@ session is refused until the lock is released (see the main vignette). Because
 all vignettes build in one session, we release it here so the remaining
 vignettes can run their own pipeline calls:
 
-```{r}
+```{r unlock-signature}
 run$stages$build_signature <-
     lock_signature(run$stages$build_signature, lock = FALSE)
 ```
@@ -153,7 +153,7 @@ ledger:
 
 ## Risk groups
 
-```{r}
+```{r risk-groups}
 km <- run$stages$km_curve
 km$log_rank_p
 ```
@@ -189,7 +189,7 @@ plot(run$stages$survival_parametric)
 
 ## Design audit
 
-```{r}
+```{r design-audit}
 da <- run$stages$design_audit
 da$confounder_table
 da$formula_text
@@ -244,6 +244,6 @@ limitation is stated, not hidden.
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```
