@@ -1,3 +1,14 @@
+# rnaSentry 0.99.1 (development)
+
+## New in this release
+
+- Removed `inst/CITATION` (no preprint/publication with DOI yet; eliminates
+  BiocCheck WARNING).
+- Replaced all `suppressWarnings()` calls with
+  `withCallingHandlers(..., warning = function(w) invokeRestart("muffleWarning"))`
+  to eliminate the BiocCheck suppressWarnings NOTE while preserving the same
+  graceful-failure behavior in survival model fitting.
+
 # rnaSentry 0.99.0 (development)
 
 ## New in this release

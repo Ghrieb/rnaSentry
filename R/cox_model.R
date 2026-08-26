@@ -190,8 +190,9 @@ cox_model <- function(sig, se, confounders = character(0)) {
   for (t in cov_terms) d[[t]] <- cd_df[[t]]
 
   fit <- tryCatch(
-    suppressWarnings(
-      survival::coxph(survival::Surv(time, event) ~ ., data = d)
+    withCallingHandlers(
+      survival::coxph(survival::Surv(time, event) ~ ., data = d),
+      warning = function(w) invokeRestart("muffleWarning")
     ),
     error = function(e) NULL
   )

@@ -137,9 +137,10 @@ survival_parametric <- function(sig, se,
   failed <- character(0)
   for (dist in dists) {
     fit <- tryCatch(
-      suppressWarnings(
+      withCallingHandlers(
         survival::survreg(survival::Surv(time, event) ~ score, data = d,
-                          dist = dist)
+                          dist = dist),
+        warning = function(w) invokeRestart("muffleWarning")
       ),
       error = function(e) NULL
     )

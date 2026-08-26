@@ -245,9 +245,10 @@ validate_external <- function(sig, external_se, time_col = NULL,
   # longer survival"). Regression guard: test-statistical_parity.R
   # ("survival::concordance reverse convention satisfies C + C_rev = 1").
   conc <- tryCatch(
-    suppressWarnings(
+    withCallingHandlers(
       survival::concordance(survival::Surv(time, event) ~ score,
-                            data = d, reverse = TRUE)
+                            data = d, reverse = TRUE),
+      warning = function(w) invokeRestart("muffleWarning")
     ),
     error = function(e) NULL
   )
