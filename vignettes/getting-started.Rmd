@@ -1,5 +1,5 @@
 ---
-title: "Getting started: from two CSVs to a SummarizedExperiment"
+title: "2. Getting started: from two CSVs to a SummarizedExperiment"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:

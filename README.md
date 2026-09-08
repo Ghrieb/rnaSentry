@@ -223,7 +223,7 @@ live GEO and documented here.
 
 A 3000-gene x 327-sample subset of GSE20685 (Li *et al.*, 2010; Affymetrix
 GPL570, 83 deaths) is fetched via `GEOquery::getGEO("GSE20685")` — see
-`inst/script/repro_gse20685.R` to regenerate a local
+`inst/scripts/repro_gse20685.R` to regenerate a local
 `SummarizedExperiment` (not committed to `inst/extdata`; vignettes use a
 synthetic offline fallback with the same structure) — and is walked through
 in `vignette("case-study-brca")`. On the bundled subset the

@@ -1,5 +1,5 @@
 ---
-title: "Naive analysis vs rnaSentry: what the guardrails prevent"
+title: "3. Naive analysis vs rnaSentry: what the guardrails prevent"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:

@@ -23,7 +23,7 @@
 # log-rank p = 3.8e-17).
 #
 # Usage (dev only; GEOquery is not a package dependency):
-#   Rscript inst/script/repro_gse20685.R   # run from the package root
+#   Rscript inst/scripts/repro_gse20685.R   # run from the package root
 #
 # If the raw eset was already downloaded (e.g. cached), point
 # GSE20685_ESET_RDS at it to skip the download.

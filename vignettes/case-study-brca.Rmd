@@ -35,7 +35,7 @@ microarray series of 327 primary breast tumors with overall-survival
 follow-up, fetched via `GEOquery` to demonstrate reuse of existing
 Bioconductor infrastructure. The full series matrix is obtained with
 `GEOquery::getGEO("GSE20685", GSEMatrix = TRUE)` and processed via
-`inst/script/repro_gse20685.R` in the package repository:
+`inst/scripts/repro_gse20685.R` in the package repository:
 
 - probe-level log2 intensities from the MAS5-summarized series matrix,
 - probe-to-gene collapse by largest mean expression,
@@ -51,11 +51,11 @@ synthetic cohort with the same structure; replace the synthetic block with the
 ```{r geoquery-example, eval = requireNamespace("GEOquery", quietly = TRUE)}
 # Demonstrates reuse of Bioconductor GEO infrastructure (eval when GEOquery
 # is installed; offline Bioc farm skips gracefully and uses synthetic below).
-# Cached via BiocFileCache when available; see inst/script/repro_gse20685.R
+# Cached via BiocFileCache when available; see inst/scripts/repro_gse20685.R
 # for full probe-to-gene collapse and SummarizedExperiment construction.
 if (requireNamespace("GEOquery", quietly = TRUE)) {
   # Example: gse <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]
-  message("GEOquery available: run inst/script/repro_gse20685.R to fetch GSE20685 (not run in vignette).")
+  message("GEOquery available: run inst/scripts/repro_gse20685.R to fetch GSE20685 (not run in vignette).")
 }
 ```
 

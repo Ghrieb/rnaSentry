@@ -1,3 +1,14 @@
+# rnaSentry 0.99.6 (development)
+
+## New in this release
+
+- Proactive hygiene (BiocContributions#168): full MIT LICENSE text,
+  trimmed `Imports` (`stats`/`graphics` removed, `Biobase` dropped from
+  `Suggests`), removed empty `inst/extdata`, renamed `inst/script` →
+  `inst/scripts` per Bioc convention, added package-level `?rnaSentry`
+  man page, synced remaining vignette `title:` with numbered
+  `VignetteIndexEntry`, and fixed `CRLF` → `LF`.
+
 # rnaSentry 0.99.5 (development)
 
 ## New in this release
