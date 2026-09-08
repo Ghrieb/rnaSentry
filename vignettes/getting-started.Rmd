@@ -1,5 +1,5 @@
 ---
-title: "Getting started: from two CSVs to a SummarizedExperiment"
+title: "2. Getting started: from two CSVs to a SummarizedExperiment"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:
@@ -7,12 +7,12 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Getting started: from two CSVs to a SummarizedExperiment}
+  %\VignetteIndexEntry{2. Getting started: from two CSVs to a SummarizedExperiment}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r getting-started-setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -37,7 +37,7 @@ paths and column names with your own and the block works unchanged.
 
 # Build two example CSV files
 
-```{r}
+```{r build-csv}
 library(rnaSentry)
 library(SummarizedExperiment)
 
@@ -53,7 +53,7 @@ cnt <- matrix(rpois(n_genes * n_samples, lambda = 200),
               dimnames = list(genes, samples))
 
 # Clinical metadata, one row per sample.
-clin <- data.frame(
+clin <- S4Vectors::DataFrame(
     time  = round(rexp(n_samples, rate = 0.08), 1),
     event = rbinom(n_samples, size = 1, prob = 0.5),
     batch = factor(rep(c("B1", "B2", "B3"), length.out = n_samples)),
@@ -84,7 +84,7 @@ pipeline: `counts.csv` (genes in rows, samples in columns) and
 
 # Step 1: read both files
 
-```{r}
+```{r read-csv}
 counts   <- as.matrix(read.csv(file.path(td, "counts.csv"),   row.names = 1))
 clinical <- read.csv(file.path(td, "clinical.csv"), row.names = 1)
 
@@ -104,7 +104,7 @@ a sample re-labeled, or a version mismatch). Passing them to
 mis-aligned columns. The fix is a single `intersect()` that keeps only
 samples found in **both** files:
 
-```{r}
+```{r intersect-samples}
 n_counts_before <- ncol(counts)
 n_clin_before   <- nrow(clinical)
 
@@ -129,12 +129,12 @@ a version or delimiter mismatch between the two files.
 `load_counts()` constructs the object and records every intake issue it
 finds in a flag ledger stored in `metadata(se)$flags`:
 
-```{r}
+```{r load-counts}
 se <- load_counts(counts, clinical)
 se
 ```
 
-```{r}
+```{r load-flags}
 S4Vectors::metadata(se)$flags
 ```
 
@@ -150,7 +150,7 @@ is to make sure you saw the issue first.
 expression principal component and flags potential confounders, before any
 per-gene modeling is invested in:
 
-```{r}
+```{r design-audit}
 da <- design_audit(se, design_vars = c("batch", "stage"))
 da
 ```
@@ -162,7 +162,7 @@ construction with repeated cross-validation, and the survival-modeling
 stages on the same object. It needs a numeric follow-up `time` column and a
 `0/1` `event` indicator in `colData`:
 
-```{r, warning = TRUE}
+```{r run-pipeline, warning = TRUE}
 run <- run_rnaSentry(se, time_col = "time", event_col = "event",
                      top_n = 5, repeats = 1, folds = 2, seed = 42,
                      design_vars = c("batch", "stage"),
@@ -181,7 +181,7 @@ session, so a second call in the same session is refused until the lock is
 released. This is the reproducibility guardrail against silently re-selecting
 signature genes after survival analysis.
 
-```{r}
+```{r unlock-signature}
 run$stages$build_signature <-
     lock_signature(run$stages$build_signature, lock = FALSE)
 ```
@@ -193,7 +193,7 @@ pipeline computes `log2(counts + 1)` when it runs. If your input file is
 *already normalized* (CPM, TPM, VST, or a microarray matrix), store it under
 the name `logcounts` instead so it is used as-is and not double-logged:
 
-```{r}
+```{r assay-naming}
 se_norm <- se
 SummarizedExperiment::assayNames(se_norm) <- "logcounts"
 ```
@@ -203,6 +203,6 @@ which scale your data is in.
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

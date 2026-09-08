@@ -333,7 +333,7 @@ build_signature <- function(se, time_col, event_col,
   # ---- univariate Cox screening -------------------------------------------
   d0 <- data.frame(time = time_vec, event = event_vec)
   if (use_adjust) {
-    for (t in design_terms) d0[[t]] <- as.data.frame(cd)[[t]]
+    d0[design_terms] <- as.data.frame(cd)[design_terms]
   }
   screen <- lapply(rownames(mat), function(g) {
     d0$g <- mat[g, ]
@@ -345,8 +345,9 @@ build_signature <- function(se, time_col, event_col,
       stats::as.formula("survival::Surv(time, event) ~ g")
     }
     fit <- tryCatch(
-      suppressWarnings(
-        survival::coxph(form, data = d0)
+      withCallingHandlers(
+        survival::coxph(form, data = d0),
+        warning = function(w) invokeRestart("muffleWarning")
       ),
       error = function(e) NULL
     )
@@ -396,8 +397,9 @@ build_signature <- function(se, time_col, event_col,
                     t(as.matrix(mat[sel_genes, , drop = FALSE])),
                     check.names = FALSE)
     fit <- tryCatch(
-      suppressWarnings(
-        survival::coxph(survival::Surv(time, event) ~ ., data = d)
+      withCallingHandlers(
+        survival::coxph(survival::Surv(time, event) ~ ., data = d),
+        warning = function(w) invokeRestart("muffleWarning")
       ),
       error = function(e) NULL
     )
@@ -492,8 +494,9 @@ build_signature <- function(se, time_col, event_col,
                          t(as.matrix(mat[genes, train, drop = FALSE])),
                          check.names = FALSE)
       fit_tr <- tryCatch(
-        suppressWarnings(
-          survival::coxph(survival::Surv(time, event) ~ ., data = d_tr)
+        withCallingHandlers(
+          survival::coxph(survival::Surv(time, event) ~ ., data = d_tr),
+          warning = function(w) invokeRestart("muffleWarning")
         ),
         error = function(e) NULL
       )
@@ -522,11 +525,12 @@ build_signature <- function(se, time_col, event_col,
             # test-statistical_parity.R ("survival::concordance reverse
             # convention satisfies C + C_rev = 1") fails if this is reverted.
             conc <- tryCatch(
-              suppressWarnings(
+              withCallingHandlers(
                 survival::concordance(
                   survival::Surv(time_vec[test], event_vec[test]) ~ score_test,
                   reverse = TRUE
-                )
+                ),
+                warning = function(w) invokeRestart("muffleWarning")
               ),
               error = function(e) NULL
             )

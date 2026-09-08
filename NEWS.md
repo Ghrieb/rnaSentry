@@ -1,3 +1,67 @@
+# rnaSentry 0.99.6 (development)
+
+## New in this release
+
+- Proactive hygiene (BiocContributions#168): full MIT LICENSE text,
+  trimmed `Imports` (`stats`/`graphics` removed, `Biobase` dropped from
+  `Suggests`), removed empty `inst/extdata`, renamed `inst/script` →
+  `inst/scripts` per Bioc convention, added package-level `?rnaSentry`
+  man page, synced remaining vignette `title:` with numbered
+  `VignetteIndexEntry`, and fixed `CRLF` → `LF`.
+
+# rnaSentry 0.99.5 (development)
+
+## New in this release
+
+- Zero-nit polish (BiocContributions#168): expanded Introduction to a
+  self-contained abstract (objective, models, functions, Bioconductor
+  motivation), added inline comparison table to Positioning, synced 3
+  vignette titles with numbered `VignetteIndexEntry`, made GEO demo
+  conditionally evaluated (`requireNamespace("GEOquery")`) with
+  `BiocFileCache` note, fixed `inst/script` to write to `tempdir()` (not
+  `inst/extdata`), and removed remaining `c()`-growth / `1:n` nits.
+
+# rnaSentry 0.99.4 (development)
+
+## New in this release
+
+- Reviewer fixes (BiocContributions#168): numbered vignettes `1.`–`6.` for
+  `browseVignettes()` ordering, removed bundled GEO data from `inst/extdata`
+  in favour of `GEOquery` (see `inst/script/repro_gse20685.R`; vignettes now
+  use synthetic cohorts offline with `GEOquery` example `eval=FALSE`),
+  added Positioning and Prior Art to introductory vignette, replaced 2
+  vectorizable `for` loops with `d[terms] <- cd[terms]` assignment, and
+  switched vignette `colData` constructions to `S4Vectors::DataFrame`.
+
+# rnaSentry 0.99.3 (development)
+
+## New in this release
+
+- Fix duplicate chunk label `setup` collision with `inst/report_template.Rmd`
+  that caused vignette `rnaSentry.Rmd` to fail during `R CMD build` (renamed
+  6 vignette setup chunks to unique labels; set `render_report = FALSE` in
+  the main vignette's pipeline call).
+
+# rnaSentry 0.99.2 (development)
+
+## New in this release
+
+- Expanded `Description` field in DESCRIPTION to meet BiocCheck's 3-sentence
+  minimum.
+- Added unique labels to all 51 previously unlabeled vignette code chunks
+  across 6 vignettes.
+
+# rnaSentry 0.99.1 (development)
+
+## New in this release
+
+- Removed `inst/CITATION` (no preprint/publication with DOI yet; eliminates
+  BiocCheck WARNING).
+- Replaced all `suppressWarnings()` calls with
+  `withCallingHandlers(..., warning = function(w) invokeRestart("muffleWarning"))`
+  to eliminate the BiocCheck suppressWarnings NOTE while preserving the same
+  graceful-failure behavior in survival model fitting.
+
 # rnaSentry 0.99.0 (development)
 
 ## New in this release

@@ -1,9 +1,11 @@
-# Build inst/extdata/gse20685_case_study.rds: a deterministic, offline-safe
-# subset of the GSE20685 breast-cancer cohort for the case-study vignette.
+# Reproduce GSE20685 subset: a deterministic processing of the GSE20685
+# breast-cancer cohort via GEOquery (output NOT committed to inst/extdata
+# per Bioconductor data guidelines; vignettes use synthetic offline fallback
+# with the same structure — run this script locally to regenerate).
 #
 # This is the shipped copy of validation/repro_gse20685.R (kept in sync for
-# review). The inst/extdata file it produces is used by the
-# case-study-brca vignette.
+# review). Previously the output was inst/extdata/gse20685_case_study.rds
+# for the case-study-brca vignette; now use tempdir()/cache (do not commit).
 #
 # Source and licensing:
 #   GSE20685 (Li et al., 2010, "A five-gene molecular grade index and
@@ -21,7 +23,7 @@
 # log-rank p = 3.8e-17).
 #
 # Usage (dev only; GEOquery is not a package dependency):
-#   Rscript inst/script/repro_gse20685.R   # run from the package root
+#   Rscript inst/scripts/repro_gse20685.R   # run from the package root
 #
 # If the raw eset was already downloaded (e.g. cached), point
 # GSE20685_ESET_RDS at it to skip the download.
@@ -104,12 +106,12 @@ se <- SummarizedExperiment::SummarizedExperiment(
   assays = list(logcounts = expr_sub), colData = coldata
 )
 
-out <- "inst/extdata/gse20685_case_study.rds"
-dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
-# xz keeps the bundled file under BiocCheck's 5MB data-file guideline
+out <- file.path(tempdir(), "gse20685_case_study.rds")
+# Previously: "inst/extdata/gse20685_case_study.rds" (not committed; see NEWS 0.99.4)
+# Cache via BiocFileCache for reuse: BiocFileCache::BiocFileCache()$add(...)
 saveRDS(se, out, compress = "xz")
-cat(sprintf("wrote %s (%.1f MB)\n", out,
-            file.info(out)$size / 1e6))
+cat(sprintf("wrote %s (%.1f MB) — not committed to inst/extdata; copy manually if needed\n",
+            out, file.info(out)$size / 1e6))
 cat("colData columns:", paste(colnames(colData(se)), collapse = ", "), "\n")
 cat(sprintf("events = %d, time range = %.1f-%.1f years\n",
             sum(se$event), min(se$time), max(se$time)))

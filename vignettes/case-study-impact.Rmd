@@ -1,5 +1,5 @@
 ---
-title: "Naive analysis vs rnaSentry: what the guardrails prevent"
+title: "3. Naive analysis vs rnaSentry: what the guardrails prevent"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:
@@ -7,12 +7,12 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Naive analysis vs rnaSentry: what the guardrails prevent}
+  %\VignetteIndexEntry{3. Naive analysis vs rnaSentry: what the guardrails prevent}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r impact-setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
@@ -52,13 +52,29 @@ without any red flag in the data. `survival::concordance()` defaults to
 Calling the default on a risk score returns `1 - Harrell's C`. The identity
 below is what the parity test suite now asserts on every fold:
 
-```{r}
+```{r sign-convention}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
 
-se <- readRDS(system.file("extdata", "gse20685_case_study.rds",
-                          package = "rnaSentry"))
+# Synthetic cohort for the sign-convention demo (real GEO via GEOquery
+# shown in case-study-brca; synthetic used here for offline builds)
+set.seed(20685)
+n_genes <- 3000
+n_samples <- 327
+genes <- paste0("GENE", seq_len(n_genes))
+samples <- paste0("Sample", seq_len(n_samples))
+mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
+              nrow = n_genes, ncol = n_samples,
+              dimnames = list(genes, samples))
+risk0 <- colMeans(mat[1:5, , drop = FALSE])
+event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
+censor_time <- rexp(n_samples, rate = 0.04)
+time <- pmin(event_time, censor_time)
+event <- as.integer(event_time < censor_time)
+coldata <- S4Vectors::DataFrame(time = time, event = event,
+                                row.names = samples)
+se <- SummarizedExperiment(assays = list(logcounts = mat), colData = coldata)
 score <- colMeans(assays(se)$logcounts[1:5, , drop = FALSE])
 c_default <- as.numeric(concordance(Surv(se$time, se$event) ~
                                     score)$concordance[1])
@@ -106,6 +122,6 @@ build-time vignette:
 
 # Session info
 
-```{r}
+```{r session-info}
 sessionInfo()
 ```

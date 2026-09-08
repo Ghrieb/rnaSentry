@@ -222,9 +222,11 @@ live GEO and documented here.
 ### 1. Breast cancer signature discovery (GSE20685)
 
 A 3000-gene x 327-sample subset of GSE20685 (Li *et al.*, 2010; Affymetrix
-GPL570, 83 deaths) ships as `inst/extdata/gse20685_case_study.rds` (built
-via `validation/repro_gse20685.R`) and is walked through in
-`vignette("case-study-brca")`. On the bundled subset the
+GPL570, 83 deaths) is fetched via `GEOquery::getGEO("GSE20685")` — see
+`inst/scripts/repro_gse20685.R` to regenerate a local
+`SummarizedExperiment` (not committed to `inst/extdata`; vignettes use a
+synthetic offline fallback with the same structure) — and is walked through
+in `vignette("case-study-brca")`. On the bundled subset the
 pipeline finds a 20-gene signature with screening-internal CV C = 0.80
 (sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design
 audit flags `subtype` (eta-squared = 0.78) and recommends adjusting for it.
