@@ -1,3 +1,10 @@
+# rnaSentry 0.99.7 (development)
+
+## New in this release
+
+- Fix `methods` in `Imports` (re-add after over-trim in 0.99.6 that caused
+  `R CMD check` `WARNING: '::' import not declared from 'methods'`).
+
 # rnaSentry 0.99.6 (development)
 
 ## New in this release
