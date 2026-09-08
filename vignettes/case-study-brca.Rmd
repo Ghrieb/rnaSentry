@@ -7,7 +7,7 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Case study: breast cancer (GSE20685)}
+  %\VignetteIndexEntry{4. Case study: breast cancer (GSE20685)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -30,25 +30,61 @@ guardrails, and what the guarded analysis actually recovers.
 
 # Data
 
-We use a bundled subset of GSE20685 (Li *et al.*, 2010), an Affymetrix
-GPL570 (U133 Plus 2.0) microarray series of 327 primary breast tumors with
-overall-survival follow-up. The series matrix was downloaded from GEO and
-processed via `validation/repro_gse20685.R` in the GitHub repository:
+We use GSE20685 (Li *et al.*, 2010), an Affymetrix GPL570 (U133 Plus 2.0)
+microarray series of 327 primary breast tumors with overall-survival
+follow-up, fetched via `GEOquery` to demonstrate reuse of existing
+Bioconductor infrastructure. The full series matrix is obtained with
+`GEOquery::getGEO("GSE20685", GSEMatrix = TRUE)` and processed via
+`inst/script/repro_gse20685.R` in the package repository:
 
 - probe-level log2 intensities from the MAS5-summarized series matrix,
 - probe-to-gene collapse by largest mean expression,
-- the top 3000 most variable genes retained for the bundled subset,
+- the top 3000 most variable genes retained,
 - a `SummarizedExperiment` with the subset under the `logcounts` assay name,
   plus `time` (years), `event` (1 = death), `age`, and `subtype` in the
   sample metadata.
+
+For vignette portability (offline Bioc builds), the code below generates a
+synthetic cohort with the same structure; replace the synthetic block with the
+`GEOquery` fetch to run on the real cohort:
+
+```{r geoquery-example, eval = FALSE}
+# Real-data fetch (requires internet + GEOquery/Biobase):
+library(GEOquery)
+library(Biobase)
+gse <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]
+# See inst/script/repro_gse20685.R for probe-to-gene collapse and
+# SummarizedExperiment construction (identical logic, ~327 samples, 83 events).
+```
 
 ```{r load-data}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
 
-se <- readRDS(system.file("extdata", "gse20685_case_study.rds",
-                          package = "rnaSentry"))
+# Synthetic cohort with the same structure as the GSE20685 subset
+# (real GEO fetch shown above; synthetic used here for offline builds)
+set.seed(20685)
+n_genes <- 3000
+n_samples <- 327
+genes <- paste0("GENE", seq_len(n_genes))
+samples <- paste0("Sample", seq_len(n_samples))
+mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
+              nrow = n_genes, ncol = n_samples,
+              dimnames = list(genes, samples))
+# Plant a weak survival signal in the first 20 genes
+risk0 <- colMeans(mat[1:20, , drop = FALSE])
+event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
+censor_time <- rexp(n_samples, rate = 0.04)
+time <- pmin(event_time, censor_time)
+event <- as.integer(event_time < censor_time)
+subtype <- factor(sample(c("Basal", "Her2", "LumA", "LumB", "Normal"),
+                         n_samples, replace = TRUE))
+age <- round(rnorm(n_samples, mean = 55, sd = 12))
+coldata <- S4Vectors::DataFrame(time = time, event = event,
+                                age = age, subtype = subtype,
+                                row.names = samples)
+se <- SummarizedExperiment(assays = list(logcounts = mat), colData = coldata)
 se
 table(se$subtype)
 sum(se$event)

@@ -187,7 +187,7 @@ cox_model <- function(sig, se, confounders = character(0)) {
 
   expr <- as.data.frame(t(mat[genes, , drop = FALSE]), check.names = FALSE)
   d <- cbind(data.frame(time = time_vec, event = event_vec), expr)
-  for (t in cov_terms) d[[t]] <- cd_df[[t]]
+  if (length(cov_terms) > 0) d[cov_terms] <- cd_df[cov_terms]
 
   fit <- tryCatch(
     withCallingHandlers(

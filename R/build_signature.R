@@ -333,7 +333,7 @@ build_signature <- function(se, time_col, event_col,
   # ---- univariate Cox screening -------------------------------------------
   d0 <- data.frame(time = time_vec, event = event_vec)
   if (use_adjust) {
-    for (t in design_terms) d0[[t]] <- as.data.frame(cd)[[t]]
+    d0[design_terms] <- as.data.frame(cd)[design_terms]
   }
   screen <- lapply(rownames(mat), function(g) {
     d0$g <- mat[g, ]

@@ -7,7 +7,7 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Introduction to rnaSentry}
+  %\VignetteIndexEntry{1. Introduction to rnaSentry}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -33,6 +33,32 @@ are meant to be read alongside this walkthrough:
 `vignette("case-study-brca")` (the full pipeline on a breast-cancer cohort),
 `vignette("case-study-confounder-audit")` (a planted batch confound), and
 `vignette("case-study-small-cohort")` (why small cohorts fail silently).
+
+# Positioning and prior art
+
+`rnaSentry`'s niche is **signature discovery with an enforced audit trail and
+honest failure modes**: quality control, sample-identity checks, confounder
+detection, and explicit gating are first-class product features rather than
+side effects. Two Bioconductor neighbours are closest:
+
+- **asuri** (Bioc 3.23, `10.18129/B9.bioc.asuri`) — de novo survival-marker
+  discovery from a `SummarizedExperiment` via subsampling glmnet + univariate
+  Cox. The closest methodological analogue; `rnaSentry` differs by design in its
+  sparse, directly inspectable linear score (univariate screen + joint Cox +
+  repeated stratified CV), its concordance/external-validation focus, and its
+  flag-ledger audit layer.
+- **signifinder** (Bioc 3.16, `10.18129/B9.bioc.signifinder`) — applies 60+
+  published cancer signatures as single-sample scores (GSVA; single-cell and
+  spatial support). Complementary rather than competing: it answers "what do
+  known signatures say about this sample?" where `rnaSentry` answers "can a new
+  survival signature be learned from this cohort?". It can be used downstream
+  to benchmark a discovered signature.
+
+Two prior-art anchors for the single-sample scoring approach itself:
+**SurvMarker** (Gammune & Gu, 2025, DOI 10.64898/2025.12.31.697184) uses
+PCA-based weighted scoring, and the **mRNAsi** stemness index (Malta *et al.*,
+*Cell* 2018;173:338-354.e15) uses OCLR-based scoring. Full profiles and a
+comparison table are in the validation dossier.
 
 # Installation
 
@@ -82,8 +108,8 @@ cnt <- cnt * 1.0
 cnt[1, ] <- 0L                 # gene1 has no counts anywhere (empty row)
 cnt[2, 1] <- cnt[2, 1] + 0.5   # a non-integer value
 colnames(cnt)[10] <- "S1"      # a duplicate sample identifier
-cd <- data.frame(condition = rep(c("tumor", "normal"), each = 5),
-                 row.names = paste0("S", 1:10))
+cd <- S4Vectors::DataFrame(condition = rep(c("tumor", "normal"), each = 5),
+                           row.names = paste0("S", 1:10))
 
 se_in <- load_counts(cnt, cd)
 S4Vectors::metadata(se_in)$flags

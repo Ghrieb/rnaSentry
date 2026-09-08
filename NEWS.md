@@ -1,3 +1,15 @@
+# rnaSentry 0.99.4 (development)
+
+## New in this release
+
+- Reviewer fixes (BiocContributions#168): numbered vignettes `1.`–`6.` for
+  `browseVignettes()` ordering, removed bundled GEO data from `inst/extdata`
+  in favour of `GEOquery` (see `inst/script/repro_gse20685.R`; vignettes now
+  use synthetic cohorts offline with `GEOquery` example `eval=FALSE`),
+  added Positioning and Prior Art to introductory vignette, replaced 2
+  vectorizable `for` loops with `d[terms] <- cd[terms]` assignment, and
+  switched vignette `colData` constructions to `S4Vectors::DataFrame`.
+
 # rnaSentry 0.99.3 (development)
 
 ## New in this release
