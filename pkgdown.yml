@@ -1,6 +1,6 @@
 pandoc: 3.8.3
 pkgdown: 2.2.1.9000
-pkgdown_sha: 179cfaee3d4e17eaa9e7d7c700b1269dc62e4d46
+pkgdown_sha: f69b62a7e74b58b42170284b6f3f56c674e7a3f8
 articles:
   case-study-brca: case-study-brca.html
   case-study-confounder-audit: case-study-confounder-audit.html
@@ -8,7 +8,4 @@ articles:
   case-study-small-cohort: case-study-small-cohort.html
   getting-started: getting-started.html
   rnaSentry: rnaSentry.html
-last_built: 2026-08-07T23:06Z
-urls:
-  reference: https://ghrieb.github.io/rnaSentry/reference
-  article: https://ghrieb.github.io/rnaSentry/articles
+last_built: 2026-09-08T18:54Z
