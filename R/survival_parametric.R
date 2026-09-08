@@ -133,9 +133,7 @@ survival_parametric <- function(sig, se,
   }
 
   d <- data.frame(time = time_vec, event = event_vec, score = score)
-  fits <- list()
-  failed <- character(0)
-  for (dist in dists) {
+  res <- lapply(dists, function(dist) {
     fit <- tryCatch(
       withCallingHandlers(
         survival::survreg(survival::Surv(time, event) ~ score, data = d,
@@ -144,14 +142,16 @@ survival_parametric <- function(sig, se,
       ),
       error = function(e) NULL
     )
-    if (is.null(fit)) {
-      failed <- c(failed, dist)
-      flags <- .add_flag(flags, "model_fit_failed", "warning",
-                         sprintf("The %s model failed to fit and was excluded from the comparison.",
-                                 dist))
-    } else {
-      fits[[dist]] <- fit
-    }
+    list(fit = fit, dist = dist)
+  })
+  fits <- setNames(lapply(res, `[[`, "fit"), dists)
+  keep <- !vapply(fits, is.null, logical(1))
+  failed <- dists[!keep]
+  fits <- fits[keep]
+  for (dist in failed) {
+    flags <- .add_flag(flags, "model_fit_failed", "warning",
+                       sprintf("The %s model failed to fit and was excluded from the comparison.",
+                               dist))
   }
   if (length(fits) == 0) {
     stop("None of the requested parametric models could be fitted.",

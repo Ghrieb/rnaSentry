@@ -1,3 +1,15 @@
+# rnaSentry 0.99.5 (development)
+
+## New in this release
+
+- Zero-nit polish (BiocContributions#168): expanded Introduction to a
+  self-contained abstract (objective, models, functions, Bioconductor
+  motivation), added inline comparison table to Positioning, synced 3
+  vignette titles with numbered `VignetteIndexEntry`, made GEO demo
+  conditionally evaluated (`requireNamespace("GEOquery")`) with
+  `BiocFileCache` note, fixed `inst/script` to write to `tempdir()` (not
+  `inst/extdata`), and removed remaining `c()`-growth / `1:n` nits.
+
 # rnaSentry 0.99.4 (development)
 
 ## New in this release

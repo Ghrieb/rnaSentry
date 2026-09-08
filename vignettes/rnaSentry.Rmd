@@ -23,7 +23,26 @@ RNA-seq count matrix to a validated prognostic gene signature: quality
 control and sample-identity auditing, confounder detection prior to
 differential expression, signature construction with cross-validation,
 survival modeling, and external validation. Every automated decision is
-reported with the statistic that justified it.
+reported with the statistic that justified it. The pipeline is built on
+core Bioconductor infrastructure — `SummarizedExperiment` for data
+representation, `BiocParallel` for optional parallel cross-validation, and
+`GEOquery`/`BiocFileCache` for public-cohort reuse — which motivates its
+inclusion in Bioconductor over CRAN.
+
+The five-stage workflow exposes eight exported functions:
+`load_counts()` (intake audit), `qc_explore()` / `sex_check()` (quality
+checks), `design_audit()` / `pca_audit()` (confounder detection), and
+`build_signature()` / `km_curve()` / `cox_model()` /
+`survival_parametric()` / `validate_external()` (linear Cox
+`survival::coxph` + `survival::survreg` risk scores, repeated stratified
+`repeats`/`folds` cross-validation with Harrell's concordance
+`reverse = TRUE`, and honest external validation). A flag ledger records
+every guardrail decision (e.g. `events_per_parameter`, `possibly_log_scaled`,
+`redundant_variable`) for the HTML audit report. Key points: the score is
+sparse and inspectable (univariate screen + joint Cox), the cross-validated
+concordance is screening-internal and must be calibrated against a null, and
+the pipeline never corrects or removes batch effects — it detects and reports
+them.
 
 This vignette demonstrates the pipeline's first stage: quality control and
 biological-sex verification.
@@ -57,8 +76,17 @@ side effects. Two Bioconductor neighbours are closest:
 Two prior-art anchors for the single-sample scoring approach itself:
 **SurvMarker** (Gammune & Gu, 2025, DOI 10.64898/2025.12.31.697184) uses
 PCA-based weighted scoring, and the **mRNAsi** stemness index (Malta *et al.*,
-*Cell* 2018;173:338-354.e15) uses OCLR-based scoring. Full profiles and a
-comparison table are in the validation dossier.
+*Cell* 2018;173:338-354.e15) uses OCLR-based scoring.
+
+| Tool | Scope | Scoring | Audit |
+|---|---|---|---|
+| **rnaSentry** | De novo prognostic signature, bulk RNA-seq | Sparse linear: univariate Cox + joint `coxph`, repeated CV concordance + external `validate_external` | Full flag ledger, gated report |
+| **asuri** (Bioc 3.23) | De novo marker via subsampling glmnet + Cox | Penalised glmnet + Cox | Subsampling stability, no ledger |
+| **signifinder** (Bioc 3.16) | Apply 60+ published signatures as single-sample scores (GSVA) | GSVA | N/A (applies known signatures) |
+| **SurvMarker** (2025) | Single-sample prognostic scoring | PCA-weighted | No audit trail |
+| **mRNAsi** (2018) | Stemness single-sample score | OCLR | No survival model |
+
+Full profiles are in the validation dossier.
 
 # Installation
 

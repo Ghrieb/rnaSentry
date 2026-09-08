@@ -1,7 +1,7 @@
 Package: rnaSentry
 Type: Package
 Title: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures
-Version: 0.99.4
+Version: 0.99.5
 Authors@R: person("Abdelkarim Hani", "Ghrieb",
     email = "ghriebabdelkarimhani@gmail.com",
     role = c("aut", "cre"))

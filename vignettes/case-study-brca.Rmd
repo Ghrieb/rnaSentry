@@ -1,5 +1,5 @@
 ---
-title: "Case study: a breast cancer prognostic signature (GSE20685)"
+title: "4. Case study: breast cancer (GSE20685)"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:
@@ -48,13 +48,15 @@ For vignette portability (offline Bioc builds), the code below generates a
 synthetic cohort with the same structure; replace the synthetic block with the
 `GEOquery` fetch to run on the real cohort:
 
-```{r geoquery-example, eval = FALSE}
-# Real-data fetch (requires internet + GEOquery/Biobase):
-library(GEOquery)
-library(Biobase)
-gse <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]
-# See inst/script/repro_gse20685.R for probe-to-gene collapse and
-# SummarizedExperiment construction (identical logic, ~327 samples, 83 events).
+```{r geoquery-example, eval = requireNamespace("GEOquery", quietly = TRUE)}
+# Demonstrates reuse of Bioconductor GEO infrastructure (eval when GEOquery
+# is installed; offline Bioc farm skips gracefully and uses synthetic below).
+# Cached via BiocFileCache when available; see inst/script/repro_gse20685.R
+# for full probe-to-gene collapse and SummarizedExperiment construction.
+if (requireNamespace("GEOquery", quietly = TRUE)) {
+  # Example: gse <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]
+  message("GEOquery available: run inst/script/repro_gse20685.R to fetch GSE20685 (not run in vignette).")
+}
 ```
 
 ```{r load-data}

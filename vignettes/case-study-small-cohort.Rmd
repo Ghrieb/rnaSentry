@@ -1,5 +1,5 @@
 ---
-title: "Case study: why small cohorts fail silently"
+title: "6. Case study: small cohorts"
 author: "Abdelkarim Hani Ghrieb"
 date: "`r Sys.Date()`"
 output:
