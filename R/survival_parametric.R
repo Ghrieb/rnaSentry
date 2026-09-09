@@ -240,7 +240,7 @@ plot.rnaSentry_parametric <- function(x, ...) {
   fitted_max <- max(vapply(x$curves,
                            function(cr) max(cr$time, na.rm = TRUE), numeric(1)))
   xlim <- c(0, max(c(max(km_times), fitted_max)))
-  plot(x$km_fit, lwd = 2, xlim = xlim, xlab = "Time",
+  graphics::plot(x$km_fit, lwd = 2, xlim = xlim, xlab = "Time",
        ylab = "Survival probability", ...)
   lty_map <- c(weibull = 1, exponential = 2, lognormal = 3, loglogistic = 4)
   for (dist in names(x$curves)) {

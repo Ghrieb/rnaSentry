@@ -1,3 +1,10 @@
+# rnaSentry 0.99.11 (development)
+
+## New in this release
+
+- Fix `NEWS.md` stale `inst/script` → `inst/scripts` and qualify 3 bare
+  `plot()` as `graphics::plot()`; bump to `0.99.11`.
+
 # rnaSentry 0.99.10 (development)
 
 ## New in this release
@@ -56,7 +63,7 @@
 
 - Reviewer fixes (BiocContributions#168): numbered vignettes `1.`–`6.` for
   `browseVignettes()` ordering, removed bundled GEO data from `inst/extdata`
-  in favour of `GEOquery` (see `inst/script/repro_gse20685.R`; vignettes now
+  in favour of `GEOquery` (see `inst/scripts/repro_gse20685.R`; vignettes now
   use synthetic cohorts offline with `GEOquery` example `eval=FALSE`),
   added Positioning and Prior Art to introductory vignette, replaced 2
   vectorizable `for` loops with `d[terms] <- cd[terms]` assignment, and
