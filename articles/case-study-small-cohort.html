@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.11</span>
       </span>
     </div>
 
@@ -96,7 +96,7 @@
                         <h4 data-toc-skip class="author">Abdelkarim Hani
 Ghrieb</h4>
             
-            <h4 data-toc-skip class="date">2026-09-08</h4>
+            <h4 data-toc-skip class="date">2026-09-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/ci/vignettes/case-study-small-cohort.Rmd" class="external-link"><code>vignettes/case-study-small-cohort.Rmd</code></a></small>
       <div class="hidden name"><code>case-study-small-cohort.Rmd</code></div>
@@ -202,9 +202,9 @@ This is 4.6 events per parameter – below the guardrail of 5.</p>
 <span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">sig_expr</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fl">0.5</span></span>
 <span><span class="va">event_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_sm</span>, rate <span class="op">=</span> <span class="fl">0.05</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.9</span> <span class="op">*</span> <span class="va">risk</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">censor_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_sm</span>, rate <span class="op">=</span> <span class="fl">0.02</span><span class="op">)</span></span>
-<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">DataFrame</span><span class="op">(</span>time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span>,</span>
-<span>                event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span>,</span>
-<span>                row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                           event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                           row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">cd</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_signature.html">build_signature</a></span><span class="op">(</span><span class="va">se</span>, <span class="st">"time"</span>, <span class="st">"event"</span>, top_n <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -385,7 +385,7 @@ proceeding.</p>
 <span><span class="co">#&gt;  [5] IRanges_2.46.0              S4Vectors_0.50.2           </span></span>
 <span><span class="co">#&gt;  [7] BiocGenerics_0.58.1         generics_0.1.4             </span></span>
 <span><span class="co">#&gt;  [9] MatrixGenerics_1.24.0       matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [11] rnaSentry_0.99.6            BiocStyle_2.40.0           </span></span>
+<span><span class="co">#&gt; [11] rnaSentry_0.99.11           BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] Matrix_1.7-5        jsonlite_2.0.0      compiler_4.6.1     </span></span>

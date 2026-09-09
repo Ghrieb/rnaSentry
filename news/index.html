@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.11</span>
       </span>
     </div>
 
@@ -73,6 +73,41 @@
     </div>
 
     <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.11" id="rnasentry-09911-development">rnaSentry 0.99.11 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-09911-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-11">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-11"></a></h3>
+<ul><li>Fix <code>NEWS.md</code> stale <code>inst/script</code> → <code>inst/scripts</code> and qualify 3 bare <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> as <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">graphics::plot()</a></code>; bump to <code>0.99.11</code>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.10" id="rnasentry-09910-development">rnaSentry 0.99.10 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-09910-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-10">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-10"></a></h3>
+<ul><li>Fix remaining <code>DataFrame</code> qualification (<code><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">S4Vectors::DataFrame</a></code> in all vignette <code>colData</code> constructions) and enforce <code>LF</code> line endings via <code>.gitattributes</code>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.9" id="rnasentry-0999-development">rnaSentry 0.99.9 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-0999-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-9">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-9"></a></h3>
+<ul><li>Fix <code>setNames</code> import (<code><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">stats::setNames</a></code>, <code>R CMD check</code> <code>NOTE</code> → <code>OK</code> on <code>linux</code>/<code>macos</code>/<code>windows</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.8" id="rnasentry-0998-development">rnaSentry 0.99.8 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-0998-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-8">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-8"></a></h3>
+<ul><li>Trigger rebuild to confirm <code>0.99.7</code> <code>methods</code> fix is stable (<code>R CMD check</code> <code>0 WARNINGS</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.7" id="rnasentry-0997-development">rnaSentry 0.99.7 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-0997-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-7">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-7"></a></h3>
+<ul><li>Fix <code>methods</code> in <code>Imports</code> (re-add after over-trim in 0.99.6 that caused <code>R CMD check</code> <code>WARNING: '::' import not declared from 'methods'</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="page-header" data-toc-text="0.99.6" id="rnasentry-0996-development">rnaSentry 0.99.6 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-0996-development"></a></h2>
 <div class="section level3">
 <h3 id="new-in-this-release-0-99-6">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-6"></a></h3>
@@ -90,7 +125,7 @@
 <h2 class="page-header" data-toc-text="0.99.4" id="rnasentry-0994-development">rnaSentry 0.99.4 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-0994-development"></a></h2>
 <div class="section level3">
 <h3 id="new-in-this-release-0-99-4">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-4"></a></h3>
-<ul><li>Reviewer fixes (BiocContributions#168): numbered vignettes <code>1.</code>–<code>6.</code> for <code><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes()</a></code> ordering, removed bundled GEO data from <code>inst/extdata</code> in favour of <code>GEOquery</code> (see <code>inst/script/repro_gse20685.R</code>; vignettes now use synthetic cohorts offline with <code>GEOquery</code> example <code>eval=FALSE</code>), added Positioning and Prior Art to introductory vignette, replaced 2 vectorizable <code>for</code> loops with <code>d[terms] &lt;- cd[terms]</code> assignment, and switched vignette <code>colData</code> constructions to <code><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">S4Vectors::DataFrame</a></code>.</li>
+<ul><li>Reviewer fixes (BiocContributions#168): numbered vignettes <code>1.</code>–<code>6.</code> for <code><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes()</a></code> ordering, removed bundled GEO data from <code>inst/extdata</code> in favour of <code>GEOquery</code> (see <code>inst/scripts/repro_gse20685.R</code>; vignettes now use synthetic cohorts offline with <code>GEOquery</code> example <code>eval=FALSE</code>), added Positioning and Prior Art to introductory vignette, replaced 2 vectorizable <code>for</code> loops with <code>d[terms] &lt;- cd[terms]</code> assignment, and switched vignette <code>colData</code> constructions to <code><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">S4Vectors::DataFrame</a></code>.</li>
 </ul></div>
 </div>
     <div class="section level2">

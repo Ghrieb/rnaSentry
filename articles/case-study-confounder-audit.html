@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.11</span>
       </span>
     </div>
 
@@ -96,7 +96,7 @@
                         <h4 data-toc-skip class="author">Abdelkarim Hani
 Ghrieb</h4>
             
-            <h4 data-toc-skip class="date">2026-09-08</h4>
+            <h4 data-toc-skip class="date">2026-09-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/ci/vignettes/case-study-confounder-audit.Rmd" class="external-link"><code>vignettes/case-study-confounder-audit.Rmd</code></a></small>
       <div class="hidden name"><code>case-study-confounder-audit.Rmd</code></div>
@@ -227,10 +227,10 @@ prognostic ones.</p>
 <span></span>
 <span><span class="va">event_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n</span>, rate <span class="op">=</span> <span class="fl">0.05</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.8</span> <span class="op">*</span> <span class="va">latent</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">censor_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n</span>, rate <span class="op">=</span> <span class="fl">0.03</span><span class="op">)</span></span>
-<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">DataFrame</span><span class="op">(</span>batch <span class="op">=</span> <span class="va">batch</span>, region <span class="op">=</span> <span class="va">region</span>,</span>
-<span>                time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span>,</span>
-<span>                event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span>,</span>
-<span>                row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span>batch <span class="op">=</span> <span class="va">batch</span>, region <span class="op">=</span> <span class="va">region</span>,</span>
+<span>                           time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                           event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span>,</span>
+<span>                           row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">cd</span><span class="op">)</span></span>
 <span><span class="va">se</span></span>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
@@ -541,7 +541,7 @@ then trust the recommended formula over an ad-hoc pick.</p>
 <span><span class="co">#&gt;  [5] Seqinfo_1.2.0               IRanges_2.46.0             </span></span>
 <span><span class="co">#&gt;  [7] S4Vectors_0.50.2            BiocGenerics_0.58.1        </span></span>
 <span><span class="co">#&gt;  [9] generics_0.1.4              MatrixGenerics_1.24.0      </span></span>
-<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.6           </span></span>
+<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.11          </span></span>
 <span><span class="co">#&gt; [13] BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
