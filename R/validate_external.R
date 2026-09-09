@@ -313,7 +313,7 @@ print.rnaSentry_external <- function(x, ...) {
 #' @export
 plot.rnaSentry_external <- function(x, ...) {
   cols <- c(low = "steelblue", high = "firebrick")
-  plot(x$km_fit, col = cols[c("low", "high")], lty = 1, lwd = 2,
+  graphics::plot(x$km_fit, col = cols[c("low", "high")], lty = 1, lwd = 2,
        xlab = "Time", ylab = "Survival probability", ...)
   graphics::legend("topright", legend = c("low risk", "high risk"),
          col = cols[c("low", "high")], lty = 1, lwd = 2, bty = "n")

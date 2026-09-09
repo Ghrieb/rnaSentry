@@ -1,3 +1,39 @@
+# rnaSentry 0.99.11 (development)
+
+## New in this release
+
+- Fix `NEWS.md` stale `inst/script` → `inst/scripts` and qualify 3 bare
+  `plot()` as `graphics::plot()`; bump to `0.99.11`.
+
+# rnaSentry 0.99.10 (development)
+
+## New in this release
+
+- Fix remaining `DataFrame` qualification (`S4Vectors::DataFrame` in all
+  vignette `colData` constructions) and enforce `LF` line endings via
+  `.gitattributes`.
+
+# rnaSentry 0.99.9 (development)
+
+## New in this release
+
+- Fix `setNames` import (`stats::setNames`, `R CMD check` `NOTE` → `OK` on
+  `linux`/`macos`/`windows`).
+
+# rnaSentry 0.99.8 (development)
+
+## New in this release
+
+- Trigger rebuild to confirm `0.99.7` `methods` fix is stable (`R CMD check`
+  `0 WARNINGS`).
+
+# rnaSentry 0.99.7 (development)
+
+## New in this release
+
+- Fix `methods` in `Imports` (re-add after over-trim in 0.99.6 that caused
+  `R CMD check` `WARNING: '::' import not declared from 'methods'`).
+
 # rnaSentry 0.99.6 (development)
 
 ## New in this release
@@ -27,7 +63,7 @@
 
 - Reviewer fixes (BiocContributions#168): numbered vignettes `1.`–`6.` for
   `browseVignettes()` ordering, removed bundled GEO data from `inst/extdata`
-  in favour of `GEOquery` (see `inst/script/repro_gse20685.R`; vignettes now
+  in favour of `GEOquery` (see `inst/scripts/repro_gse20685.R`; vignettes now
   use synthetic cohorts offline with `GEOquery` example `eval=FALSE`),
   added Positioning and Prior Art to introductory vignette, replaced 2
   vectorizable `for` loops with `d[terms] <- cd[terms]` assignment, and

@@ -62,10 +62,10 @@ for (b in seq_len(3)) {
 
 event_time <- rexp(n, rate = 0.05 * exp(0.8 * latent))
 censor_time <- rexp(n, rate = 0.03)
-cd <- DataFrame(batch = batch, region = region,
-                time = pmin(event_time, censor_time),
-                event = as.integer(event_time < censor_time),
-                row.names = colnames(counts))
+cd <- S4Vectors::DataFrame(batch = batch, region = region,
+                           time = pmin(event_time, censor_time),
+                           event = as.integer(event_time < censor_time),
+                           row.names = colnames(counts))
 se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
 se
 ```

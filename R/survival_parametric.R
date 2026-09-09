@@ -144,7 +144,7 @@ survival_parametric <- function(sig, se,
     )
     list(fit = fit, dist = dist)
   })
-  fits <- setNames(lapply(res, `[[`, "fit"), dists)
+  fits <- stats::setNames(lapply(res, `[[`, "fit"), dists)
   keep <- !vapply(fits, is.null, logical(1))
   failed <- dists[!keep]
   fits <- fits[keep]
@@ -240,7 +240,7 @@ plot.rnaSentry_parametric <- function(x, ...) {
   fitted_max <- max(vapply(x$curves,
                            function(cr) max(cr$time, na.rm = TRUE), numeric(1)))
   xlim <- c(0, max(c(max(km_times), fitted_max)))
-  plot(x$km_fit, lwd = 2, xlim = xlim, xlab = "Time",
+  graphics::plot(x$km_fit, lwd = 2, xlim = xlim, xlab = "Time",
        ylab = "Survival probability", ...)
   lty_map <- c(weibull = 1, exponential = 2, lognormal = 3, loglogistic = 4)
   for (dist in names(x$curves)) {
