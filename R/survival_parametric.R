@@ -144,7 +144,7 @@ survival_parametric <- function(sig, se,
     )
     list(fit = fit, dist = dist)
   })
-  fits <- setNames(lapply(res, `[[`, "fit"), dists)
+  fits <- stats::setNames(lapply(res, `[[`, "fit"), dists)
   keep <- !vapply(fits, is.null, logical(1))
   failed <- dists[!keep]
   fits <- fits[keep]

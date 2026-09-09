@@ -1,3 +1,10 @@
+# rnaSentry 0.99.9 (development)
+
+## New in this release
+
+- Fix `setNames` import (`stats::setNames`, `R CMD check` `NOTE` → `OK` on
+  `linux`/`macos`/`windows`).
+
 # rnaSentry 0.99.8 (development)
 
 ## New in this release
