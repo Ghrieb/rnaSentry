@@ -42,9 +42,9 @@ sig_expr <- colMeans(counts[1:5, , drop = FALSE])
 risk <- scale(sig_expr)[, 1] * 0.5
 event_time <- rexp(n_sm, rate = 0.05 * exp(0.9 * risk))
 censor_time <- rexp(n_sm, rate = 0.02)
-cd <- DataFrame(time = pmin(event_time, censor_time),
-                event = as.integer(event_time < censor_time),
-                row.names = colnames(counts))
+cd <- S4Vectors::DataFrame(time = pmin(event_time, censor_time),
+                           event = as.integer(event_time < censor_time),
+                           row.names = colnames(counts))
 se <- SummarizedExperiment(assays = list(counts = counts), colData = cd)
 
 sig <- build_signature(se, "time", "event", top_n = 5,

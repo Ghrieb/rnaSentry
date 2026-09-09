@@ -1,3 +1,11 @@
+# rnaSentry 0.99.10 (development)
+
+## New in this release
+
+- Fix remaining `DataFrame` qualification (`S4Vectors::DataFrame` in all
+  vignette `colData` constructions) and enforce `LF` line endings via
+  `.gitattributes`.
+
 # rnaSentry 0.99.9 (development)
 
 ## New in this release
