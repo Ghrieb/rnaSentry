@@ -1,3 +1,10 @@
+# rnaSentry 0.99.8 (development)
+
+## New in this release
+
+- Trigger rebuild to confirm `0.99.7` `methods` fix is stable (`R CMD check`
+  `0 WARNINGS`).
+
 # rnaSentry 0.99.7 (development)
 
 ## New in this release
