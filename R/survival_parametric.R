@@ -85,10 +85,16 @@ survival_parametric <- function(sig, se,
                      choices = c("weibull", "exponential",
                                  "lognormal", "loglogistic"))
   cd <- SummarizedExperiment::colData(se)
-  for (nm in c(sig$time_col, sig$event_col)) {
-    if (length(nm) != 1 || !is.character(nm) || !nm %in% colnames(cd)) {
-      stop(sprintf("colData(se) has no column '%s'.", nm), call. = FALSE)
-    }
+  missing_surv_sp <- setdiff(c(sig$time_col, sig$event_col), colnames(cd))
+  if (length(missing_surv_sp) > 0) {
+    stop(sprintf("colData(se) has no column '%s'.", missing_surv_sp[1]), call. = FALSE)
+  }
+  invalid_surv_sp <- vapply(c(sig$time_col, sig$event_col), function(nm) {
+    length(nm) != 1 || !is.character(nm) || is.na(nm)
+  }, logical(1))
+  if (any(invalid_surv_sp)) {
+    stop(sprintf("colData(se) has no column '%s'.",
+                 c(sig$time_col, sig$event_col)[which(invalid_surv_sp)[1]]), call. = FALSE)
   }
   time_vec <- as.numeric(cd[[sig$time_col]])
   if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
@@ -148,11 +154,9 @@ survival_parametric <- function(sig, se,
   keep <- !vapply(fits, is.null, logical(1))
   failed <- dists[!keep]
   fits <- fits[keep]
-  for (dist in failed) {
-    flags <- .add_flag(flags, "model_fit_failed", "warning",
-                       sprintf("The %s model failed to fit and was excluded from the comparison.",
-                               dist))
-  }
+  flags <- Reduce(function(fl, dist) .add_flag(fl, "model_fit_failed", "warning",
+                       sprintf("The %s model failed to fit and was excluded from the comparison.", dist)),
+                  failed, init = flags)
   if (length(fits) == 0) {
     stop("None of the requested parametric models could be fitted.",
          call. = FALSE)
@@ -214,20 +218,15 @@ print.rnaSentry_parametric <- function(x, ...) {
   cat(sprintf("rnaSentry parametric models: %d-gene signature, %d samples.\n",
               length(x$genes), length(x$score)))
   cat("AIC comparison:\n")
-  for (i in seq_len(nrow(x$table))) {
-    star <- if (x$table$best[i]) " *" else ""
-    cat(sprintf("  %-12s AIC %8.2f  delta %6.2f  weight %5.3f%s\n",
-                x$table$dist[i], x$table$AIC[i], x$table$delta_AIC[i],
-                x$table$weight[i], star))
-  }
+  cat(sprintf("  %-12s AIC %8.2f  delta %6.2f  weight %5.3f%s\n",
+              x$table$dist, x$table$AIC, x$table$delta_AIC,
+              x$table$weight, ifelse(x$table$best, " *", "")), sep = "")
   cat(sprintf("Best model: %s.\n", x$best))
   cat(if (x$sig_locked) "Signature locked.\n" else "Signature not locked.\n")
   if (nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }
@@ -243,10 +242,10 @@ plot.rnaSentry_parametric <- function(x, ...) {
   graphics::plot(x$km_fit, lwd = 2, xlim = xlim, xlab = "Time",
        ylab = "Survival probability", ...)
   lty_map <- c(weibull = 1, exponential = 2, lognormal = 3, loglogistic = 4)
-  for (dist in names(x$curves)) {
+  invisible(lapply(names(x$curves), function(dist) {
     graphics::lines(x$curves[[dist]]$time, x$curves[[dist]]$survival,
                     col = cols[[dist]], lty = lty_map[[dist]], lwd = 2)
-  }
+  }))
   graphics::legend("topright",
                    legend = c("KM", names(x$curves)),
                    col = c("black", cols[names(x$curves)]),

@@ -130,14 +130,14 @@ test_that("survival_parametric AIC/loglik/npar match stats::AIC on the same fits
   sig <- build_signature(se, "time", "event", top_n = 10, repeats = 2,
                          folds = 3, seed = 7)
   sp <- survival_parametric(sig, se)
-  for (dist in names(sp$fits)) {
+  invisible(lapply(names(sp$fits), function(dist) {
     expect_equal(sp$table$AIC[sp$table$dist == dist],
                  stats::AIC(sp$fits[[dist]]))
     expect_equal(sp$table$loglik[sp$table$dist == dist],
                  as.numeric(stats::logLik(sp$fits[[dist]])))
     expect_equal(sp$table$npar[sp$table$dist == dist],
                  length(sp$fits[[dist]]$coefficients) + 1)
-  }
+  }))
   expect_equal(sp$best, sp$table$dist[which.min(sp$table$AIC)])
 })
 
@@ -158,29 +158,30 @@ test_that("build_signature fold concordance matches concordance on the same fold
   set.seed(seed)
   n <- length(time_vec)
   fold_ids <- integer(n)
-  for (grp in list(which(event_vec == 0L), which(event_vec == 1L))) {
-    if (length(grp) == 0) next
-    grp_shuffled <- grp[sample.int(length(grp))]
-    fold_ids[grp_shuffled] <- rep(seq_len(folds), length.out = length(grp))
-  }
+  strata <- lapply(list(which(event_vec == 0L), which(event_vec == 1L)),
+                   function(grp) {
+                     if (length(grp) == 0) return(NULL)
+                     grp_shuffled <- grp[sample.int(length(grp))]
+                     data.frame(idx = grp_shuffled,
+                                f = rep(seq_len(folds), length.out = length(grp)))
+                   })
+  strata <- do.call(rbind, strata)
+  if (!is.null(strata) && nrow(strata) > 0) fold_ids[strata$idx] <- strata$f
 
-  ref <- numeric(folds)
-  for (f in seq_len(folds)) {
+  ref <- vapply(seq_len(folds), function(f) {
     train <- which(fold_ids != f)
     test <- which(fold_ids == f)
     if (length(train) < 5 || length(test) < 2 ||
         sum(event_vec[train]) < 2 || sum(event_vec[test]) < 1) {
-      ref[f] <- NA_real_
-      next
+      return(NA_real_)
     }
     d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
-                       t(as.matrix(mat[sig$genes, train, drop = FALSE])))
+                       base::t(as.matrix(mat[sig$genes, train, drop = FALSE])))
     fit_tr <- survival::coxph(survival::Surv(time, event) ~ ., data = d_tr)
     b <- stats::coef(fit_tr)
-    score_test <- as.vector(t(as.matrix(mat[names(b), test, drop = FALSE])) %*% b)
+    score_test <- as.vector(base::t(as.matrix(mat[names(b), test, drop = FALSE])) %*% b)
     if (isTRUE(stats::sd(score_test) == 0)) {
-      ref[f] <- NA_real_
-      next
+      return(NA_real_)
     }
     conc <- tryCatch(
       suppressWarnings(
@@ -189,9 +190,9 @@ test_that("build_signature fold concordance matches concordance on the same fold
       ),
       error = function(e) NULL
     )
-    ref[f] <- if (is.null(conc)) NA_real_ else as.numeric(conc$concordance[1])
-    if (!is.finite(ref[f])) ref[f] <- NA_real_
-  }
+    val <- if (is.null(conc)) NA_real_ else as.numeric(conc$concordance[1])
+    if (!is.finite(val)) NA_real_ else val
+  }, numeric(1))
 
   expect_equal(sig$cv_results$c_index, ref)
   expect_equal(sig$cv_results$fold, seq_len(folds))

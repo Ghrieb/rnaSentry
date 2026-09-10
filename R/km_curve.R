@@ -77,10 +77,16 @@ km_curve <- function(sig, se, cutpoint = NULL) {
   }
 
   cd <- SummarizedExperiment::colData(se)
-  for (nm in c(sig$time_col, sig$event_col)) {
-    if (length(nm) != 1 || !is.character(nm) || !nm %in% colnames(cd)) {
-      stop(sprintf("colData(se) has no column '%s'.", nm), call. = FALSE)
-    }
+  missing_surv_km <- setdiff(c(sig$time_col, sig$event_col), colnames(cd))
+  if (length(missing_surv_km) > 0) {
+    stop(sprintf("colData(se) has no column '%s'.", missing_surv_km[1]), call. = FALSE)
+  }
+  invalid_surv_km <- vapply(c(sig$time_col, sig$event_col), function(nm) {
+    length(nm) != 1 || !is.character(nm) || is.na(nm)
+  }, logical(1))
+  if (any(invalid_surv_km)) {
+    stop(sprintf("colData(se) has no column '%s'.",
+                 c(sig$time_col, sig$event_col)[which(invalid_surv_km)[1]]), call. = FALSE)
   }
   time_vec <- as.numeric(cd[[sig$time_col]])
   if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
@@ -201,10 +207,8 @@ print.rnaSentry_km <- function(x, ...) {
   cat(if (x$sig_locked) "Signature locked.\n" else "Signature not locked.\n")
   if (nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }

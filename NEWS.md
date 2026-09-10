@@ -1,3 +1,14 @@
+# rnaSentry 0.99.12 (development)
+
+## New in this release
+
+- General `for`-loop refactor (BiocContributions#168, DarioS): replaced all
+  `for` loops with `*apply`/`Reduce`/vectorized idioms across `R/`,
+  `inst/report_template.Rmd`, vignette `case-study-confounder-audit.Rmd` and
+  the `testthat` helpers — 36 loops total, including the cited
+  `design_terms` example (now `vapply`+`Reduce` and `t` shadow fix);
+  bump to `0.99.12`.
+
 # rnaSentry 0.99.11 (development)
 
 ## New in this release

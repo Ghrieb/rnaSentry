@@ -164,9 +164,7 @@ run_rnaSentry <- function(se, time_col, event_col,
 #' @export
 print.rnaSentry_run <- function(x, ...) {
   cat("rnaSentry pipeline run.\n")
-  for (nm in names(x$stages)) {
-    cat(sprintf("  - %s\n", nm))
-  }
+  cat(sprintf("  - %s\n", names(x$stages)), sep = "")
   if (!is.null(x$report)) {
     cat(sprintf("Report: %s\n", x$report))
   }

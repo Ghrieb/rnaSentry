@@ -185,10 +185,17 @@ build_signature <- function(se, time_col, event_col,
     stop("'se' must be a SummarizedExperiment object.", call. = FALSE)
   }
   cd <- SummarizedExperiment::colData(se)
-  for (nm in c(time_col, event_col)) {
-    if (length(nm) != 1 || !is.character(nm) || !nm %in% colnames(cd)) {
-      stop(sprintf("colData(se) has no column '%s'.", nm), call. = FALSE)
-    }
+  missing_cols <- setdiff(c(time_col, event_col), colnames(cd))
+  if (length(missing_cols) > 0) {
+    stop(sprintf("colData(se) has no column '%s'.", missing_cols[1]),
+         call. = FALSE)
+  }
+  invalid_surv <- vapply(c(time_col, event_col), function(nm) {
+    length(nm) != 1 || !is.character(nm) || is.na(nm)
+  }, logical(1))
+  if (any(invalid_surv)) {
+    stop(sprintf("colData(se) has no column '%s'.",
+                 c(time_col, event_col)[which(invalid_surv)[1]]), call. = FALSE)
   }
   if (length(outcome_col) != 1 || !is.character(outcome_col) ||
       is.na(outcome_col)) {
@@ -203,13 +210,14 @@ build_signature <- function(se, time_col, event_col,
       is.na(p_threshold) || p_threshold <= 0 || p_threshold >= 1) {
     stop("'p_threshold' must be a single number in (0, 1).", call. = FALSE)
   }
-  for (nm in c("repeats", "folds")) {
-    val <- get(nm)
-    if (!is.numeric(val) || length(val) != 1 || is.na(val) || val < 1 ||
-        val != round(val)) {
-      stop(sprintf("'%s' must be a single positive integer.", nm),
-           call. = FALSE)
-    }
+  invalid_rep <- vapply(c("repeats", "folds"), function(nm) {
+    val <- get(nm, envir = environment())
+    !is.numeric(val) || length(val) != 1 || is.na(val) || val < 1 ||
+      val != round(val)
+  }, logical(1))
+  if (any(invalid_rep)) {
+    stop(sprintf("'%s' must be a single positive integer.",
+                 c("repeats", "folds")[which(invalid_rep)[1]]), call. = FALSE)
   }
   if (!is.null(seed) &&
       (!is.numeric(seed) || length(seed) != 1 || is.na(seed))) {
@@ -275,19 +283,18 @@ build_signature <- function(se, time_col, event_col,
   use_adjust <- length(design_terms) > 0 && adjust_for_design
   if (length(design_terms) > 0) {
     cd_df <- as.data.frame(cd)
-    for (t in design_terms) {
-      x <- cd_df[[t]]
-      u <- unique(x[!is.na(x)])
-      if (length(u) < 2) {
-        stop(sprintf("Design term '%s' has no variation across samples; drop it or use a variable design.",
-                     t), call. = FALSE)
-      }
-      if (anyNA(x)) {
-        flags <- .add_flag(flags, "design_terms_missing", "info",
-                           sprintf("Design term '%s' has missing values; samples with missing values are excluded from screening.",
-                                   t))
-      }
+    bad_design <- design_terms[vapply(design_terms, function(term) {
+      length(unique(cd_df[[term]][!is.na(cd_df[[term]])])) < 2
+    }, logical(1))]
+    if (length(bad_design) > 0) {
+      stop(sprintf("Design term '%s' has no variation across samples; drop it or use a variable design.",
+                   bad_design[1]), call. = FALSE)
     }
+    na_terms <- design_terms[vapply(design_terms, function(term) anyNA(cd_df[[term]]),
+                                    logical(1))]
+    flags <- Reduce(function(fl, term) .add_flag(fl, "design_terms_missing", "info",
+                       sprintf("Design term '%s' has missing values; samples with missing values are excluded from screening.", term)),
+                    na_terms, init = flags)
     if (use_adjust) {
       flags <- .add_flag(flags, "adjusted_screening", "info",
                          sprintf("Univariate screening adjusted for design term(s): %s.",
@@ -391,10 +398,12 @@ build_signature <- function(se, time_col, event_col,
   sel_genes <- rownames(mat)[sel]
 
   # ---- joint coefficients --------------------------------------------------
-  coef_vec <- NULL
-  for (iter in seq_len(5)) {
+  .fit_joint <- function(sel_local, fl, attempt = 1L) {
+    if (attempt > 5L || length(sel_local) == 0L) {
+      return(list(coef = NULL, sel = sel_local, flags = fl))
+    }
     d <- data.frame(time = time_vec, event = event_vec,
-                    t(as.matrix(mat[sel_genes, , drop = FALSE])),
+                    base::t(as.matrix(mat[sel_local, , drop = FALSE])),
                     check.names = FALSE)
     fit <- tryCatch(
       withCallingHandlers(
@@ -403,23 +412,26 @@ build_signature <- function(se, time_col, event_col,
       ),
       error = function(e) NULL
     )
-    if (is.null(fit)) break
+    if (is.null(fit)) return(list(coef = NULL, sel = sel_local, flags = fl))
     b <- stats::coef(fit)
     names(b) <- .strip_backticks(names(b))
-    if (length(b) == 0) break
+    if (length(b) == 0) return(list(coef = NULL, sel = sel_local, flags = fl))
     bad <- !is.finite(b) | !is.finite(exp(b))
     if (any(bad)) {
       dropped <- names(b)[bad]
-      flags <- .add_flag(flags, "coefficient_unstable", "warning",
-                         sprintf("Gene(s) %s had a non-finite joint Cox coefficient and were dropped from the signature.",
-                                 paste(dropped, collapse = ", ")))
-      sel_genes <- setdiff(sel_genes, dropped)
-      if (length(sel_genes) == 0) break
-      next
+      fl2 <- .add_flag(fl, "coefficient_unstable", "warning",
+                       sprintf("Gene(s) %s had a non-finite joint Cox coefficient and were dropped from the signature.",
+                               paste(dropped, collapse = ", ")))
+      sel2 <- setdiff(sel_local, dropped)
+      if (length(sel2) == 0) return(list(coef = NULL, sel = sel2, flags = fl2))
+      return(.fit_joint(sel2, fl2, attempt + 1L))
     }
-    coef_vec <- b
-    break
+    list(coef = b, sel = sel_local, flags = fl)
   }
+  joint_res <- .fit_joint(sel_genes, flags)
+  coef_vec <- joint_res$coef
+  sel_genes <- joint_res$sel
+  flags <- joint_res$flags
   if (is.null(coef_vec) || length(coef_vec) == 0) {
     stop("The joint Cox model for the selected genes did not yield finite ",
          "coefficients; reduce 'top_n' or check for collinear genes.",
@@ -458,11 +470,15 @@ build_signature <- function(se, time_col, event_col,
   make_all_folds <- function() {
     lapply(seq_len(repeats), function(r) {
       fold_ids <- integer(n)
-      for (grp in list(which(event_vec == 0L), which(event_vec == 1L))) {
-        if (length(grp) == 0) next
-        grp_shuffled <- grp[sample.int(length(grp))]
-        fold_ids[grp_shuffled] <- rep(seq_len(folds), length.out = length(grp))
-      }
+      strata <- lapply(list(which(event_vec == 0L), which(event_vec == 1L)),
+                       function(grp) {
+                         if (length(grp) == 0) return(NULL)
+                         grp_shuffled <- grp[sample.int(length(grp))]
+                         data.frame(idx = grp_shuffled,
+                                    f = rep(seq_len(folds), length.out = length(grp)))
+                       })
+      strata <- do.call(rbind, strata)
+      if (!is.null(strata) && nrow(strata) > 0) fold_ids[strata$idx] <- strata$f
       fold_ids
     })
   }
@@ -491,7 +507,7 @@ build_signature <- function(se, time_col, event_col,
                            f, r)))
     } else {
       d_tr <- data.frame(time = time_vec[train], event = event_vec[train],
-                         t(as.matrix(mat[genes, train, drop = FALSE])),
+                         base::t(as.matrix(mat[genes, train, drop = FALSE])),
                          check.names = FALSE)
       fit_tr <- tryCatch(
         withCallingHandlers(
@@ -513,7 +529,7 @@ build_signature <- function(se, time_col, event_col,
                                f, r)))
         } else {
           gn <- names(b)
-          score_test <- as.vector(t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
+          score_test <- as.vector(base::t(as.matrix(mat[gn, test, drop = FALSE])) %*% b)
           if (isTRUE(stats::sd(score_test) == 0)) {
             fl <- list(c("cv_fold_failed",
                          sprintf("Constant risk score on fold %d of repeat %d.",
@@ -564,11 +580,10 @@ build_signature <- function(se, time_col, event_col,
   cv_rows <- lapply(fold_out, function(elt) elt$cv_row)
   cv_results <- do.call(rbind, cv_rows)
   rownames(cv_results) <- NULL
-  for (elt in fold_out) {
-    for (flag in elt$flags) {
-      flags <- flag_fold(flags, flag[1], flag[2])
-    }
-  }
+  flags <- Reduce(function(fl_acc, elt) {
+    Reduce(function(fl2, flag) flag_fold(fl2, flag[1], flag[2]),
+           elt$flags, init = fl_acc)
+  }, fold_out, init = flags)
   ci_vals <- cv_results$c_index
   if (all(!is.finite(ci_vals))) {
     stop("Cross-validation could not produce a single concordance value; the model may be degenerate.",
@@ -617,10 +632,8 @@ print.rnaSentry_signature <- function(x, ...) {
   cat(if (isTRUE(x$locked)) "Locked.\n" else "Not locked.\n")
   if (!is.null(x$flags) && is.data.frame(x$flags) && nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }
