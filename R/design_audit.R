@@ -195,23 +195,25 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
   # ---- confounder scan ------------------------------------------------------
   types <- vapply(design_vars, function(v) .design_var_type(cd[[v]]),
                   character(1))
-  conf_rows <- vector("list", length(design_vars))
-  for (i in seq_along(design_vars)) {
+  no_data_idx <- vapply(seq_along(design_vars), function(i) {
+    sum(!is.na(cd[[design_vars[i]]])) < 2 || types[i] == "empty"
+  }, logical(1))
+  no_data_vars <- design_vars[no_data_idx]
+  flags <- Reduce(function(fl, v) .add_flag(fl, "variable_no_data", "warning",
+                   sprintf("Design variable '%s' has no usable values; not tested.", v)),
+                  no_data_vars, init = flags)
+  conf_rows <- lapply(seq_along(design_vars), function(i) {
     v <- design_vars[i]
     x <- cd[[v]]
     ok <- !is.na(x)
     base <- data.frame(variable = v, type = types[i], n = sum(ok),
                        stringsAsFactors = FALSE)
     if (sum(ok) < 2 || types[i] == "empty") {
-      flags <- .add_flag(flags, "variable_no_data", "warning",
-                         sprintf("Design variable '%s' has no usable values; not tested.",
-                                 v))
-      conf_rows[[i]] <- cbind(base, data.frame(
+      return(cbind(base, data.frame(
         test = "none", statistic = NA_real_, df = NA_character_,
         p_value = NA_real_, effect_size = NA_real_,
         effect_size_type = NA_character_, flagged = FALSE,
-        stringsAsFactors = FALSE))
-      next
+        stringsAsFactors = FALSE)))
     }
     s <- surrogate[ok]
     row <- if (types[i] == "numeric") {
@@ -219,8 +221,8 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     } else {
       .oneway_pc_test(s, x[ok], alpha = alpha)
     }
-    conf_rows[[i]] <- cbind(base, row)
-  }
+    cbind(base, row)
+  })
   confounder_table <- do.call(rbind, conf_rows)
   rownames(confounder_table) <- NULL
   confounder_table$adj_p <- stats::p.adjust(confounder_table$p_value,
@@ -341,27 +343,26 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
   # ---- recommended formula --------------------------------------------------
   drop_vars <- character(0)
   if (!is.null(pairwise_table)) {
-    for (j in seq_len(nrow(pairwise_table))) {
-      pr <- pairwise_table[j, ]
-      if (!isTRUE(pr$redundant)) next
+    redundant_rows <- pairwise_table[isTRUE(pairwise_table$redundant), , drop = FALSE]
+    drop_candidates <- vapply(seq_len(nrow(redundant_rows)), function(j) {
+      pr <- redundant_rows[j, ]
       pos1 <- match(pr$var1, design_vars)
       pos2 <- match(pr$var2, design_vars)
-      if (!is.na(pos1) && !is.na(pos2)) {
-        drop_later <- if (pos1 > pos2) pr$var1 else pr$var2
-        drop_vars <- unique(c(drop_vars, drop_later))
-      }
-    }
+      if (is.na(pos1) || is.na(pos2)) return(NA_character_)
+      if (pos1 > pos2) pr$var1 else pr$var2
+    }, character(1))
+    drop_vars <- unique(drop_candidates[!is.na(drop_candidates)])
   }
   if (length(drop_vars) > 0) {
-    for (dv in drop_vars) {
+    flags <- Reduce(function(fl, dv) {
       pr <- pairwise_table[pairwise_table$var1 == dv |
                              pairwise_table$var2 == dv, , drop = FALSE]
       pr <- pr[isTRUE(pr$redundant), , drop = FALSE]
       partner <- if (nrow(pr) > 0 && pr$var1[1] == dv) pr$var2[1] else pr$var1[1]
-      flags <- .add_flag(flags, "redundant_variable", "warning",
-                         sprintf("Design variable '%s' is redundant with '%s' (effect size %.2f, p = %.3g) and was dropped from the formula.",
-                                 dv, partner, pr$effect_size[1], pr$p_value[1]))
-    }
+      .add_flag(fl, "redundant_variable", "warning",
+                sprintf("Design variable '%s' is redundant with '%s' (effect size %.2f, p = %.3g) and was dropped from the formula.",
+                        dv, partner, pr$effect_size[1], pr$p_value[1]))
+    }, drop_vars, init = flags)
   }
   constant_vars <- design_vars[vapply(design_vars, function(v) {
     x <- cd[[v]]
@@ -466,10 +467,8 @@ print.rnaSentry_design <- function(x, ...) {
     cat("No issues flagged.\n")
   } else {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }

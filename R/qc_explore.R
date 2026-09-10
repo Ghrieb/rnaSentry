@@ -87,11 +87,10 @@ qc_explore <- function(se, mad_threshold = 3) {
   )
   bad_cols <- missing_summary[missing_summary$pct_missing > 0, ]
   if (nrow(bad_cols) > 0) {
-    for (i in seq_len(nrow(bad_cols))) {
-      flags <- .add_flag(flags, "missing_metadata", "warning",
-                         sprintf("Column '%s' has %.1f%% missing values.",
-                                 bad_cols$column[i], bad_cols$pct_missing[i]))
-    }
+    flags <- Reduce(function(fl, i) .add_flag(fl, "missing_metadata", "warning",
+                       sprintf("Column '%s' has %.1f%% missing values.",
+                               bad_cols$column[i], bad_cols$pct_missing[i])),
+                    seq_len(nrow(bad_cols)), init = flags)
   }
 
   # 4. library-size outliers (robust, MAD-based, on log10 scale)
@@ -131,9 +130,8 @@ print.rnaSentry_qc <- function(x, ...) {
     cat("No issues flagged.\n")
   } else {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i], x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }

@@ -64,8 +64,8 @@ if (length(flag_tables) > 0) {
 ## Stage results
 
 ```{r stages, results="asis"}
-for (nm in names(params$stages)) {
+invisible(lapply(names(params$stages), function(nm) {
   cat("\n\n###", nm, "\n\n")
   print(params$stages[[nm]])
-}
+}))
 ```

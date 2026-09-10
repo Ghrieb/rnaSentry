@@ -49,16 +49,14 @@ n <- 180
 latent <- rnorm(n)
 region <- factor(cut(latent, breaks = 3, labels = c("R1", "R2", "R3")))
 batch <- as.character(region)
-for (i in seq_len(n))
-    if (runif(1) < 0.2) batch[i] <- sample(c("R1", "R2", "R3"), 1)
+flip <- runif(n) < 0.2
+batch[flip] <- sample(c("R1", "R2", "R3"), sum(flip), replace = TRUE)
 batch <- factor(batch)
 
 counts <- matrix(rpois(50 * n, lambda = 200), nrow = 50, ncol = n,
                  dimnames = list(paste0("g", seq_len(50)), paste0("S", seq_len(n))))
-for (b in seq_len(3)) {
-    idx <- which(batch == levels(batch)[b])
-    counts[1:6, idx] <- counts[1:6, idx] * (1 + 0.6 * b)
-}
+counts[1:6, ] <- counts[1:6, ] *
+  matrix(1 + 0.6 * as.integer(batch), nrow = 6, ncol = n, byrow = TRUE)
 
 event_time <- rexp(n, rate = 0.05 * exp(0.8 * latent))
 censor_time <- rexp(n, rate = 0.03)

@@ -30,10 +30,10 @@ test_that("survival_parametric returns the documented structure", {
   expect_true(all(sp$table$AIC == sort(sp$table$AIC)))
   expect_s3_class(sp$km_fit, "survfit")
   expect_setequal(names(sp$curves), names(sp$fits))
-  for (cr in sp$curves) {
+  invisible(lapply(sp$curves, function(cr) {
     expect_true(all(c("time", "survival") %in% colnames(cr)))
     expect_true(all(cr$survival >= 0 & cr$survival <= 1))
-  }
+  }))
   expect_equal(length(sp$score), ncol(se))
   expect_false(sp$sig_locked)
   expect_true(nzchar(sp$created))

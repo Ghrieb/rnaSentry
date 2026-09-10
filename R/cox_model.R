@@ -101,10 +101,16 @@ cox_model <- function(sig, se, confounders = character(0)) {
     stop("'sig' has no genes to model.", call. = FALSE)
   }
   cd <- SummarizedExperiment::colData(se)
-  for (nm in c(sig$time_col, sig$event_col)) {
-    if (length(nm) != 1 || !is.character(nm) || !nm %in% colnames(cd)) {
-      stop(sprintf("colData(se) has no column '%s'.", nm), call. = FALSE)
-    }
+  missing_surv <- setdiff(c(sig$time_col, sig$event_col), colnames(cd))
+  if (length(missing_surv) > 0) {
+    stop(sprintf("colData(se) has no column '%s'.", missing_surv[1]), call. = FALSE)
+  }
+  invalid_surv <- vapply(c(sig$time_col, sig$event_col), function(nm) {
+    length(nm) != 1 || !is.character(nm) || is.na(nm)
+  }, logical(1))
+  if (any(invalid_surv)) {
+    stop(sprintf("colData(se) has no column '%s'.",
+                 c(sig$time_col, sig$event_col)[which(invalid_surv)[1]]), call. = FALSE)
   }
   time_vec <- as.numeric(cd[[sig$time_col]])
   if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
@@ -167,18 +173,15 @@ cox_model <- function(sig, se, confounders = character(0)) {
   }
 
   cd_df <- as.data.frame(cd)
-  n_missing_cov <- 0L
-  for (t in cov_terms) {
-    x <- cd_df[[t]]
-    u <- unique(x[!is.na(x)])
-    if (length(u) < 2) {
-      stop(sprintf("Covariate '%s' has no variation across samples.", t),
-           call. = FALSE)
-    }
-    if (anyNA(x)) {
-      n_missing_cov <- n_missing_cov + sum(is.na(x))
-    }
+  bad_cov <- cov_terms[vapply(cov_terms, function(term) {
+    length(unique(cd_df[[term]][!is.na(cd_df[[term]])])) < 2
+  }, logical(1))]
+  if (length(bad_cov) > 0) {
+    stop(sprintf("Covariate '%s' has no variation across samples.", bad_cov[1]),
+         call. = FALSE)
   }
+  n_missing_cov <- sum(vapply(cov_terms, function(term) sum(is.na(cd_df[[term]])),
+                              numeric(1)))
   if (n_missing_cov > 0) {
     flags <- .add_flag(flags, "missing_covariates", "info",
                        sprintf("Covariate values are missing for %d sample(s); those samples are excluded from the fit.",
@@ -294,19 +297,15 @@ print.rnaSentry_cox_model <- function(x, ...) {
   tab <- x$gene_summary
   if (nrow(tab) > 0) {
     cat("Signature genes (HR [95% CI], BH adj. p):\n")
-    for (i in seq_len(nrow(tab))) {
-      cat(sprintf("  %-14s %.2f [%.2f, %.2f]  p = %s  adj.p = %s\n",
-                  tab$term[i], tab$HR[i], tab$HR_low[i], tab$HR_high[i],
-                  format.pval(tab$p[i]), format.pval(tab$adj_p[i])))
-    }
+    cat(sprintf("  %-14s %.2f [%.2f, %.2f]  p = %s  adj.p = %s\n",
+                tab$term, tab$HR, tab$HR_low, tab$HR_high,
+                format.pval(tab$p), format.pval(tab$adj_p)), sep = "")
   }
   cat(if (x$sig_locked) "Signature locked.\n" else "Signature not locked.\n")
   if (nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }

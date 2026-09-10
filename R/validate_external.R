@@ -144,11 +144,17 @@ validate_external <- function(sig, external_se, time_col = NULL,
   cd <- SummarizedExperiment::colData(external_se)
   t_col <- if (is.null(time_col)) sig$time_col else time_col
   e_col <- if (is.null(event_col)) sig$event_col else event_col
-  for (nm in c(t_col, e_col)) {
-    if (length(nm) != 1 || !is.character(nm) || !nm %in% colnames(cd)) {
-      stop(sprintf("colData(external_se) has no column '%s'.", nm),
-           call. = FALSE)
-    }
+  missing_ext <- setdiff(c(t_col, e_col), colnames(cd))
+  if (length(missing_ext) > 0) {
+    stop(sprintf("colData(external_se) has no column '%s'.", missing_ext[1]),
+         call. = FALSE)
+  }
+  invalid_ext <- vapply(c(t_col, e_col), function(nm) {
+    length(nm) != 1 || !is.character(nm) || is.na(nm)
+  }, logical(1))
+  if (any(invalid_ext)) {
+    stop(sprintf("colData(external_se) has no column '%s'.",
+                 c(t_col, e_col)[which(invalid_ext)[1]]), call. = FALSE)
   }
   time_vec <- as.numeric(cd[[t_col]])
   if (anyNA(time_vec) || any(time_vec < 0) || any(!is.finite(time_vec))) {
@@ -302,10 +308,8 @@ print.rnaSentry_external <- function(x, ...) {
   cat(if (x$sig_locked) "Signature locked.\n" else "Signature not locked.\n")
   if (nrow(x$flags) > 0) {
     cat(sprintf("%d issue(s) flagged:\n", nrow(x$flags)))
-    for (i in seq_len(nrow(x$flags))) {
-      cat(sprintf("  [%s] %s: %s\n", x$flags$severity[i],
-                  x$flags$check[i], x$flags$detail[i]))
-    }
+    cat(sprintf("  [%s] %s: %s\n", x$flags$severity, x$flags$check, x$flags$detail),
+        sep = "")
   }
   invisible(x)
 }
