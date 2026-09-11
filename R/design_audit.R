@@ -343,7 +343,7 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
   # ---- recommended formula --------------------------------------------------
   drop_vars <- character(0)
   if (!is.null(pairwise_table)) {
-    redundant_rows <- pairwise_table[isTRUE(pairwise_table$redundant), , drop = FALSE]
+    redundant_rows <- pairwise_table[pairwise_table$redundant, , drop = FALSE]
     drop_candidates <- vapply(seq_len(nrow(redundant_rows)), function(j) {
       pr <- redundant_rows[j, ]
       pos1 <- match(pr$var1, design_vars)
@@ -357,7 +357,7 @@ design_audit <- function(se, design_vars, outcome_col = NULL,
     flags <- Reduce(function(fl, dv) {
       pr <- pairwise_table[pairwise_table$var1 == dv |
                              pairwise_table$var2 == dv, , drop = FALSE]
-      pr <- pr[isTRUE(pr$redundant), , drop = FALSE]
+      pr <- pr[pr$redundant, , drop = FALSE]
       partner <- if (nrow(pr) > 0 && pr$var1[1] == dv) pr$var2[1] else pr$var1[1]
       .add_flag(fl, "redundant_variable", "warning",
                 sprintf("Design variable '%s' is redundant with '%s' (effect size %.2f, p = %.3g) and was dropped from the formula.",

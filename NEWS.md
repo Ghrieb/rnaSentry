@@ -1,3 +1,12 @@
+# rnaSentry 0.99.13 (development)
+
+## New in this release
+
+- Fix `isTRUE(vector)` filter in `R/design_audit.R` (`pairwise_table$redundant`
+  vector) that caused `redundant_variable` flag and `dropped_vars` to be
+  empty on `r-universe` checks; restore `design_audit` redundancy detection
+  (3 test failures → 0). Bump to `0.99.13`.
+
 # rnaSentry 0.99.12 (development)
 
 ## New in this release
