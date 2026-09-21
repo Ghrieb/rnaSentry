@@ -38,9 +38,10 @@ from GEO, processed to gene-level expression (probe-to-gene collapse by
 largest mean expression), and subset to the top 3000 most variable genes. The
 result is a `SummarizedExperiment` with a `logcounts` assay plus `time`
 (years), `event` (1 = death), `age`, and `subtype` in the sample metadata.
-The processed data is cached via `BiocFileCache` for subsequent calls. When
-`GEOquery` is unavailable or the download fails, a synthetic cohort with the
-same structure is used instead.
+The processed data is cached via `BiocFileCache` for subsequent calls. Only
+if `GEOquery` is unavailable or the download fails, an internal synthetic
+fallback of identical structure (`.brca_fallback_cohort()`, fixed seed for
+reproducibility) is used instead so the vignette still builds offline.
 
 ```{r load-data}
 library(rnaSentry)
@@ -53,26 +54,7 @@ if (using_real) {
   se <- se_real
 } else {
   message("GEOquery unavailable or download failed; using synthetic fallback.")
-  set.seed(20685)
-  n_genes <- 3000
-  n_samples <- 327
-  genes <- paste0("GENE", seq_len(n_genes))
-  samples <- paste0("Sample", seq_len(n_samples))
-  mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
-                nrow = n_genes, ncol = n_samples,
-                dimnames = list(genes, samples))
-  risk0 <- colMeans(mat[1:20, , drop = FALSE])
-  event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
-  censor_time <- rexp(n_samples, rate = 0.04)
-  time <- pmin(event_time, censor_time)
-  event <- as.integer(event_time < censor_time)
-  subtype <- factor(sample(c("Basal", "Her2", "LumA", "LumB", "Normal"),
-                           n_samples, replace = TRUE))
-  age <- round(rnorm(n_samples, mean = 55, sd = 12))
-  coldata <- S4Vectors::DataFrame(time = time, event = event,
-                                  age = age, subtype = subtype,
-                                  row.names = samples)
-  se <- SummarizedExperiment(assays = list(logcounts = mat), colData = coldata)
+  se <- rnaSentry:::.brca_fallback_cohort()
 }
 se
 table(se$subtype)
