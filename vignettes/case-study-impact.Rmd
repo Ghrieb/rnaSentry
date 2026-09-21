@@ -89,6 +89,28 @@ biologically expected value all along. The same class of error has appeared
 in published survival literature; rnaSentry pins the convention in code, in
 parity tests, and in the rendered report.
 
+## Pipeline execution on the same cohort
+
+Running `rnaSentry` on the synthetic cohort above demonstrates the guardrail
+flags in action:
+
+```{r pipeline-demo, warning = TRUE}
+run <- run_rnaSentry(se, time_col = "time", event_col = "event",
+                     top_n = 5, repeats = 2, folds = 3, seed = 42,
+                     render_report = FALSE)
+run$stages$build_signature$flags
+```
+
+Every flag in the ledger is backed by a statistic. The `events_per_parameter`
+warning, the `reverse = TRUE` convention, and the fold-level concordance
+distribution are the guardrails that prevent the three failure modes
+demonstrated in the case studies above.
+
+```{r unlock-impact}
+run$stages$build_signature <-
+    lock_signature(run$stages$build_signature, lock = FALSE)
+```
+
 # The LUAD honest negative (GSE31210 -> GSE50081)
 
 The fourth failure mode is demonstrated on independent GEO cohorts in the
@@ -108,6 +130,43 @@ build-time vignette:
 - A power analysis in the simulation study (`validation/simulate_study.R`)
   quantifies why: transfer power < 0.30 at ~35 discovery events, and >= 0.80
   only near ~300 events for a C ~ 0.65 signature.
+
+## Demonstrating the honest-negative concept with synthetic data
+
+The same pattern -- high screening-internal CV but poor external transfer --
+can be reproduced on a small synthetic cohort:
+
+```{r luad-null-demo}
+set.seed(7)
+n_genes <- 120
+n_samples <- 80
+cnt <- matrix(rpois(n_genes * n_samples, lambda = 500),
+              nrow = n_genes, ncol = n_samples,
+              dimnames = list(paste0("gene", seq_len(n_genes)),
+                              paste0("S", seq_len(n_samples))))
+sig_expr <- colMeans(cnt[1:5, , drop = FALSE])
+risk <- scale(sig_expr)[, 1] * 0.4
+event_time <- rexp(n_samples, rate = 0.03 * exp(0.8 * risk))
+censor_time <- rexp(n_samples, rate = 0.02)
+cd <- S4Vectors::DataFrame(time = pmin(event_time, censor_time),
+                           event = as.integer(event_time < censor_time),
+                           row.names = colnames(cnt))
+se_null <- SummarizedExperiment(assays = list(counts = cnt), colData = cd)
+discovery <- se_null[, seq_len(60)]
+external <- se_null[, 61:80]
+
+sig_null <- build_signature(discovery, "time", "event", top_n = 5,
+                            repeats = 2, folds = 3, seed = 7)
+cat("Screening-internal CV C:", mean(sig_null$cv_results$c_index), "\n")
+
+val_null <- validate_external(sig_null, external)
+cat("External C:", val_null$concordance, "\n")
+cat("External log-rank p:", val_null$log_rank_p, "\n")
+```
+
+The screening-internal CV is optimistic (high C) but the external validation
+on the held-out half is poor -- exactly the honest-negative pattern the
+tool is designed to surface rather than hide.
 
 # Reading this package's claims
 
