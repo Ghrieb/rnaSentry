@@ -210,14 +210,17 @@ a synthetic cohort with the same structure is used instead.</p>
 <span><span class="co">#&gt;     anyMissing, rowMedians</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_gse20685.html">fetch_gse20685</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">se_real</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_gse20685.html">fetch_gse20685</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Setting options('download.file.method.GEOquery'='auto')</span></span>
 <span><span class="co">#&gt; Setting options('GEOquery.inmemory.gpl'=FALSE)</span></span>
 <span><span class="co">#&gt; Downloading GSE20685 from GEO ...</span></span>
 <span><span class="co">#&gt; Found 1 file(s)</span></span>
 <span><span class="co">#&gt; GSE20685_series_matrix.txt.gz</span></span>
 <span><span class="co">#&gt; BiocFileCache write failed: all(rtype == "web" | file.exists(fpath)) is not TRUE</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">using_real</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">se_real</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">using_real</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">se</span> <span class="op">&lt;-</span> <span class="va">se_real</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"GEOquery unavailable or download failed; using synthetic fallback."</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20685</span><span class="op">)</span></span>
 <span>  <span class="va">n_genes</span> <span class="op">&lt;-</span> <span class="fl">3000</span></span>
@@ -255,6 +258,10 @@ a synthetic cohort with the same structure is used instead.</p>
 <span><span class="co">#&gt;       37       34       41       81       41       93</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">event</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 83</span></span></code></pre></div>
+<p>The cohort analyzed below is the live GSE20685 series matrix from GEO
+(downloaded via GEOquery, cached with BiocFileCache). It records 83
+deaths, so every number printed in this vignette reproduces whichever
+source was used.</p>
 </div>
 <div class="section level2">
 <h2 id="tier-1-the-naive-analysis">Tier 1: the naive analysis<a class="anchor" aria-label="anchor" href="#tier-1-the-naive-analysis"></a>
@@ -367,7 +374,7 @@ hypothesis-generating, and the cross-validated concordance and hazard
 ratios as unstable at this event count.</li>
 <li>
 <strong>Screening-internal CV.</strong> The cross-validated
-concordance (mean C = 0.80) is a <em>screening-internal</em> estimate:
+concordance (mean C = 0.78) is a <em>screening-internal</em> estimate:
 gene selection happens on the full cohort before the CV split, so it is
 optimistic. Read it relative to a matched null, as discussed in the main
 vignette and in the README.</li>
@@ -544,6 +551,17 @@ published result.</li>
 <code>logcounts</code> are already log2 intensities, so no second
 transform is applied (the <code>logcounts</code> assay name is
 used).</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<ul>
+<li>Li Y, Zou L, Li Q, et al. A five-gene molecular grade index and
+HOXB13:IL17BR are complementary prognostic factors in early stage breast
+cancer. <em>Clinical Cancer Research</em> (2010). GEO accession: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE20685" class="external-link uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE20685</a>
+(Affymetrix GPL570, HG-U133 Plus 2.0; downloaded here via
+<code><a href="http://seandavi.github.io/GEOquery/reference/getGEO.html" class="external-link">GEOquery::getGEO()</a></code>).</li>
 </ul>
 </div>
 <div class="section level2">

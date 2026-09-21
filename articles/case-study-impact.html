@@ -440,10 +440,12 @@ pattern the tool is designed to surface rather than hide.</p>
 </h2>
 <ul>
 <li>
-<strong>Every number above is reproducible.</strong> The case-study
-vignettes build offline from the bundled data, and the live-GEO numbers
-are reproduced by <code>validation/repro_live_geo.R</code> in the GitHub
-repository.</li>
+<strong>Every number above is reproducible.</strong> The
+breast-cancer case study downloads the live GSE20685 series from GEO via
+<code>GEOquery</code> (cached with <code>BiocFileCache</code>, with an
+evaluated synthetic fallback of identical structure if the download is
+unavailable), and the live-GEO LUAD numbers are reproduced by
+<code>validation/repro_live_geo.R</code> in the GitHub repository.</li>
 <li>
 <strong>The guardrails are testable.</strong> Each flag in the
 report’s audit trail is a <code>(check, severity, detail, stage)</code>
