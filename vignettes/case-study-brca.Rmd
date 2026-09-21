@@ -18,10 +18,11 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 # Status note
 
-This case study is an illustrative walkthrough of `rnaSentry` on a public
-dataset, provided to show how the pipeline behaves on real data. It is *not*
-peer-reviewed and the signature reported here is provisional. Treat every
-number below as a demonstration, not a clinical claim.
+This case study is an illustrative walkthrough of `rnaSentry` on the public
+GSE20685 breast-cancer dataset, provided to show how the pipeline behaves on
+real data. It is *not* peer-reviewed and the signature reported here is
+provisional. Treat every number below as a demonstration, not a clinical
+claim.
 
 The narrative follows the *three-tier* structure used across the case studies:
 a **naive analysis** first, then **rnaSentry standing guard**, then the
@@ -32,61 +33,19 @@ guardrails, and what the guarded analysis actually recovers.
 
 We use GSE20685 (Li *et al.*, 2010), an Affymetrix GPL570 (U133 Plus 2.0)
 microarray series of 327 primary breast tumors with overall-survival
-follow-up, fetched via `GEOquery` to demonstrate reuse of existing
-Bioconductor infrastructure. The full series matrix is obtained with
-`GEOquery::getGEO("GSE20685", GSEMatrix = TRUE)` and processed via
-`inst/scripts/repro_gse20685.R` in the package repository:
-
-- probe-level log2 intensities from the MAS5-summarized series matrix,
-- probe-to-gene collapse by largest mean expression,
-- the top 3000 most variable genes retained,
-- a `SummarizedExperiment` with the subset under the `logcounts` assay name,
-  plus `time` (years), `event` (1 = death), `age`, and `subtype` in the
-  sample metadata.
-
-For vignette portability (offline Bioc builds), the code below generates a
-synthetic cohort with the same structure; replace the synthetic block with the
-`GEOquery` fetch to run on the real cohort:
-
-```{r geoquery-example, eval = requireNamespace("GEOquery", quietly = TRUE)}
-# Demonstrates reuse of Bioconductor GEO infrastructure (eval when GEOquery
-# is installed; offline Bioc farm skips gracefully and uses synthetic below).
-# Cached via BiocFileCache when available; see inst/scripts/repro_gse20685.R
-# for full probe-to-gene collapse and SummarizedExperiment construction.
-if (requireNamespace("GEOquery", quietly = TRUE)) {
-  # Example: gse <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]
-  message("GEOquery available: run inst/scripts/repro_gse20685.R to fetch GSE20685 (not run in vignette).")
-}
-```
+follow-up. The full series matrix is downloaded from GEO via `GEOquery`,
+processed to gene-level expression (probe-to-gene collapse by largest mean
+expression), and subset to the top 3000 most variable genes. The result is a
+`SummarizedExperiment` with a `logcounts` assay plus `time` (years),
+`event` (1 = death), `age`, and `subtype` in the sample metadata. The
+processed data is cached via `BiocFileCache` for subsequent calls.
 
 ```{r load-data}
 library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
 
-# Synthetic cohort with the same structure as the GSE20685 subset
-# (real GEO fetch shown above; synthetic used here for offline builds)
-set.seed(20685)
-n_genes <- 3000
-n_samples <- 327
-genes <- paste0("GENE", seq_len(n_genes))
-samples <- paste0("Sample", seq_len(n_samples))
-mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
-              nrow = n_genes, ncol = n_samples,
-              dimnames = list(genes, samples))
-# Plant a weak survival signal in the first 20 genes
-risk0 <- colMeans(mat[1:20, , drop = FALSE])
-event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
-censor_time <- rexp(n_samples, rate = 0.04)
-time <- pmin(event_time, censor_time)
-event <- as.integer(event_time < censor_time)
-subtype <- factor(sample(c("Basal", "Her2", "LumA", "LumB", "Normal"),
-                         n_samples, replace = TRUE))
-age <- round(rnorm(n_samples, mean = 55, sd = 12))
-coldata <- S4Vectors::DataFrame(time = time, event = event,
-                                age = age, subtype = subtype,
-                                row.names = samples)
-se <- SummarizedExperiment(assays = list(logcounts = mat), colData = coldata)
+se <- fetch_gse20685()
 se
 table(se$subtype)
 sum(se$event)

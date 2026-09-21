@@ -1,3 +1,12 @@
+# rnaSentry 0.99.14 (development)
+
+## New in this release
+
+- `case-study-brca` vignette now uses real GSE20685 data downloaded from GEO
+  via `GEOquery` and cached via `BiocFileCache`, with a synthetic offline
+  fallback. Added `fetch_gse20685()` helper (`R/geo_utils.R`).
+- Bump to `0.99.14`.
+
 # rnaSentry 0.99.13 (development)
 
 ## New in this release
