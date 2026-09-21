@@ -126,15 +126,16 @@ recovers.</p>
 </h2>
 <p>We use GSE20685 (Li <em>et al.</em>, 2010), an Affymetrix GPL570
 (U133 Plus 2.0) microarray series of 327 primary breast tumors with
-overall-survival follow-up. The full series matrix is downloaded from
-GEO via <code>GEOquery</code>, processed to gene-level expression
-(probe-to-gene collapse by largest mean expression), and subset to the
-top 3000 most variable genes. The result is a
+overall-survival follow-up. When <code>GEOquery</code> is available, the
+full series matrix is downloaded from GEO, processed to gene-level
+expression (probe-to-gene collapse by largest mean expression), and
+subset to the top 3000 most variable genes. The result is a
 <code>SummarizedExperiment</code> with a <code>logcounts</code> assay
 plus <code>time</code> (years), <code>event</code> (1 = death),
 <code>age</code>, and <code>subtype</code> in the sample metadata. The
 processed data is cached via <code>BiocFileCache</code> for subsequent
-calls.</p>
+calls. When <code>GEOquery</code> is unavailable or the download fails,
+a synthetic cohort with the same structure is used instead.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ghrieb.github.io/rnaSentry/" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
@@ -216,6 +217,29 @@ calls.</p>
 <span><span class="co">#&gt; Found 1 file(s)</span></span>
 <span><span class="co">#&gt; GSE20685_series_matrix.txt.gz</span></span>
 <span><span class="co">#&gt; BiocFileCache write failed: all(rtype == "web" | file.exists(fpath)) is not TRUE</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"GEOquery unavailable or download failed; using synthetic fallback."</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20685</span><span class="op">)</span></span>
+<span>  <span class="va">n_genes</span> <span class="op">&lt;-</span> <span class="fl">3000</span></span>
+<span>  <span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">327</span></span>
+<span>  <span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"GENE"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_genes</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Sample"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_samples</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_genes</span> <span class="op">*</span> <span class="va">n_samples</span>, mean <span class="op">=</span> <span class="fl">6</span>, sd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>                nrow <span class="op">=</span> <span class="va">n_genes</span>, ncol <span class="op">=</span> <span class="va">n_samples</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">genes</span>, <span class="va">samples</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">risk0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MatrixGenerics/man/rowMeans.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">mat</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">event_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_samples</span>, rate <span class="op">=</span> <span class="fl">0.08</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.6</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">risk0</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">censor_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_samples</span>, rate <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span></span>
+<span>  <span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span></span>
+<span>  <span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span></span>
+<span>  <span class="va">subtype</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Basal"</span>, <span class="st">"Her2"</span>, <span class="st">"LumA"</span>, <span class="st">"LumB"</span>, <span class="st">"Normal"</span><span class="op">)</span>,</span>
+<span>                           <span class="va">n_samples</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_samples</span>, mean <span class="op">=</span> <span class="fl">55</span>, sd <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">coldata</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>, event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                  age <span class="op">=</span> <span class="va">age</span>, subtype <span class="op">=</span> <span class="va">subtype</span>,</span>
+<span>                                  row.names <span class="op">=</span> <span class="va">samples</span><span class="op">)</span></span>
+<span>  <span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>logcounts <span class="op">=</span> <span class="va">mat</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">coldata</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span><span class="va">se</span></span>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
 <span><span class="co">#&gt; dim: 3000 327 </span></span>
