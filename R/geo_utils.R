@@ -31,14 +31,11 @@
 #' }
 #'
 #' @importFrom Biobase exprs fData pData
+#' @importFrom SummarizedExperiment assay rowData colData
 #' @export
 fetch_gse20685 <- function(cache = TRUE) {
   if (!requireNamespace("GEOquery", quietly = TRUE)) {
     message("GEOquery not installed; returning NULL.")
-    return(NULL)
-  }
-  if (!requireNamespace("Biobase", quietly = TRUE)) {
-    message("Biobase not installed; returning NULL.")
     return(NULL)
   }
 
@@ -49,26 +46,55 @@ fetch_gse20685 <- function(cache = TRUE) {
     cached <- BiocFileCache::bfcquery(bfc, rname, "rname", exact = TRUE)
     if (nrow(cached) > 0L) {
       message("Loading cached GSE20685 ...")
-      return(readRDS(BiocFileCache::bfcrpath(bfc, rname)))
+      cached_se <- tryCatch(
+        readRDS(BiocFileCache::bfcrpath(bfc, rname)),
+        error = function(e) {
+          message("Cached GSE20685 unreadable: ", conditionMessage(e))
+          NULL
+        }
+      )
+      if (!is.null(cached_se)) return(cached_se)
     }
   }
 
   message("Downloading GSE20685 from GEO ...")
-  geo <- tryCatch(
-    GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE),
-    error = function(e) {
-      message("GEOquery download failed: ", conditionMessage(e))
-      NULL
-    }
-  )
-  if (is.null(geo)) return(NULL)
+  # NOTE: newer GEOquery versions return a (Ranged)SummarizedExperiment
+  # instead of an ExpressionSet for some series. Handle both, and return
+  # NULL (vignette synthetic fallback) on any failure so a GEO format
+  # change can never hard-fail the vignette build.
+  se <- tryCatch(
+    {
+      geo <- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)
+      if (is.null(geo) || length(geo) == 0L) stop("empty GEO result")
 
-  eset <- geo[[1]]
+      eset <- geo[[1]]
 
-  # --- probe -> gene collapse (largest-mean probe per symbol) ---
-  expr <- Biobase::exprs(eset)
-  fd <- Biobase::fData(eset)
-  sym <- as.character(fd[["Gene symbol"]])
+      if (methods::is(eset, "ExpressionSet")) {
+        expr <- Biobase::exprs(eset)
+        fd <- Biobase::fData(eset)
+        p <- Biobase::pData(eset)
+      } else if (methods::is(eset, "SummarizedExperiment")) {
+        expr <- as.matrix(SummarizedExperiment::assay(eset, 1))
+        fd <- as.data.frame(SummarizedExperiment::rowData(eset))
+        p <- as.data.frame(SummarizedExperiment::colData(eset))
+      } else {
+        stop(
+          "unsupported GEO object class: ",
+          paste(class(eset), collapse = ", ")
+        )
+      }
+
+      # --- probe -> gene collapse (largest-mean probe per symbol) ---
+      # Column is "Gene symbol" (lowercase s) on GPL570 via ExpressionSet,
+      # but S4Vectors::DataFrame() sanitizes names ("Gene.symbol") on the
+      # SummarizedExperiment path. Match normalization-insensitively so
+      # both object types (and future annotation tweaks) resolve.
+      norm_nm <- function(x) gsub("[^a-z0-9]", "", tolower(x))
+      sym_hit <- which(norm_nm(colnames(fd)) == "genesymbol")
+      if (length(sym_hit) == 0L) {
+        stop("gene-symbol column not found in feature data")
+      }
+      sym <- as.character(fd[[sym_hit[1]]])
 
   has_sym <- !is.na(sym) & sym != "" & sym != "---"
   expr <- expr[has_sym, , drop = FALSE]
@@ -83,11 +109,27 @@ fetch_gse20685 <- function(cache = TRUE) {
   rownames(expr_gene) <- sym_o[!dups]
 
   # --- clinical metadata ---
-  p <- Biobase::pData(eset)
-  time_years <- as.numeric(as.character(p[["follow_up_duration (years):ch1"]]))
-  event_death <- as.integer(as.character(p[["event_death:ch1"]]))
-  age <- as.numeric(as.character(p[["age at diagnosis:ch1"]]))
-  subtype <- as.character(p[["subtype:ch1"]])
+  # `p` already holds the sample metadata from the class branch above.
+  # Names may be sanitized on the SE path
+  # ("follow_up_duration (years):ch1" -> "follow_up_duration..years..ch1"),
+  # so match normalization-insensitively.
+  norm_nm <- function(x) gsub("[^a-z0-9]", "", tolower(x))
+  find_col <- function(key) {
+    hit <- which(norm_nm(colnames(p)) == key)
+    if (length(hit) == 0L) return(NA_character_)
+    colnames(p)[hit[1]]
+  }
+  time_col <- find_col("followupdurationyearsch1")
+  event_col <- find_col("eventdeathch1")
+  age_col <- find_col("ageatdiagnosisch1")
+  subtype_col <- find_col("subtypech1")
+  if (any(is.na(c(time_col, event_col, age_col, subtype_col)))) {
+    stop("expected clinical columns not found in GEO sample metadata")
+  }
+  time_years <- as.numeric(as.character(p[[time_col]]))
+  event_death <- as.integer(as.character(p[[event_col]]))
+  age <- as.numeric(as.character(p[[age_col]]))
+  subtype <- as.character(p[[subtype_col]])
 
   keep <- !is.na(time_years) & !is.na(event_death) & time_years >= 0 &
     event_death %in% c(0L, 1L)
@@ -113,10 +155,17 @@ fetch_gse20685 <- function(cache = TRUE) {
     subtype = factor(subtype),
     row.names = colnames(expr_sub)
   )
-  se <- SummarizedExperiment::SummarizedExperiment(
-    assays = list(logcounts = expr_sub),
-    colData = coldata
+      SummarizedExperiment::SummarizedExperiment(
+        assays = list(logcounts = expr_sub),
+        colData = coldata
+      )
+    },
+    error = function(e) {
+      message("fetch_gse20685 failed: ", conditionMessage(e), "; returning NULL.")
+      NULL
+    }
   )
+  if (is.null(se)) return(NULL)
 
   # --- cache if available ---
   if (!is.null(bfc)) {

@@ -52,18 +52,45 @@ if (file.exists(cache)) {
 }
 
 # ---- probe -> gene collapse (largest-mean probe per symbol), as in Gate 5 --
-expr <- exprs(eset)
-fd <- fData(eset)
-sym <- as.character(fd[["Gene symbol"]])
+# NOTE: newer GEOquery versions return a (Ranged)SummarizedExperiment
+# instead of an ExpressionSet. Handle both (mirrors R/geo_utils.R).
+if (is(eset, "ExpressionSet")) {
+  expr <- exprs(eset)
+  fd <- fData(eset)
+  p <- pData(eset)
+} else if (is(eset, "SummarizedExperiment")) {
+  expr <- as.matrix(SummarizedExperiment::assay(eset, 1))
+  fd <- as.data.frame(SummarizedExperiment::rowData(eset))
+  p <- as.data.frame(SummarizedExperiment::colData(eset))
+} else {
+  stop("unsupported GEO object class: ", paste(class(eset), collapse = ", "))
+}
+# Normalization-insensitive matching: DataFrame() sanitizes names on the
+# SE path ("Gene symbol" -> "Gene.symbol"). Mirrors R/geo_utils.R.
+norm_nm <- function(x) gsub("[^a-z0-9]", "", tolower(x))
+sym_hit <- which(norm_nm(colnames(fd)) == "genesymbol")
+if (length(sym_hit) == 0L) stop("gene-symbol column not found in feature data")
+sym <- as.character(fd[[sym_hit[1]]])
 cat(sprintf("probes: %d, symbols mapped: %d (%.1f%%)\n",
             nrow(expr), sum(!is.na(sym) & sym != "" & sym != "---"),
             100 * sum(!is.na(sym) & sym != "" & sym != "---") / nrow(expr)))
 
-p <- pData(eset)
-time_years <- as.numeric(as.character(p[["follow_up_duration (years):ch1"]]))
-event_death <- as.integer(as.character(p[["event_death:ch1"]]))
-age <- as.numeric(as.character(p[["age at diagnosis:ch1"]]))
-subtype <- as.character(p[["subtype:ch1"]])
+find_col <- function(key) {
+  hit <- which(norm_nm(colnames(p)) == key)
+  if (length(hit) == 0L) return(NA_character_)
+  colnames(p)[hit[1]]
+}
+time_col <- find_col("followupdurationyearsch1")
+event_col <- find_col("eventdeathch1")
+age_col <- find_col("ageatdiagnosisch1")
+subtype_col <- find_col("subtypech1")
+if (any(is.na(c(time_col, event_col, age_col, subtype_col)))) {
+  stop("expected clinical columns not found in GEO sample metadata")
+}
+time_years <- as.numeric(as.character(p[[time_col]]))
+event_death <- as.integer(as.character(p[[event_col]]))
+age <- as.numeric(as.character(p[[age_col]]))
+subtype <- as.character(p[[subtype_col]])
 keep <- !is.na(time_years) & !is.na(event_death) & time_years >= 0 &
   event_death %in% c(0L, 1L)
 cat(sprintf("samples with usable OS metadata: %d / %d (%d deaths)\n",
