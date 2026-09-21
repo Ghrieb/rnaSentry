@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
       </span>
     </div>
 
@@ -96,7 +96,7 @@
                         <h4 data-toc-skip class="author">Abdelkarim Hani
 Ghrieb</h4>
             
-            <h4 data-toc-skip class="date">2026-09-11</h4>
+            <h4 data-toc-skip class="date">2026-09-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/ci/vignettes/case-study-brca.Rmd" class="external-link"><code>vignettes/case-study-brca.Rmd</code></a></small>
       <div class="hidden name"><code>case-study-brca.Rmd</code></div>
@@ -109,10 +109,11 @@ Ghrieb</h4>
 <h2 id="status-note">Status note<a class="anchor" aria-label="anchor" href="#status-note"></a>
 </h2>
 <p>This case study is an illustrative walkthrough of
-<code>rnaSentry</code> on a public dataset, provided to show how the
-pipeline behaves on real data. It is <em>not</em> peer-reviewed and the
-signature reported here is provisional. Treat every number below as a
-demonstration, not a clinical claim.</p>
+<code>rnaSentry</code> on the public GSE20685 breast-cancer dataset,
+provided to show how the pipeline behaves on real data. It is
+<em>not</em> peer-reviewed and the signature reported here is
+provisional. Treat every number below as a demonstration, not a clinical
+claim.</p>
 <p>The narrative follows the <em>three-tier</em> structure used across
 the case studies: a <strong>naive analysis</strong> first, then
 <strong>rnaSentry standing guard</strong>, then the
@@ -125,37 +126,16 @@ recovers.</p>
 </h2>
 <p>We use GSE20685 (Li <em>et al.</em>, 2010), an Affymetrix GPL570
 (U133 Plus 2.0) microarray series of 327 primary breast tumors with
-overall-survival follow-up, fetched via <code>GEOquery</code> to
-demonstrate reuse of existing Bioconductor infrastructure. The full
-series matrix is obtained with
-<code>GEOquery::getGEO("GSE20685", GSEMatrix = TRUE)</code> and
-processed via <code>inst/scripts/repro_gse20685.R</code> in the package
-repository:</p>
-<ul>
-<li>probe-level log2 intensities from the MAS5-summarized series
-matrix,</li>
-<li>probe-to-gene collapse by largest mean expression,</li>
-<li>the top 3000 most variable genes retained,</li>
-<li>a <code>SummarizedExperiment</code> with the subset under the
-<code>logcounts</code> assay name, plus <code>time</code> (years),
-<code>event</code> (1 = death), <code>age</code>, and
-<code>subtype</code> in the sample metadata.</li>
-</ul>
-<p>For vignette portability (offline Bioc builds), the code below
-generates a synthetic cohort with the same structure; replace the
-synthetic block with the <code>GEOquery</code> fetch to run on the real
-cohort:</p>
+overall-survival follow-up. The full series matrix is downloaded from
+GEO via <code>GEOquery</code>, processed to gene-level expression
+(probe-to-gene collapse by largest mean expression), and subset to the
+top 3000 most variable genes. The result is a
+<code>SummarizedExperiment</code> with a <code>logcounts</code> assay
+plus <code>time</code> (years), <code>event</code> (1 = death),
+<code>age</code>, and <code>subtype</code> in the sample metadata. The
+processed data is cached via <code>BiocFileCache</code> for subsequent
+calls.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Demonstrates reuse of Bioconductor GEO infrastructure (eval when GEOquery</span></span>
-<span><span class="co"># is installed; offline Bioc farm skips gracefully and uses synthetic below).</span></span>
-<span><span class="co"># Cached via BiocFileCache when available; see inst/scripts/repro_gse20685.R</span></span>
-<span><span class="co"># for full probe-to-gene collapse and SummarizedExperiment construction.</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"GEOquery"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># Example: gse &lt;- GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)[[1]]</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"GEOquery available: run inst/scripts/repro_gse20685.R to fetch GSE20685 (not run in vignette)."</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt; GEOquery available: run inst/scripts/repro_gse20685.R to fetch GSE20685 (not run in vignette).</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ghrieb.github.io/rnaSentry/" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: MatrixGenerics</span></span>
@@ -229,44 +209,28 @@ cohort:</p>
 <span><span class="co">#&gt;     anyMissing, rowMedians</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Synthetic cohort with the same structure as the GSE20685 subset</span></span>
-<span><span class="co"># (real GEO fetch shown above; synthetic used here for offline builds)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20685</span><span class="op">)</span></span>
-<span><span class="va">n_genes</span> <span class="op">&lt;-</span> <span class="fl">3000</span></span>
-<span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">327</span></span>
-<span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"GENE"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_genes</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Sample"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_samples</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_genes</span> <span class="op">*</span> <span class="va">n_samples</span>, mean <span class="op">=</span> <span class="fl">6</span>, sd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span>,</span>
-<span>              nrow <span class="op">=</span> <span class="va">n_genes</span>, ncol <span class="op">=</span> <span class="va">n_samples</span>,</span>
-<span>              dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">genes</span>, <span class="va">samples</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># Plant a weak survival signal in the first 20 genes</span></span>
-<span><span class="va">risk0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MatrixGenerics/man/rowMeans.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="va">mat</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">event_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_samples</span>, rate <span class="op">=</span> <span class="fl">0.08</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">0.6</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">risk0</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">censor_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="va">n_samples</span>, rate <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span></span>
-<span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">event_time</span>, <span class="va">censor_time</span><span class="op">)</span></span>
-<span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">event_time</span> <span class="op">&lt;</span> <span class="va">censor_time</span><span class="op">)</span></span>
-<span><span class="va">subtype</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Basal"</span>, <span class="st">"Her2"</span>, <span class="st">"LumA"</span>, <span class="st">"LumB"</span>, <span class="st">"Normal"</span><span class="op">)</span>,</span>
-<span>                         <span class="va">n_samples</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_samples</span>, mean <span class="op">=</span> <span class="fl">55</span>, sd <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">coldata</span> <span class="op">&lt;-</span> <span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>, event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                age <span class="op">=</span> <span class="va">age</span>, subtype <span class="op">=</span> <span class="va">subtype</span>,</span>
-<span>                                row.names <span class="op">=</span> <span class="va">samples</span><span class="op">)</span></span>
-<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>logcounts <span class="op">=</span> <span class="va">mat</span><span class="op">)</span>, colData <span class="op">=</span> <span class="va">coldata</span><span class="op">)</span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_gse20685.html">fetch_gse20685</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Setting options('download.file.method.GEOquery'='auto')</span></span>
+<span><span class="co">#&gt; Setting options('GEOquery.inmemory.gpl'=FALSE)</span></span>
+<span><span class="co">#&gt; Downloading GSE20685 from GEO ...</span></span>
+<span><span class="co">#&gt; Found 1 file(s)</span></span>
+<span><span class="co">#&gt; GSE20685_series_matrix.txt.gz</span></span>
+<span><span class="co">#&gt; BiocFileCache write failed: all(rtype == "web" | file.exists(fpath)) is not TRUE</span></span>
 <span><span class="va">se</span></span>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
 <span><span class="co">#&gt; dim: 3000 327 </span></span>
 <span><span class="co">#&gt; metadata(0):</span></span>
 <span><span class="co">#&gt; assays(1): logcounts</span></span>
-<span><span class="co">#&gt; rownames(3000): GENE1 GENE2 ... GENE2999 GENE3000</span></span>
+<span><span class="co">#&gt; rownames(3000): CRISP3 S100A7 ... HYDIN MAGEB3</span></span>
 <span><span class="co">#&gt; rowData names(0):</span></span>
-<span><span class="co">#&gt; colnames(327): Sample1 Sample2 ... Sample326 Sample327</span></span>
+<span><span class="co">#&gt; colnames(327): GSM519117 GSM519118 ... GSM519442 GSM519443</span></span>
 <span><span class="co">#&gt; colData names(4): time event age subtype</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">subtype</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Basal   Her2   LumA   LumB Normal </span></span>
-<span><span class="co">#&gt;     71     73     47     72     64</span></span>
+<span><span class="co">#&gt;   type I  type II type III  type IV   type V  type VI </span></span>
+<span><span class="co">#&gt;       37       34       41       81       41       93</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">se</span><span class="op">$</span><span class="va">event</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 216</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 83</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tier-1-the-naive-analysis">Tier 1: the naive analysis<a class="anchor" aria-label="anchor" href="#tier-1-the-naive-analysis"></a>
@@ -276,7 +240,7 @@ these lines: pick a few highly variable genes, screen them against
 survival with univariate Cox regressions, average the survivors into a
 risk score, and quote the concordance that R prints by default. Let us
 run exactly that.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">logcounts</span></span>
 <span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">lg</span>, <span class="fl">1</span>, <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">cand</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">vars</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span><span class="op">]</span></span>
@@ -294,7 +258,7 @@ run exactly that.</p>
 <span>                                    reverse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">$</span><span class="va">concordance</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>c_default <span class="op">=</span> <span class="va">c_default</span>, c_reverse <span class="op">=</span> <span class="va">c_reverse</span>, sum <span class="op">=</span> <span class="va">c_default</span> <span class="op">+</span> <span class="va">c_reverse</span><span class="op">)</span></span>
 <span><span class="co">#&gt; c_default c_reverse       sum </span></span>
-<span><span class="co">#&gt; 0.4024795 0.5975205 1.0000000</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.323754  0.676246  1.000000</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/pkg/survival/man/concordance.html" class="external-link">survival::concordance()</a></code> defaults to the convention
 <em>larger score means longer survival</em>
 (<code>reverse = FALSE</code>). A Cox risk score means the opposite –
@@ -329,28 +293,37 @@ Kaplan-Meier risk groups. Because the cohort metadata records
 <code>age</code> and <code>subtype</code>, both are supplied as design
 variables so the audit can check them against the expression
 surrogate.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_rnaSentry.html">run_rnaSentry</a></span><span class="op">(</span><span class="va">se</span>, time_col <span class="op">=</span> <span class="st">"time"</span>, event_col <span class="op">=</span> <span class="st">"event"</span>,</span>
 <span>                     outcome_col <span class="op">=</span> <span class="st">"overall_survival"</span>,</span>
 <span>                     design_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"subtype"</span><span class="op">)</span>,</span>
 <span>                     top_n <span class="op">=</span> <span class="fl">20</span>, repeats <span class="op">=</span> <span class="fl">3</span>, folds <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">42</span>,</span>
 <span>                     render_report <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Only 83 event(s) for a 20-gene signature (4.2 events per parameter),</span></span>
+<span><span class="co">#&gt; below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard</span></span>
+<span><span class="co">#&gt; ratios are unstable at this event count; consider fewer genes or a larger</span></span>
+<span><span class="co">#&gt; cohort.</span></span>
 <span><span class="va">sig</span> <span class="op">&lt;-</span> <span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sig</span><span class="op">$</span><span class="va">genes</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "GENE13"   "GENE47"   "GENE20"   "GENE876"  "GENE2311" "GENE18"</span></span>
+<span><span class="co">#&gt; [1] "C20orf96" "SPRR3"    "EPHX2"    "CD1E"     "CASP14"   "ARNT2"</span></span>
 <span><span class="va">sig</span><span class="op">$</span><span class="va">cv_summary</span></span>
 <span><span class="co">#&gt;       mean         sd </span></span>
-<span><span class="co">#&gt; 0.70686033 0.03610309</span></span>
+<span><span class="co">#&gt; 0.78469786 0.03000978</span></span>
 <span><span class="va">sig</span><span class="op">$</span><span class="va">flags</span></span>
-<span><span class="co">#&gt;              check severity                                        detail</span></span>
-<span><span class="co">#&gt; 1 signature_locked     info Signature locked against downstream mutation.</span></span>
-<span><span class="co">#&gt;            stage</span></span>
-<span><span class="co">#&gt; 1 lock_signature</span></span></code></pre></div>
+<span><span class="co">#&gt;                  check severity</span></span>
+<span><span class="co">#&gt; 1 events_per_parameter  warning</span></span>
+<span><span class="co">#&gt; 2     signature_locked     info</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                detail</span></span>
+<span><span class="co">#&gt; 1 Only 83 event(s) for a 20-gene signature (4.2 events per parameter), below 'min_events_per_parameter' = 5. Cross-validated concordance and hazard ratios are unstable at this event count; consider fewer genes or a larger cohort.</span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                                                       Signature locked against downstream mutation.</span></span>
+<span><span class="co">#&gt;             stage</span></span>
+<span><span class="co">#&gt; 1 build_signature</span></span>
+<span><span class="co">#&gt; 2  lock_signature</span></span></code></pre></div>
 <p>The run locks the discovered signature, so a second discovery in the
 same session is refused until the lock is released (see the main
 vignette). Because all vignettes build in one session, we release it
 here so the remaining vignettes can run their own pipeline calls:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span> <span class="op">&lt;-</span></span>
 <span>    <span class="fu"><a href="../reference/lock_signature.html">lock_signature</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span>, lock <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>The guardrails that the naive analysis missed are now explicit in the
@@ -381,13 +354,13 @@ confounders the screening adjusts for, instead of an ad-hoc pick.</li>
 <div class="section level3">
 <h3 id="risk-groups">Risk groups<a class="anchor" aria-label="anchor" href="#risk-groups"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">km</span> <span class="op">&lt;-</span> <span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">km_curve</span></span>
 <span><span class="va">km</span><span class="op">$</span><span class="va">log_rank_p</span></span>
-<span><span class="co">#&gt; [1] 2.96665e-23</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 3.261912e-17</span></span></code></pre></div>
 <p>The discovered signature separates the cohort into risk groups whose
 survival curves differ dramatically at the discovery cutpoint:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">km_curve</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="case-study-brca_files/figure-html/brca-km-1.png" class="r-plt" alt="Kaplan-Meier survival curves for the low- and high-risk groups at the discovery cutpoint, with the log-rank p-value annotated. The risk groups diverge sharply." width="672"><p class="caption">
@@ -404,7 +377,7 @@ diverge sharply.
 with survival jointly with the other signature genes, so the forest plot
 below shows which genes carry their effect even after adjustment for the
 rest of the signature:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">cox_model</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="case-study-brca_files/figure-html/brca-forest-1.png" class="r-plt" alt="Adjusted Cox forest plot for the signature genes: log hazard ratio with 95% confidence interval, ordered by p-value. The vertical dashed line marks no effect (log HR = 0)." width="672"><p class="caption">
@@ -421,7 +394,7 @@ marks no effect (log HR = 0).
 and Weibull) to the same risk groups and overlays it on the Kaplan-Meier
 curves, providing a smooth estimate of the survival function when a
 parametric shape is a reasonable description:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">survival_parametric</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="case-study-brca_files/figure-html/brca-parametric-1.png" class="r-plt" alt="Kaplan-Meier curves with parametric survival-model overlay for the low- and high-risk groups." width="672"><p class="caption">
@@ -433,15 +406,15 @@ and high-risk groups.
 <div class="section level3">
 <h3 id="design-audit">Design audit<a class="anchor" aria-label="anchor" href="#design-audit"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">da</span> <span class="op">&lt;-</span> <span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">design_audit</span></span>
 <span><span class="va">da</span><span class="op">$</span><span class="va">confounder_table</span></span>
-<span><span class="co">#&gt;   variable        type   n test statistic     df   p_value  effect_size</span></span>
-<span><span class="co">#&gt; 1      age     numeric 327   lm 0.1261915 1, 325 0.7226444 0.0003881308</span></span>
-<span><span class="co">#&gt; 2  subtype categorical 327  aov 0.4302324 4, 322 0.7867781 0.0053160906</span></span>
-<span><span class="co">#&gt;   effect_size_type flagged     adj_p</span></span>
-<span><span class="co">#&gt; 1        r_squared   FALSE 0.7867781</span></span>
-<span><span class="co">#&gt; 2      eta_squared   FALSE 0.7867781</span></span>
+<span><span class="co">#&gt;   variable        type   n test   statistic     df       p_value effect_size</span></span>
+<span><span class="co">#&gt; 1      age     numeric 327   lm   0.7932527 1, 325  3.737772e-01 0.002434835</span></span>
+<span><span class="co">#&gt; 2  subtype categorical 327  aov 245.7217644 5, 321 2.008554e-107 0.792850947</span></span>
+<span><span class="co">#&gt;   effect_size_type flagged         adj_p</span></span>
+<span><span class="co">#&gt; 1        r_squared   FALSE  3.737772e-01</span></span>
+<span><span class="co">#&gt; 2      eta_squared    TRUE 4.017108e-107</span></span>
 <span><span class="va">da</span><span class="op">$</span><span class="va">formula_text</span></span>
 <span><span class="co">#&gt; [1] "~ age + subtype"</span></span></code></pre></div>
 <p><code>subtype</code> is flagged as associated with the expression
@@ -455,7 +428,7 @@ surrogate scan detects: the breast-cancer subtypes occupy distinct
 regions of expression space, which is why omitting <code>subtype</code>
 from the design would let subtype-driven expression masquerade as
 survival association:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_pca_audit.html">plot_pca_audit</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">pca_audit</span>, color_by <span class="op">=</span> <span class="st">"subtype"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="case-study-brca_files/figure-html/brca-pca-subtype-1.png" class="r-plt" alt="PC1-PC2 scatter of the GSE20685 subset colored by breast-cancer subtype. The subtypes separate along the leading PCs, mirroring the design audit's surrogate-association flag for `subtype`." width="672"><p class="caption">
@@ -552,7 +525,7 @@ used).</li>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -579,34 +552,39 @@ used).</li>
 <span><span class="co">#&gt;  [1] survival_3.8-6              SummarizedExperiment_1.42.0</span></span>
 <span><span class="co">#&gt;  [3] Biobase_2.72.0              GenomicRanges_1.64.0       </span></span>
 <span><span class="co">#&gt;  [5] Seqinfo_1.2.0               IRanges_2.46.0             </span></span>
-<span><span class="co">#&gt;  [7] S4Vectors_0.50.2            BiocGenerics_0.58.1        </span></span>
+<span><span class="co">#&gt;  [7] S4Vectors_0.50.3            BiocGenerics_0.58.1        </span></span>
 <span><span class="co">#&gt;  [9] generics_0.1.4              MatrixGenerics_1.24.0      </span></span>
-<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.13          </span></span>
+<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.14          </span></span>
 <span><span class="co">#&gt; [13] BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] gtable_0.3.6        ggplot2_4.0.3       xfun_0.60          </span></span>
-<span><span class="co">#&gt;  [4] bslib_0.12.0        htmlwidgets_1.6.4   lattice_0.22-9     </span></span>
-<span><span class="co">#&gt;  [7] tzdb_0.5.0          vctrs_0.7.3         tools_4.6.1        </span></span>
-<span><span class="co">#&gt; [10] tibble_3.3.1        pkgconfig_2.0.3     Matrix_1.7-5       </span></span>
-<span><span class="co">#&gt; [13] data.table_1.18.6.1 RColorBrewer_1.1-3  rentrez_1.2.4      </span></span>
-<span><span class="co">#&gt; [16] S7_0.2.2            desc_1.4.3          lifecycle_1.0.5    </span></span>
-<span><span class="co">#&gt; [19] farver_2.1.2        compiler_4.6.1      textshaping_1.0.5  </span></span>
-<span><span class="co">#&gt; [22] statmod_1.5.2       htmltools_0.5.9     sass_0.4.10        </span></span>
-<span><span class="co">#&gt; [25] yaml_2.3.12         pkgdown_2.2.1.9000  pillar_1.11.1      </span></span>
-<span><span class="co">#&gt; [28] jquerylib_0.1.4     tidyr_1.3.2         DelayedArray_0.38.2</span></span>
-<span><span class="co">#&gt; [31] cachem_1.1.0        limma_3.68.5        abind_1.4-8        </span></span>
-<span><span class="co">#&gt; [34] tidyselect_1.2.1    digest_0.6.39       dplyr_1.2.1        </span></span>
-<span><span class="co">#&gt; [37] purrr_1.2.2         bookdown_0.48       labeling_0.4.3     </span></span>
-<span><span class="co">#&gt; [40] splines_4.6.1       fastmap_1.2.0       grid_4.6.1         </span></span>
-<span><span class="co">#&gt; [43] GEOquery_2.80.0     cli_3.6.6           SparseArray_1.12.2 </span></span>
-<span><span class="co">#&gt; [46] magrittr_2.0.5      S4Arrays_1.12.0     XML_3.99-0.24      </span></span>
-<span><span class="co">#&gt; [49] withr_3.0.3         readr_2.2.0         scales_1.4.0       </span></span>
-<span><span class="co">#&gt; [52] rmarkdown_2.32      XVector_0.52.0      otel_0.2.0         </span></span>
-<span><span class="co">#&gt; [55] ragg_1.5.2          hms_1.1.4           evaluate_1.0.5     </span></span>
-<span><span class="co">#&gt; [58] knitr_1.52          rlang_1.3.0         glue_1.8.1         </span></span>
-<span><span class="co">#&gt; [61] BiocManager_1.30.27 xml2_1.6.0          jsonlite_2.0.0     </span></span>
-<span><span class="co">#&gt; [64] R6_2.6.1            systemfonts_1.3.2   fs_2.1.0</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] tidyselect_1.2.1    farver_2.1.2        dplyr_1.2.1        </span></span>
+<span><span class="co">#&gt;  [4] blob_1.3.0          S7_0.2.2            filelock_1.0.3     </span></span>
+<span><span class="co">#&gt;  [7] R.utils_2.13.0      fastmap_1.2.0       BiocFileCache_3.2.0</span></span>
+<span><span class="co">#&gt; [10] GEOquery_2.80.0     XML_3.99-0.24       digest_0.6.39      </span></span>
+<span><span class="co">#&gt; [13] lifecycle_1.0.5     statmod_1.5.2       RSQLite_3.53.3     </span></span>
+<span><span class="co">#&gt; [16] magrittr_2.0.5      compiler_4.6.1      rlang_1.3.0        </span></span>
+<span><span class="co">#&gt; [19] sass_0.4.10         tools_4.6.1         yaml_2.3.12        </span></span>
+<span><span class="co">#&gt; [22] data.table_1.18.6.1 knitr_1.52          labeling_0.4.3     </span></span>
+<span><span class="co">#&gt; [25] S4Arrays_1.12.0     htmlwidgets_1.6.4   bit_4.6.0          </span></span>
+<span><span class="co">#&gt; [28] curl_8.0.0          DelayedArray_0.38.2 RColorBrewer_1.1-3 </span></span>
+<span><span class="co">#&gt; [31] xml2_1.6.0          abind_1.4-8         withr_3.0.3        </span></span>
+<span><span class="co">#&gt; [34] purrr_1.2.2         desc_1.4.3          R.oo_1.27.1        </span></span>
+<span><span class="co">#&gt; [37] grid_4.6.1          ggplot2_4.0.3       scales_1.4.0       </span></span>
+<span><span class="co">#&gt; [40] cli_3.6.6           rmarkdown_2.32      ragg_1.5.2         </span></span>
+<span><span class="co">#&gt; [43] otel_0.2.0          tzdb_0.5.0          DBI_1.3.0          </span></span>
+<span><span class="co">#&gt; [46] cachem_1.1.0        splines_4.6.1       BiocManager_1.30.27</span></span>
+<span><span class="co">#&gt; [49] XVector_0.52.0      vctrs_0.7.3         Matrix_1.7-5       </span></span>
+<span><span class="co">#&gt; [52] jsonlite_2.0.0      bookdown_0.48       hms_1.1.4          </span></span>
+<span><span class="co">#&gt; [55] bit64_4.8.6         systemfonts_1.3.2   limma_3.68.5       </span></span>
+<span><span class="co">#&gt; [58] tidyr_1.3.2         jquerylib_0.1.4     glue_1.8.1         </span></span>
+<span><span class="co">#&gt; [61] pkgdown_2.2.1.9000  gtable_0.3.6        tibble_3.3.1       </span></span>
+<span><span class="co">#&gt; [64] pillar_1.11.1       htmltools_0.5.9     R6_2.6.1           </span></span>
+<span><span class="co">#&gt; [67] dbplyr_2.6.0        httr2_1.3.0         textshaping_1.0.5  </span></span>
+<span><span class="co">#&gt; [70] evaluate_1.0.5      lattice_0.22-9      readr_2.2.0        </span></span>
+<span><span class="co">#&gt; [73] rentrez_1.2.4       R.methodsS3_1.8.2   memoise_2.0.1      </span></span>
+<span><span class="co">#&gt; [76] bslib_0.12.0        SparseArray_1.12.2  xfun_0.61          </span></span>
+<span><span class="co">#&gt; [79] fs_2.1.0            pkgconfig_2.0.3</span></span></code></pre></div>
 </div>
   </div>
 
