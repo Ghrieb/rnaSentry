@@ -68,7 +68,7 @@ fetch_gse20685 <- function(cache = TRUE) {
   # --- probe -> gene collapse (largest-mean probe per symbol) ---
   expr <- Biobase::exprs(eset)
   fd <- Biobase::fData(eset)
-  sym <- as.character(fd[["Gene Symbol"]])
+  sym <- as.character(fd[["Gene symbol"]])
 
   has_sym <- !is.na(sym) & sym != "" & sym != "---"
   expr <- expr[has_sym, , drop = FALSE]

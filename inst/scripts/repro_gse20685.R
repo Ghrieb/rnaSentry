@@ -54,7 +54,7 @@ if (file.exists(cache)) {
 # ---- probe -> gene collapse (largest-mean probe per symbol), as in Gate 5 --
 expr <- exprs(eset)
 fd <- fData(eset)
-sym <- as.character(fd[["Gene Symbol"]])
+sym <- as.character(fd[["Gene symbol"]])
 cat(sprintf("probes: %d, symbols mapped: %d (%.1f%%)\n",
             nrow(expr), sum(!is.na(sym) & sym != "" & sym != "---"),
             100 * sum(!is.na(sym) & sym != "" & sym != "---") / nrow(expr)))
