@@ -159,7 +159,9 @@ sig_null <- build_signature(discovery, "time", "event", top_n = 5,
                             repeats = 2, folds = 3, seed = 7)
 cat("Screening-internal CV C:", mean(sig_null$cv_results$c_index), "\n")
 
-val_null <- validate_external(sig_null, external)
+km_null <- km_curve(sig_null, discovery)
+val_null <- validate_external(sig_null, external,
+                              cutpoint = km_null$cutpoint)
 cat("External C:", val_null$concordance, "\n")
 cat("External log-rank p:", val_null$log_rank_p, "\n")
 ```
