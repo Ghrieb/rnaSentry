@@ -172,8 +172,10 @@ tool is designed to surface rather than hide.
 
 # Reading this package's claims
 
-- **Every number above is reproducible.** The case-study vignettes build
-  offline from the bundled data, and the live-GEO numbers are reproduced by
+- **Every number above is reproducible.** The breast-cancer case study downloads
+  the live GSE20685 series from GEO via `GEOquery` (cached with `BiocFileCache`,
+  with an evaluated synthetic fallback of identical structure if the download
+  is unavailable), and the live-GEO LUAD numbers are reproduced by
   `validation/repro_live_geo.R` in the GitHub repository.
 - **The guardrails are testable.** Each flag in the report's audit trail is a
   `(check, severity, detail, stage)` record backed by a statistic, and each

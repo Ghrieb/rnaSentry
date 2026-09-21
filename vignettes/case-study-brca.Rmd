@@ -47,8 +47,11 @@ library(rnaSentry)
 library(SummarizedExperiment)
 library(survival)
 
-se <- fetch_gse20685()
-if (is.null(se)) {
+se_real <- fetch_gse20685()
+using_real <- !is.null(se_real)
+if (using_real) {
+  se <- se_real
+} else {
   message("GEOquery unavailable or download failed; using synthetic fallback.")
   set.seed(20685)
   n_genes <- 3000
@@ -75,6 +78,8 @@ se
 table(se$subtype)
 sum(se$event)
 ```
+
+The cohort analyzed below is `r if (using_real) "the live GSE20685 series matrix from GEO (downloaded via GEOquery, cached with BiocFileCache)" else "a synthetic fallback cohort with the same structure (3000 genes x 327 samples, same logcounts/time/event/age/subtype layout), used because the GEO download was unavailable"`. It records `r sum(se$event)` deaths, so every number printed in this vignette reproduces whichever source was used.
 
 # Tier 1: the naive analysis
 
@@ -162,12 +167,13 @@ ledger:
   `reverse = TRUE`; the sign convention cannot silently flip (a parity test
   asserts `C + C_rev = 1` on every fold).
 - **Events per parameter.** The `events_per_parameter` warning is expected and
-  matches the documented limitation: 83 deaths for a 20-gene signature is 4.2
-  events per parameter, below the guardrail of 5. The signature should be read
+  matches the documented limitation: `r sum(se$event)` deaths for a 20-gene
+  signature is `r round(sum(se$event) / 20, 1)` events per parameter, below
+  the guardrail of 5. The signature should be read
   as hypothesis-generating, and the cross-validated concordance and hazard
   ratios as unstable at this event count.
-- **Screening-internal CV.** The cross-validated concordance (mean C = 0.80)
-  is a *screening-internal* estimate: gene selection happens on the full
+- **Screening-internal CV.** The cross-validated concordance (mean C =
+  `r round(sig$cv_summary[["mean"]], 2)`) is a *screening-internal* estimate: gene selection happens on the full
   cohort before the CV split, so it is optimistic. Read it relative to a
   matched null, as discussed in the main vignette and in the README.
 - **Design.** The design audit below decides which confounders the screening
@@ -239,7 +245,7 @@ plot_pca_audit(run$stages$pca_audit, color_by = "subtype")
 | Score direction | default convention reads the score as *protective*; `C < 0.5` looks like failure | `reverse = TRUE`; `C_rev = 1 - C_default`, direction correct |
 | Headline concordance | `C_default` quoted as gospel | `C_rev` quoted with its convention, and flagged screening-internal |
 | Out-of-sample claim | none / implicit | only `validate_external()` counts; matched-null calibration required |
-| Events per parameter | not reported | 4.2 < 5, warned in the ledger |
+| Events per parameter | not reported | `r round(sum(se$event) / 20, 1)` < 5, warned in the ledger |
 | Design | ad-hoc | `subtype` flagged and adjusted for |
 
 **What a guarded analysis can claim:** on the full-cohort face-validity run
@@ -263,6 +269,14 @@ limitation is stated, not hidden.
 - GSE20685 is an *Affymetrix* series; its `logcounts` are already log2
   intensities, so no second transform is applied (the `logcounts` assay name
   is used).
+
+# References
+
+- Li Y, Zou L, Li Q, et al. A five-gene molecular grade index and HOXB13:IL17BR
+  are complementary prognostic factors in early stage breast cancer. *Clinical
+  Cancer Research* (2010). GEO accession:
+  <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE20685> (Affymetrix
+  GPL570, HG-U133 Plus 2.0; downloaded here via `GEOquery::getGEO()`).
 
 # Session info
 
