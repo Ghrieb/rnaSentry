@@ -1,3 +1,20 @@
+# rnaSentry 0.99.15 (development)
+
+## New in this release
+
+- `fetch_gse20685()` handles `RangedSummarizedExperiment` from newer
+  `GEOquery` (assay/rowData/colData branch) with sanitization-tolerant
+  column matching; all processing wrapped in `tryCatch` → `NULL` fallback;
+  download bounded via `withr` timeout (Bioconductor Appendix C). Fixes
+  r-universe source `ERROR`.
+- `case-study-brca` vignette shows real-data code only; synthetic generator
+  moved to internal `.brca_fallback_cohort()`; data-source provenance note,
+  inline deaths/events-per-parameter/CV statistics, and References
+  (Li et al. 2010) added.
+- `case-study-impact` vignette: fixed missing `cutpoint` in
+  `validate_external()` demo; corrected stale offline-data claim.
+- Bump to `0.99.15`.
+
 # rnaSentry 0.99.14 (development)
 
 ## New in this release
