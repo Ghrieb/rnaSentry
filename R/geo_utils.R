@@ -201,26 +201,29 @@ fetch_gse20685 <- function(cache = TRUE) {
 #' @return A \code{SummarizedExperiment}.
 #' @noRd
 .brca_fallback_cohort <- function() {
-  set.seed(20685)
-  n_genes <- 3000
-  n_samples <- 327
-  genes <- paste0("GENE", seq_len(n_genes))
-  samples <- paste0("Sample", seq_len(n_samples))
-  mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
-                nrow = n_genes, ncol = n_samples,
-                dimnames = list(genes, samples))
-  risk0 <- colMeans(mat[1:20, , drop = FALSE])
-  event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
-  censor_time <- rexp(n_samples, rate = 0.04)
-  time <- pmin(event_time, censor_time)
-  event <- as.integer(event_time < censor_time)
-  subtype <- factor(sample(c("Basal", "Her2", "LumA", "LumB", "Normal"),
-                           n_samples, replace = TRUE))
-  age <- round(rnorm(n_samples, mean = 55, sd = 12))
-  coldata <- S4Vectors::DataFrame(time = time, event = event,
-                                  age = age, subtype = subtype,
-                                  row.names = samples)
-  SummarizedExperiment::SummarizedExperiment(
-    assays = list(logcounts = mat), colData = coldata
-  )
+  # Scoped seed (no global RNG side effects; a bare seed call in R/ code is a
+  # BiocCheck WARNING).
+  withr::with_seed(20685, {
+    n_genes <- 3000
+    n_samples <- 327
+    genes <- paste0("GENE", seq_len(n_genes))
+    samples <- paste0("Sample", seq_len(n_samples))
+    mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
+                  nrow = n_genes, ncol = n_samples,
+                  dimnames = list(genes, samples))
+    risk0 <- colMeans(mat[seq_len(20), , drop = FALSE])
+    event_time <- rexp(n_samples, rate = 0.08 * exp(0.6 * scale(risk0)[, 1]))
+    censor_time <- rexp(n_samples, rate = 0.04)
+    time <- pmin(event_time, censor_time)
+    event <- as.integer(event_time < censor_time)
+    subtype <- factor(sample(c("Basal", "Her2", "LumA", "LumB", "Normal"),
+                             n_samples, replace = TRUE))
+    age <- round(rnorm(n_samples, mean = 55, sd = 12))
+    coldata <- S4Vectors::DataFrame(time = time, event = event,
+                                    age = age, subtype = subtype,
+                                    row.names = samples)
+    SummarizedExperiment::SummarizedExperiment(
+      assays = list(logcounts = mat), colData = coldata
+    )
+  })
 }
