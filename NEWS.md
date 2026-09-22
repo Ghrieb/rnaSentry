@@ -1,3 +1,12 @@
+# rnaSentry 0.99.16 (development)
+
+## New in this release
+
+- Scope fallback seed with `withr::with_seed()` (no global RNG side
+  effects; clears BiocCheck `set.seed` WARNING) and use `seq_len()`
+  (clears `1:...` NOTE) in `.brca_fallback_cohort()`.
+- Bump to `0.99.16`.
+
 # rnaSentry 0.99.15 (development)
 
 ## New in this release
