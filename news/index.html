@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.14</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.15</span>
       </span>
     </div>
 
@@ -72,6 +72,19 @@
       <small>Source: <a href="https://github.com/Ghrieb/rnaSentry/blob/ci/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.99.15" id="rnasentry-09915-development">rnaSentry 0.99.15 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-09915-development"></a></h2>
+<div class="section level3">
+<h3 id="new-in-this-release-0-99-15">New in this release<a class="anchor" aria-label="anchor" href="#new-in-this-release-0-99-15"></a></h3>
+<ul><li>
+<code><a href="../reference/fetch_gse20685.html">fetch_gse20685()</a></code> handles <code>RangedSummarizedExperiment</code> from newer <code>GEOquery</code> (assay/rowData/colData branch) with sanitization-tolerant column matching; all processing wrapped in <code>tryCatch</code> → <code>NULL</code> fallback; download bounded via <code>withr</code> timeout (Bioconductor Appendix C). Fixes r-universe source <code>ERROR</code>.</li>
+<li>
+<code>case-study-brca</code> vignette shows real-data code only; synthetic generator moved to internal <code>.brca_fallback_cohort()</code>; data-source provenance note, inline deaths/events-per-parameter/CV statistics, and References (Li et al. 2010) added.</li>
+<li>
+<code>case-study-impact</code> vignette: fixed missing <code>cutpoint</code> in <code><a href="../reference/validate_external.html">validate_external()</a></code> demo; corrected stale offline-data claim.</li>
+<li>Bump to <code>0.99.15</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.99.14" id="rnasentry-09914-development">rnaSentry 0.99.14 (development)<a class="anchor" aria-label="anchor" href="#rnasentry-09914-development"></a></h2>
 <div class="section level3">
