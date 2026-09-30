@@ -1,3 +1,18 @@
+# rnaSentry 0.99.18 (development)
+
+## New in this release
+
+- Name the microarray assay `exprs` (not `logcounts`); the shared
+  analysis-matrix dispatcher recognizes `exprs` as log-ready (prevents a
+  double-log transform). BRCA vignette shows real-data code only;
+  fallback lives in an internal helper.
+- BRCA numbers re-derived live on current code (CV 0.785, log-rank
+  3.3e-17, eta-squared 0.79; MKI67/ESR1 re-derived exactly); honest
+  limitation documented that internal CV sits inside the matched
+  permuted-selection band (0.744–0.785); GPL annotation drift disclosed
+  user-facing; bounded GEO download retries (3x).
+- Bump to `0.99.18`.
+
 # rnaSentry 0.99.17 (development)
 
 ## New in this release
