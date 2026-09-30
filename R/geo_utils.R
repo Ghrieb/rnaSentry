@@ -43,13 +43,35 @@ fetch_gse20685 <- function() {
   # change can never hard-fail the vignette build.
   tryCatch(
     {
-      # Bound the download time (Bioconductor Appendix C: web queries must
-      # fail quickly on nightly builders); never shorten a user-configured
-      # longer timeout.
-      geo <- withr::with_options(
-        list(timeout = max(300, getOption("timeout"))),
-        GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)
-      )
+      # Bounded retries for unattended builders (Bioconductor Appendix C:
+      # web queries must fail quickly, and NCBI FTP is intermittently slow).
+      # Worst case is n_total * per-attempt timeout, then NULL fallback. A
+      # while loop is used per the Appendix C retrieval template (and keeps
+      # the package for-loop free).
+      n_total <- 3L
+      n_tries <- n_total
+      timeout_s <- max(180, getOption("timeout"))
+      geo <- NULL
+      attempt <- 0L
+      while (n_tries > 0L) {
+        n_tries <- n_tries - 1L
+        attempt <- attempt + 1L
+        if (attempt > 1L) {
+          message("GEOquery download retry ", attempt, " of ", n_total, " ...")
+        }
+        geo <- tryCatch(
+          withr::with_options(
+            list(timeout = timeout_s),
+            GEOquery::getGEO("GSE20685", GSEMatrix = TRUE, AnnotGPL = TRUE)
+          ),
+          error = function(e) {
+            message("GEOquery attempt ", attempt, " failed: ",
+                    conditionMessage(e))
+            NULL
+          }
+        )
+        if (!is.null(geo) && length(geo) > 0L) break
+      }
       if (is.null(geo) || length(geo) == 0L) stop("empty GEO result")
 
       se0 <- methods::as(geo[[1]], "SummarizedExperiment")

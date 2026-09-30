@@ -252,6 +252,11 @@ limitation is stated, not hidden.
   this signature is a demonstration, not a published result.
 - GSE20685 is an *Affymetrix* series; its `exprs` are already log2
   intensities, used as-is (the microarray assay name, not log-counts).
+- **GPL annotation drift.** Gene-level counts may shift slightly across
+  sessions as NCBI updates the GPL570 annotation (23,520 post-collapse genes
+  in August 2026 vs 22,189 in September 2026); core findings — MKI67/ESR1
+  directions, risk-group separation (median low not reached / high 11.4 y),
+  CV ≈ 0.78 — reproduced across both annotations.
 
 # References
 
