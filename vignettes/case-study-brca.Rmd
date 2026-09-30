@@ -36,7 +36,8 @@ microarray series of 327 primary breast tumors with overall-survival
 follow-up. When `GEOquery` is available, the full series matrix is downloaded
 from GEO, processed to gene-level expression (probe-to-gene collapse by
 largest mean expression), and subset to the top 3000 most variable genes. The
-result is a `SummarizedExperiment` with a `logcounts` assay plus `time`
+result is a `SummarizedExperiment` with an `exprs` assay (microarray log2
+intensities, used as-is) plus `time`
 (years), `event` (1 = death), `age`, and `subtype` in the sample metadata.
 `GEOquery` caches the series matrix itself, so repeat builds reuse the local
 copy. Only if `GEOquery` is unavailable or the download fails, an internal
@@ -62,7 +63,7 @@ table(se$subtype)
 sum(se$event)
 ```
 
-The cohort analyzed below is `r if (using_real) "the live GSE20685 series matrix from GEO (downloaded via GEOquery, which caches the series matrix locally)" else "a synthetic fallback cohort with the same structure (3000 genes x 327 samples, same logcounts/time/event/age/subtype layout), used because the GEO download was unavailable"`. It records `r sum(se$event)` deaths, so every number printed in this vignette reproduces whichever source was used.
+The cohort analyzed below is `r if (using_real) "the live GSE20685 series matrix from GEO (downloaded via GEOquery, which caches the series matrix locally)" else "a synthetic fallback cohort with the same structure (3000 genes x 327 samples, same exprs/time/event/age/subtype layout), used because the GEO download was unavailable"`. It records `r sum(se$event)` deaths, so every number printed in this vignette reproduces whichever source was used.
 
 # Tier 1: the naive analysis
 
@@ -72,7 +73,7 @@ univariate Cox regressions, average the survivors into a risk score, and
 quote the concordance that R prints by default. Let us run exactly that.
 
 ```{r naive-screen, warning = FALSE}
-lg <- assays(se)$logcounts
+lg <- assays(se)$exprs
 vars <- apply(lg, 1, stats::var, na.rm = TRUE)
 cand <- names(sort(vars, decreasing = TRUE))[seq_len(200)]
 stat <- do.call(rbind, lapply(cand, function(g) {
@@ -249,9 +250,8 @@ limitation is stated, not hidden.
   see the main vignette's "Assumptions and limitations".
 - **Low events per parameter.** The guardrail warning above is a real signal;
   this signature is a demonstration, not a published result.
-- GSE20685 is an *Affymetrix* series; its `logcounts` are already log2
-  intensities, so no second transform is applied (the `logcounts` assay name
-  is used).
+- GSE20685 is an *Affymetrix* series; its `exprs` are already log2
+  intensities, used as-is (the microarray assay name, not log-counts).
 
 # References
 

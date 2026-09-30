@@ -65,7 +65,7 @@ test_that("fetch_gse20685 handles ExpressionSet input", {
     fetch_gse20685()
   )
   expect_s4_class(out, "SummarizedExperiment")
-  expect_identical(SummarizedExperiment::assayNames(out), "logcounts")
+  expect_identical(SummarizedExperiment::assayNames(out), "exprs")
   # 60 probes collapse to 30 unique gene symbols
   expect_equal(nrow(out), 30L)
   expect_equal(ncol(out), 40L)
@@ -94,8 +94,8 @@ test_that("fetch_gse20685 agrees on ExpressionSet and SummarizedExperiment input
   )
   expect_true(!is.null(out_es) && !is.null(out_se))
   expect_equal(
-    SummarizedExperiment::assay(out_es, "logcounts"),
-    SummarizedExperiment::assay(out_se, "logcounts")
+    SummarizedExperiment::assay(out_es, "exprs"),
+    SummarizedExperiment::assay(out_se, "exprs")
   )
   expect_equal(
     as.data.frame(SummarizedExperiment::colData(out_es)),
@@ -120,8 +120,8 @@ test_that("fetch_gse20685 handles RangedSummarizedExperiment input", {
   )
   expect_true(!is.null(out_ranged))
   expect_equal(
-    SummarizedExperiment::assay(out_se, "logcounts"),
-    SummarizedExperiment::assay(out_ranged, "logcounts")
+    SummarizedExperiment::assay(out_se, "exprs"),
+    SummarizedExperiment::assay(out_ranged, "exprs")
   )
 })
 
@@ -147,12 +147,12 @@ test_that(".brca_fallback_cohort matches the fetch contract and is deterministic
   expect_s4_class(fb1, "SummarizedExperiment")
   expect_equal(nrow(fb1), 3000L)
   expect_equal(ncol(fb1), 327L)
-  expect_identical(SummarizedExperiment::assayNames(fb1), "logcounts")
+  expect_identical(SummarizedExperiment::assayNames(fb1), "exprs")
   expect_true(all(c("time", "event", "age", "subtype") %in%
     colnames(SummarizedExperiment::colData(fb1))))
   expect_equal(
-    SummarizedExperiment::assay(fb1, "logcounts"),
-    SummarizedExperiment::assay(fb2, "logcounts")
+    SummarizedExperiment::assay(fb1, "exprs"),
+    SummarizedExperiment::assay(fb2, "exprs")
   )
   # the helper must not disturb the caller's RNG stream
   set.seed(99)
@@ -160,5 +160,39 @@ test_that(".brca_fallback_cohort matches the fetch contract and is deterministic
   set.seed(99)
   invisible(rnaSentry:::.brca_fallback_cohort())
   expect_identical(before, runif(1))
+})
+
+test_that("exprs assay is treated as log-ready across consumers", {
+  # Same log-scale matrix under two names: build_signature and km_curve must
+  # behave identically. Without "exprs" in the dispatcher, the microarray
+  # matrix would be double-logged via log2(mat + 1).
+  set.seed(11)
+  n_genes <- 60L
+  n_samples <- 50L
+  mat <- matrix(rnorm(n_genes * n_samples, mean = 6, sd = 1.5),
+                nrow = n_genes, ncol = n_samples,
+                dimnames = list(paste0("g", seq_len(n_genes)),
+                                paste0("S", seq_len(n_samples))))
+  sig_expr <- colMeans(mat[seq_len(5), , drop = FALSE])
+  risk <- scale(sig_expr)[, 1] * 0.6
+  event_time <- rexp(n_samples, rate = 0.05 * exp(risk))
+  censor_time <- rexp(n_samples, rate = 0.03)
+  cd <- S4Vectors::DataFrame(time = pmin(event_time, censor_time),
+                             event = as.integer(event_time < censor_time),
+                             row.names = colnames(mat))
+  se_log <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(logcounts = mat), colData = cd)
+  se_ex <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(exprs = mat), colData = cd)
+  sig_log <- build_signature(se_log, "time", "event", top_n = 5,
+                             repeats = 1, folds = 3, seed = 11)
+  sig_ex <- build_signature(se_ex, "time", "event", top_n = 5,
+                            repeats = 1, folds = 3, seed = 11)
+  expect_identical(sig_ex$genes, sig_log$genes)
+  expect_equal(sig_ex$cv_summary, sig_log$cv_summary)
+  km_log <- km_curve(sig_log, se_log)
+  km_ex <- km_curve(sig_ex, se_ex)
+  expect_equal(km_ex$cutpoint, km_log$cutpoint)
+  expect_equal(km_ex$log_rank_p, km_log$log_rank_p)
 })
 

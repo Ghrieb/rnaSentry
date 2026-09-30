@@ -4,8 +4,9 @@
 #' \code{GEOquery::getGEO()} (which caches the series matrix itself),
 #' performs probe-to-gene collapse (largest mean expression per symbol),
 #' subsets to the top 3000 most variable genes, and returns a
-#' \code{SummarizedExperiment} with \code{logcounts} assay and clinical
-#' metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
+#' \code{SummarizedExperiment} with an \code{exprs} assay (microarray log2
+#' intensities, used as-is by the pipeline) and clinical metadata
+#' (\code{time}, \code{event}, \code{age}, \code{subtype}).
 #'
 #' @return A \code{SummarizedExperiment} or \code{NULL} if the download or
 #'   processing fails (e.g. network unavailable, \code{GEOquery} not
@@ -128,7 +129,7 @@ fetch_gse20685 <- function() {
     row.names = colnames(expr_sub)
   )
       SummarizedExperiment::SummarizedExperiment(
-        assays = list(logcounts = expr_sub),
+        assays = list(exprs = expr_sub),
         colData = coldata
       )
     },
@@ -143,7 +144,7 @@ fetch_gse20685 <- function() {
 #'
 #' Offline fallback for the breast-cancer case-study vignette when the live
 #' GSE20685 download via \code{fetch_gse20685()} fails. Same structure as the
-#' real output (3000 genes x 327 samples, \code{logcounts} assay, \code{time} /
+#' real output (3000 genes x 327 samples, \code{exprs} assay, \code{time} /
 #' \code{event} / \code{age} / \code{subtype} metadata) with a fixed seed so
 #' the fallback is reproducible. Not exported.
 #'
@@ -171,8 +172,8 @@ fetch_gse20685 <- function() {
     coldata <- S4Vectors::DataFrame(time = time, event = event,
                                     age = age, subtype = subtype,
                                     row.names = samples)
-    SummarizedExperiment::SummarizedExperiment(
-      assays = list(logcounts = mat), colData = coldata
-    )
+  SummarizedExperiment::SummarizedExperiment(
+    assays = list(exprs = mat), colData = coldata
+  )
   })
 }

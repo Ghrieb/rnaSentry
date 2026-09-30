@@ -66,7 +66,8 @@ are associated with global expression structure.
 }
 \details{
 The analysis matrix is chosen by preference from an existing assay named
-\code{"logcounts"} or \code{"vst"}; if neither exists, \code{log2(counts +
+\code{"logcounts"} or \code{"vst"} (RNA-seq) or \code{"exprs"}
+(microarray); if none exists, \code{log2(counts +
 1)} is computed from the first assay. Genes with zero variance or missing
 values are removed because they carry no information for PCA and would
 make \code{stats::prcomp} fail; the number removed and the reason are

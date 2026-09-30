@@ -5,9 +5,13 @@
 - Simplify `fetch_gse20685()` per review: drop the redundant `BiocFileCache`
   layer (`GEOquery` caches the series matrix itself) and the `cache`
   parameter; unify `ExpressionSet`/`SummarizedExperiment` handling with
-  `as(, "SummarizedExperiment")`. File goes from 226 to ~110 lines; the
+  `as(, "SummarizedExperiment")`. File goes from 226 to 178 lines; the
   remaining code is strictly probe-to-gene collapse and survival-metadata
   extraction.
+- Name the microarray assay `exprs` (not `logcounts`, which means
+  log-transformed sequencing counts); the shared analysis-matrix dispatcher
+  now recognizes `exprs` as log-ready alongside `logcounts`/`vst`, preventing
+  a double-log transform. Pinned by cross-consumer tests.
 - Bump to `0.99.17`.
 
 # rnaSentry 0.99.16 (development)
