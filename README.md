@@ -133,10 +133,11 @@ remain re-runnable on the locked signature.
 The concordance reported by `build_signature()` is a **screening-internal**
 metric: genes are selected on the full cohort *before* the CV split, so the
 CV fold is not fully untouched by selection. On a large candidate panel the
-value is *optimistic*: on GSE20685, a post-hoc full-protocol build on
-survival-permuted data gives CV C = 0.82, versus 0.582 for a no-selection
-random-gene control (face-validity run record) and 0.490 for the same
-no-selection protocol on simulated null data. Always interpret it
+value is *optimistic*: on GSE20685, identical-protocol builds on
+survival-permuted data give CV C = 0.744–0.785 across 6 draws (vs 0.785 for
+the real signature — inside, not above, the noise band), versus 0.582 for a
+no-selection random-gene control (face-validity run record) and 0.490 for the
+same no-selection protocol on simulated null data. Always interpret it
 **relative to a matched null** (a permutation-null or random-gene control),
 and treat `validate_external()` on an independent cohort as the only fully
 out-of-sample estimate.
@@ -216,7 +217,7 @@ live GEO and documented here.
 
 | Failure mode | Naive headline | Guarded headline |
 |---|---|---|
-| Wrong direction (GSE20685) | inverted-convention read (C ~ 0.2) looks like a failure | held-out C = 0.783 vs 0.582 random-gene control |
+| Wrong direction (GSE20685) | inverted-convention read (C ~ 0.2) looks like a failure | held-out C = 0.783 vs 0.582 random-gene control (CV alone does not exceed selection-noise controls; see case-study Limitations) |
 | Confounded design (synthetic cohort) | six batch-driven genes are "prognostic"; batch + region are "independent" | batch/region redundant (Cramer's V = 0.82); design reduced to `~ batch` |
 | Underpowered discovery (30 samples, 23 events) | "mean CV C = 0.74 - decent" | fold range 0.50-1.00, sd 0.14, 4.6 events/parameter |
 | False transfer (GSE31210 -> GSE50081) | "CV C = 0.86, validated" | external C = 0.540, p = 0.266: transfer not demonstrated |
