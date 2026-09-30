@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.18</span>
       </span>
     </div>
 
@@ -283,12 +283,13 @@ generalization, the signature is a failure.”</p>
 <p>This is not hypothetical. The first real-data face-validity run of
 this very cohort reported CV concordance <strong>0.217</strong> and a
 naive reading would rationalize it as extreme selection-induced winner’s
-curse; the correct value is <code>1 - 0.217 = 0.783</code>, a strong
-held-out result in the biologically expected direction. The full
-diagnosis, including the <code>C + C_rev = 1</code> invariant you can
-see holding above, is recorded in the repository’s validation dossier.
-The parity test suite now asserts that invariant on every fold so the
-convention cannot silently flip again.</p>
+curse; the correct value is <code>1 - 0.217 = 0.783</code>, a
+directionally correct held-out result (see Limitations on what CV alone
+can and cannot show). The full diagnosis, including the
+<code>C + C_rev = 1</code> invariant you can see holding above, is
+recorded in the repository’s validation dossier. The parity test suite
+now asserts that invariant on every fold so the convention cannot
+silently flip again.</p>
 <p>Even read in the correct direction, a naive analyst stops at the
 cross- validated mean and treats it as an out-of-sample estimate. As the
 LUAD honest-negative case study documents, a screening-internal CV on a
@@ -506,11 +507,14 @@ calibration required</td>
 <p><strong>What a guarded analysis can claim:</strong> on the
 full-cohort face-validity run of this dataset rnaSentry reports a
 directionally correct held-out concordance of 0.783 against a 0.582
-random-gene control (and a 0.490 simulated null) – genuine survival
-signal, not a 0.22 collapse – while the naive pipeline either reports a
-“failed” signature (inverted convention) or an uncalibrated 0.80
-(screening-internal optimism). The events-per-parameter limitation is
-stated, not hidden.</p>
+random-gene control (and a 0.490 simulated null) – while the naive
+pipeline either reports a “failed” signature (inverted convention) or an
+uncalibrated 0.80 (screening-internal optimism). Caveat (see
+Limitations): the rerun CV of 0.785 sits inside, not above, a matched
+permuted-selection noise band (0.744–0.785), so the CV alone is not
+evidence of discrimination – the signal evidence is the hazard
+directions and the risk split, and transfer remains unvalidated here.
+The events-per-parameter limitation is stated, not hidden.</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
@@ -526,6 +530,16 @@ interpretable.</li>
 <strong>Screening-internal CV.</strong> The concordance above is
 optimistic by design; see the main vignette’s “Assumptions and
 limitations”.</li>
+<li>
+<strong>Internal CV does not clearly beat selection-driven
+noise.</strong> Identical-protocol builds on survival-permuted data (6
+draws) give CV C 0.744–0.785 vs this signature’s 0.785 — the real
+estimate sits inside, not above, the noise band. The CV number alone
+therefore cannot clearly distinguish genuine signal from screening
+optimism in this cohort; evidence for real signal rests on MKI67/ESR1
+hazard directions matching known biology and risk-group separation
+(log-rank p = 3.3e-17), and only external validation can confirm the
+multi-gene signature generalizes.</li>
 <li>
 <strong>Low events per parameter.</strong> The guardrail warning
 above is a real signal; this signature is a demonstration, not a
@@ -585,7 +599,7 @@ cancer. <em>Clinical Cancer Research</em> (2010). GEO accession: <a href="https:
 <span><span class="co">#&gt;  [5] Seqinfo_1.2.0               IRanges_2.46.0             </span></span>
 <span><span class="co">#&gt;  [7] S4Vectors_0.50.3            BiocGenerics_0.58.1        </span></span>
 <span><span class="co">#&gt;  [9] generics_0.1.4              MatrixGenerics_1.24.0      </span></span>
-<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.17          </span></span>
+<span><span class="co">#&gt; [11] matrixStats_1.5.0           rnaSentry_0.99.18          </span></span>
 <span><span class="co">#&gt; [13] BiocStyle_2.40.0           </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>

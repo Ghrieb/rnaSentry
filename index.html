@@ -34,7 +34,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">rnaSentry</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.18</span>
       </span>
     </div>
 
@@ -189,7 +189,7 @@
 <div class="section level2">
 <h2 id="reading-the-cv-concordance">Reading the CV concordance<a class="anchor" aria-label="anchor" href="#reading-the-cv-concordance"></a>
 </h2>
-<p>The concordance reported by <code><a href="reference/build_signature.html">build_signature()</a></code> is a <strong>screening-internal</strong> metric: genes are selected on the full cohort <em>before</em> the CV split, so the CV fold is not fully untouched by selection. On a large candidate panel the value is <em>optimistic</em>: on GSE20685, a post-hoc full-protocol build on survival-permuted data gives CV C = 0.82, versus 0.582 for a no-selection random-gene control (face-validity run record) and 0.490 for the same no-selection protocol on simulated null data. Always interpret it <strong>relative to a matched null</strong> (a permutation-null or random-gene control), and treat <code><a href="reference/validate_external.html">validate_external()</a></code> on an independent cohort as the only fully out-of-sample estimate.</p>
+<p>The concordance reported by <code><a href="reference/build_signature.html">build_signature()</a></code> is a <strong>screening-internal</strong> metric: genes are selected on the full cohort <em>before</em> the CV split, so the CV fold is not fully untouched by selection. On a large candidate panel the value is <em>optimistic</em>: on GSE20685, identical-protocol builds on survival-permuted data give CV C = 0.744–0.785 across 6 draws (vs 0.785 for the real signature — inside, not above, the noise band), versus 0.582 for a no-selection random-gene control (face-validity run record) and 0.490 for the same no-selection protocol on simulated null data. Always interpret it <strong>relative to a matched null</strong> (a permutation-null or random-gene control), and treat <code><a href="reference/validate_external.html">validate_external()</a></code> on an independent cohort as the only fully out-of-sample estimate.</p>
 </div>
 <div class="section level2">
 <h2 id="input-requirements">Input requirements<a class="anchor" aria-label="anchor" href="#input-requirements"></a>
@@ -263,7 +263,7 @@
 <tr>
 <td>Wrong direction (GSE20685)</td>
 <td>inverted-convention read (C ~ 0.2) looks like a failure</td>
-<td>held-out C = 0.783 vs 0.582 random-gene control</td>
+<td>held-out C = 0.783 vs 0.582 random-gene control (CV alone does not exceed selection-noise controls; see case-study Limitations)</td>
 </tr>
 <tr>
 <td>Confounded design (synthetic cohort)</td>
