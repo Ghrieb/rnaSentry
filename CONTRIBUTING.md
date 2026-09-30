@@ -60,8 +60,8 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
 | 2 | Adversarial review + stale-number sweep | `powershell -ExecutionPolicy Bypass -File validation/grep_stale_numbers.ps1` (0 hits outside the allow-list: `validation/*`, `vignettes/case-study-brca.Rmd`, `vignettes/case-study-impact.Rmd`) |
 | 3 | Statistical parity | every statistic re-implemented independently and asserted equal (log-rank, Cramér's V, Cox HR/CI/p, Schoenfeld, AIC/loglik, fold CV C, `C + C_rev = 1`) |
 | 4 | Simulation study | `Rscript validation/simulate_study.R` — **15 falsifiable targets / 15 PASS** (parity, null-data, and external-transfer power targets) |
-| 5 | Real-data face validity | `Rscript validation/repro_gse20685.R` (bundled subset) and the live GEO pair (Gate 5b) |
-| 5c | Case-study vignettes | `vignettes/case-study-*.Rmd` must build offline with numbers matching the validation dossier's recorded values |
+| 5 | Real-data face validity | `Rscript inst/scripts/repro_gse20685.R` (live-GEO subset) and the live GEO pair (Gate 5b) |
+| 5c | Case-study vignettes | `vignettes/case-study-*.Rmd` must build (live GEO with offline fallback) with numbers matching the validation dossier's recorded values |
 
 ### Rules that make the gates meaningful
 
@@ -85,7 +85,7 @@ instructions and expected values are in `validation/maintainer_testing_guide.md`
    WARNING / 1 NOTE, `tidy` only).
 3. If statistics or tests changed: Gate 3 parity suite + Gate 4 simulation
    (15/15).
-4. If intake/annotation handling changed: Gate 5 repro on the bundled subset.
+4. If intake/annotation handling changed: Gate 5 repro on the live-GEO subset.
 5. Gate 2 stale-number sweep.
 6. Commit logs together with the change at a logical checkpoint (see
    `maintainer_testing_guide.md` for the log naming convention).
