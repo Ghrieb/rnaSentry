@@ -1,3 +1,15 @@
+# rnaSentry 0.99.17 (development)
+
+## New in this release
+
+- Simplify `fetch_gse20685()` per review: drop the redundant `BiocFileCache`
+  layer (`GEOquery` caches the series matrix itself) and the `cache`
+  parameter; unify `ExpressionSet`/`SummarizedExperiment` handling with
+  `as(, "SummarizedExperiment")`. File goes from 226 to ~110 lines; the
+  remaining code is strictly probe-to-gene collapse and survival-metadata
+  extraction.
+- Bump to `0.99.17`.
+
 # rnaSentry 0.99.16 (development)
 
 ## New in this release

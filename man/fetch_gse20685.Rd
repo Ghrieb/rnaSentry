@@ -4,12 +4,7 @@
 \alias{fetch_gse20685}
 \title{Fetch and process GSE20685 breast cancer cohort}
 \usage{
-fetch_gse20685(cache = TRUE)
-}
-\arguments{
-\item{cache}{Logical. If \code{TRUE} (default), cache the processed
-\code{SummarizedExperiment} via \code{BiocFileCache}. If \code{FALSE},
-always re-download and re-process.}
+fetch_gse20685()
 }
 \value{
 A \code{SummarizedExperiment} or \code{NULL} if the download or
@@ -18,11 +13,11 @@ A \code{SummarizedExperiment} or \code{NULL} if the download or
 }
 \description{
 Downloads GSE20685 (Li *et al.*, 2010) from GEO via
-\code{GEOquery::getGEO()}, performs probe-to-gene collapse (largest mean
-expression per symbol), subsets to the top 3000 most variable genes, and
-returns a \code{SummarizedExperiment} with \code{logcounts} assay and
-clinical metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
-Results are cached via \code{BiocFileCache} for subsequent calls.
+\code{GEOquery::getGEO()} (which caches the series matrix itself),
+performs probe-to-gene collapse (largest mean expression per symbol),
+subsets to the top 3000 most variable genes, and returns a
+\code{SummarizedExperiment} with \code{logcounts} assay and clinical
+metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
 }
 \details{
 This helper packages the processing pipeline from
