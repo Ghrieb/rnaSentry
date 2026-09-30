@@ -112,7 +112,8 @@
 #' @section Assumptions and limitations:
 #' The signature is a linear Cox risk score (larger score = earlier event).
 #' The pipeline assumes standard right-censored survival from bulk RNA-seq
-#' with raw integer counts or a correctly-named \code{logcounts} assay
+#' with raw integer counts or a correctly-named \code{logcounts} (RNA-seq) or
+#' \code{exprs} (microarray) assay
 #' (pre-scaled data in a \code{counts}-named slot is flagged as
 #' \code{possibly_log_scaled}). It does not model competing risks,
 #' time-varying covariates, left truncation, single-cell data, or

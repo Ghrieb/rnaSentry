@@ -130,7 +130,7 @@ coldata <- S4Vectors::DataFrame(
   row.names = colnames(expr_sub)
 )
 se <- SummarizedExperiment::SummarizedExperiment(
-  assays = list(logcounts = expr_sub), colData = coldata
+  assays = list(exprs = expr_sub), colData = coldata
 )
 
 out <- file.path(tempdir(), "gse20685_case_study.rds")

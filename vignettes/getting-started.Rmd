@@ -186,12 +186,14 @@ run$stages$build_signature <-
     lock_signature(run$stages$build_signature, lock = FALSE)
 ```
 
-# Assay naming: `counts` vs `logcounts`
+# Assay naming: `counts` vs `logcounts` (`exprs` for microarray)
 
 `load_counts()` stores your matrix under the assay name `counts`, and the
 pipeline computes `log2(counts + 1)` when it runs. If your input file is
-*already normalized* (CPM, TPM, VST, or a microarray matrix), store it under
-the name `logcounts` instead so it is used as-is and not double-logged:
+*already normalized* (CPM, TPM, VST), store it under
+the name `logcounts` instead so it is used as-is and not double-logged. For
+microarray log2 intensities, use the conventional assay name `exprs`, which
+the pipeline likewise uses as-is:
 
 ```{r assay-naming}
 se_norm <- se

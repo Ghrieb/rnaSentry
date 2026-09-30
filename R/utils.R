@@ -48,9 +48,9 @@
 }
 
 # Detect expression matrices that look already log-transformed but are not
-# stored in a preferred assay slot. The pipeline log2-transforms the first
-# assay when no "logcounts"/"vst" assay exists, so pre-scaled data sitting in
-# a "counts"-named slot would be double-logged. Two signals must agree before
+# stored in a preferred assay slot. The pipeline uses a "logcounts", "vst"
+# or "exprs" assay as-is and otherwise log2-transforms the first assay, so
+# pre-scaled data sitting in a "counts"-named slot would be double-logged. Two signals must agree before
 # we warn, so low-depth or filtered-but-correct integer count data is not
 # false-flagged: (1) the values are non-integer, and (2) the maximum is below
 # log2_scale_max (a ceiling far too small for raw bulk read counts).
@@ -64,7 +64,8 @@
     sprintf(paste0("The first assay looks already log-transformed (non-integer ",
                    "values with a maximum below %d). rnaSentry will log2-transform ",
                    "it again, double-logging expression. Rename the assay to ",
-                   "\"logcounts\" or supply raw integer counts."), log2_scale_max)
+                   "\"logcounts\" (RNA-seq) or \"exprs\" (microarray), or supply ",
+                   "raw integer counts."), log2_scale_max)
   } else {
     NA_character_
   }
@@ -72,13 +73,14 @@
 }
 
 # Select the analysis assay for PCA/confounder work. Prefers an existing
-# "logcounts" assay, then "vst", otherwise computes log2(counts + 1) on the
-# first assay. Returns a list with the matrix, the assay name used, and a
-# flag/message from .log_detect_log_scaled() so stages can surface a
-# double-log warning through the flag ledger.
+# "logcounts" assay, then "vst", then "exprs" (microarray log2 intensities),
+# otherwise computes log2(counts + 1) on the first assay. Returns a list with
+# the matrix, the assay name used, and a flag/message from
+# .log_detect_log_scaled() so stages can surface a double-log warning
+# through the flag ledger.
 .get_analysis_matrix <- function(se) {
   anames <- SummarizedExperiment::assayNames(se)
-  preferred <- c("logcounts", "vst")
+  preferred <- c("logcounts", "vst", "exprs")
   chosen <- preferred[preferred %in% anames]
   if (length(chosen) > 0) {
     mat <- as.matrix(SummarizedExperiment::assay(se, chosen[1]))

@@ -16,8 +16,9 @@ Downloads GSE20685 (Li *et al.*, 2010) from GEO via
 \code{GEOquery::getGEO()} (which caches the series matrix itself),
 performs probe-to-gene collapse (largest mean expression per symbol),
 subsets to the top 3000 most variable genes, and returns a
-\code{SummarizedExperiment} with \code{logcounts} assay and clinical
-metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
+\code{SummarizedExperiment} with an \code{exprs} assay (microarray log2
+intensities, used as-is by the pipeline) and clinical metadata
+(\code{time}, \code{event}, \code{age}, \code{subtype}).
 }
 \details{
 This helper packages the processing pipeline from
