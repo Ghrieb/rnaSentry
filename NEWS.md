@@ -12,6 +12,10 @@
   log-transformed sequencing counts); the shared analysis-matrix dispatcher
   now recognizes `exprs` as log-ready alongside `logcounts`/`vst`, preventing
   a double-log transform. Pinned by cross-consumer tests.
+- Corrected overclaim: BRCA internal CV (0.78) does not clearly exceed a
+  selection-driven noise control (matched permuted band 0.744–0.785);
+  signal evidence restated as MKI67/ESR1 directions + risk separation —
+  see vignette Limitations.
 - Bump to `0.99.17`.
 
 # rnaSentry 0.99.16 (development)

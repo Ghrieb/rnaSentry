@@ -100,8 +100,8 @@ concludes "below chance, poor generalization, the signature is a failure."
 This is not hypothetical. The first real-data face-validity run of this very
 cohort reported CV concordance **0.217** and a naive reading would rationalize
 it as extreme selection-induced winner's curse; the correct value is
-`1 - 0.217 = 0.783`, a strong held-out result in the biologically expected
-direction. The full diagnosis, including the `C + C_rev = 1` invariant you can
+`1 - 0.217 = 0.783`, a directionally correct held-out result (see Limitations
+on what CV alone can and cannot show). The full diagnosis, including the `C + C_rev = 1` invariant you can
 see holding above, is recorded in the repository's validation dossier. The
 parity test suite now asserts that invariant on every fold so the convention
 cannot silently flip again.
@@ -235,9 +235,12 @@ plot_pca_audit(run$stages$pca_audit, color_by = "subtype")
 **What a guarded analysis can claim:** on the full-cohort face-validity run
 of this dataset rnaSentry reports a directionally correct held-out concordance
 of 0.783 against a 0.582 random-gene control (and a 0.490 simulated null) --
-genuine survival signal, not a 0.22 collapse -- while the naive pipeline
-either reports a "failed" signature (inverted convention) or an
-uncalibrated 0.80 (screening-internal optimism). The events-per-parameter
+while the naive pipeline either reports a "failed" signature (inverted
+convention) or an uncalibrated 0.80 (screening-internal optimism). Caveat (see
+Limitations): the rerun CV of 0.785 sits inside, not above, a matched
+permuted-selection noise band (0.744–0.785), so the CV alone is not evidence
+of discrimination -- the signal evidence is the hazard directions and the
+risk split, and transfer remains unvalidated here. The events-per-parameter
 limitation is stated, not hidden.
 
 # Limitations
@@ -248,6 +251,14 @@ limitation is stated, not hidden.
   at in-cohort analysis so the numbers stay interpretable.
 - **Screening-internal CV.** The concordance above is optimistic by design;
   see the main vignette's "Assumptions and limitations".
+- **Internal CV does not clearly beat selection-driven noise.**
+  Identical-protocol builds on survival-permuted data (6 draws) give CV C
+  0.744–0.785 vs this signature's 0.785 — the real estimate sits inside,
+  not above, the noise band. The CV number alone therefore cannot clearly
+  distinguish genuine signal from screening optimism in this cohort;
+  evidence for real signal rests on MKI67/ESR1 hazard directions matching
+  known biology and risk-group separation (log-rank p = 3.3e-17), and only
+  external validation can confirm the multi-gene signature generalizes.
 - **Low events per parameter.** The guardrail warning above is a real signal;
   this signature is a demonstration, not a published result.
 - GSE20685 is an *Affymetrix* series; its `exprs` are already log2

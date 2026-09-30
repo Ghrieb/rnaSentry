@@ -234,3 +234,40 @@ test_that("exprs assay is treated as log-ready across consumers", {
   expect_equal(km_ex$log_rank_p, km_log$log_rank_p)
 })
 
+test_that("permuted-selection CV documents screening optimism", {
+  # Mechanism pin for the BRCA vignette Limitations bullet (matched
+  # permuted band 0.744-0.785 on GSE20685): applying the discovery
+  # protocol to survival-permuted data still yields CV far above chance,
+  # so CV alone cannot demonstrate discrimination. Synthetic scale here
+  # (no downloads in tests); seeded and deterministic. Calibrated value
+  # on 2026-09-30: 0.6947.
+  set.seed(20261001)
+  n_genes <- 120L
+  n_samples <- 80L
+  cnt <- matrix(rpois(n_genes * n_samples, lambda = 500),
+                nrow = n_genes, ncol = n_samples,
+                dimnames = list(paste0("gene", seq_len(n_genes)),
+                                paste0("S", seq_len(n_samples))))
+  sig_expr <- colMeans(cnt[seq_len(5), , drop = FALSE])
+  risk <- scale(sig_expr)[, 1] * 0.4
+  event_time <- rexp(n_samples, rate = 0.03 * exp(0.8 * risk))
+  censor_time <- rexp(n_samples, rate = 0.02)
+  cd <- S4Vectors::DataFrame(time = pmin(event_time, censor_time),
+                             event = as.integer(event_time < censor_time),
+                             row.names = colnames(cnt))
+  se0 <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = cnt), colData = cd)
+  set.seed(7)
+  ord <- sample(n_samples)
+  se_p <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = SummarizedExperiment::assay(se0, "counts")),
+    colData = S4Vectors::DataFrame(time = cd$time[ord],
+                                   event = cd$event[ord],
+                                   row.names = colnames(cnt)))
+  sig_p <- build_signature(se_p, "time", "event", top_n = 5,
+                           repeats = 2, folds = 3, seed = 7)
+  cv_null <- mean(sig_p$cv_results$c_index)
+  expect_gt(cv_null, 0.60)
+  expect_lt(cv_null, 0.80)
+})
+
