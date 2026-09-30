@@ -81,7 +81,7 @@ make_pca_se <- function(n_genes = 30, n_samples = 30, seed = 404) {
   half <- n_samples / 2
   # systematic batch signal on the first half of the genes
   signal_rows <- seq_len(floor(n_genes / 2))
-  counts[signal_rows, 1:half] <- counts[signal_rows, 1:half] * 3L
+  counts[signal_rows, seq_len(half)] <- counts[signal_rows, seq_len(half)] * 3L
   batch <- factor(rep(c("B1", "B2"), each = half))
   coldata <- S4Vectors::DataFrame(
     batch = batch,
