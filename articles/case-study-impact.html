@@ -315,8 +315,10 @@ fold:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Synthetic cohort for the sign-convention demo (real GEO via GEOquery</span></span>
-<span><span class="co"># shown in case-study-brca; synthetic used here for offline builds)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20685</span><span class="op">)</span></span>
+<span><span class="co"># shown in case-study-brca; synthetic used here for offline builds).</span></span>
+<span><span class="co"># NOTE: seed deliberately differs from any GEO accession so future</span></span>
+<span><span class="co"># `git log -S "set.seed(20685)"` audits stay unambiguous.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">n_genes</span> <span class="op">&lt;-</span> <span class="fl">3000</span></span>
 <span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">327</span></span>
 <span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"GENE"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_genes</span><span class="op">)</span><span class="op">)</span></span>
@@ -339,10 +341,10 @@ fold:</p>
 <span>                                    reverse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">$</span><span class="va">concordance</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>c_default <span class="op">=</span> <span class="va">c_default</span>, c_reverse <span class="op">=</span> <span class="va">c_reverse</span>, sum <span class="op">=</span> <span class="va">c_default</span> <span class="op">+</span> <span class="va">c_reverse</span><span class="op">)</span></span>
 <span><span class="co">#&gt; c_default c_reverse       sum </span></span>
-<span><span class="co">#&gt; 0.3805157 0.6194843 1.0000000</span></span></code></pre></div>
-<p>A naive reading of the default concordance convention reports 0.217
+<span><span class="co">#&gt; 0.3494893 0.6505107 1.0000000</span></span></code></pre></div>
+<p>A naive reading of the default concordance convention reports 0.349
 and would rationalize it as winner’s curse;
-<code>1 - 0.217 = 0.783</code> is the correct, biologically expected
+<code>1 - 0.349 = 0.651</code> is the correct, biologically expected
 value all along. The same class of error has appeared in published
 survival literature; rnaSentry pins the convention in code, in parity
 tests, and in the rendered report.</p>
