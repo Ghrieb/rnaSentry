@@ -26,7 +26,7 @@ survival modeling, and external validation. Every automated decision is
 reported with the statistic that justified it. The pipeline is built on
 core Bioconductor infrastructure — `SummarizedExperiment` for data
 representation, `BiocParallel` for optional parallel cross-validation, and
-`GEOquery`/`BiocFileCache` for public-cohort reuse — which motivates its
+`GEOquery` for public-cohort reuse — which motivates its
 inclusion in Bioconductor over CRAN.
 
 The five-stage workflow exposes eight exported functions:

@@ -135,7 +135,8 @@ se <- SummarizedExperiment::SummarizedExperiment(
 
 out <- file.path(tempdir(), "gse20685_case_study.rds")
 # Previously: "inst/extdata/gse20685_case_study.rds" (not committed; see NEWS 0.99.4)
-# Cache via BiocFileCache for reuse: BiocFileCache::BiocFileCache()$add(...)
+# Cache: GEOquery caches the series matrix locally for reuse
+# (getGEO reports "Using locally cached version" on repeat runs).
 saveRDS(se, out, compress = "xz")
 cat(sprintf("wrote %s (%.1f MB) — not committed to inst/extdata; copy manually if needed\n",
             out, file.info(out)$size / 1e6))

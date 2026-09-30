@@ -1,15 +1,11 @@
 #' Fetch and process GSE20685 breast cancer cohort
 #'
 #' Downloads GSE20685 (Li *et al.*, 2010) from GEO via
-#' \code{GEOquery::getGEO()}, performs probe-to-gene collapse (largest mean
-#' expression per symbol), subsets to the top 3000 most variable genes, and
-#' returns a \code{SummarizedExperiment} with \code{logcounts} assay and
-#' clinical metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
-#' Results are cached via \code{BiocFileCache} for subsequent calls.
-#'
-#' @param cache Logical. If \code{TRUE} (default), cache the processed
-#'   \code{SummarizedExperiment} via \code{BiocFileCache}. If \code{FALSE},
-#'   always re-download and re-process.
+#' \code{GEOquery::getGEO()} (which caches the series matrix itself),
+#' performs probe-to-gene collapse (largest mean expression per symbol),
+#' subsets to the top 3000 most variable genes, and returns a
+#' \code{SummarizedExperiment} with \code{logcounts} assay and clinical
+#' metadata (\code{time}, \code{event}, \code{age}, \code{subtype}).
 #'
 #' @return A \code{SummarizedExperiment} or \code{NULL} if the download or
 #'   processing fails (e.g. network unavailable, \code{GEOquery} not
@@ -30,39 +26,21 @@
 #' se
 #' }
 #'
-#' @importFrom Biobase exprs fData pData
 #' @importFrom SummarizedExperiment assay rowData colData
 #' @export
-fetch_gse20685 <- function(cache = TRUE) {
+fetch_gse20685 <- function() {
   if (!requireNamespace("GEOquery", quietly = TRUE)) {
     message("GEOquery not installed; returning NULL.")
     return(NULL)
   }
 
-  bfc <- NULL
-  rname <- "rnaSentry_gse20685"
-  if (cache && requireNamespace("BiocFileCache", quietly = TRUE)) {
-    bfc <- BiocFileCache::BiocFileCache()
-    cached <- BiocFileCache::bfcquery(bfc, rname, "rname", exact = TRUE)
-    if (nrow(cached) > 0L) {
-      message("Loading cached GSE20685 ...")
-      cached_se <- tryCatch(
-        readRDS(BiocFileCache::bfcrpath(bfc, rname)),
-        error = function(e) {
-          message("Cached GSE20685 unreadable: ", conditionMessage(e))
-          NULL
-        }
-      )
-      if (!is.null(cached_se)) return(cached_se)
-    }
-  }
-
   message("Downloading GSE20685 from GEO ...")
   # NOTE: newer GEOquery versions return a (Ranged)SummarizedExperiment
-  # instead of an ExpressionSet for some series. Handle both, and return
-  # NULL (vignette synthetic fallback) on any failure so a GEO format
+  # instead of an ExpressionSet for some series. Coercing with as() handles
+  # both: it converts ExpressionSet and passes SummarizedExperiment through.
+  # Any failure returns NULL (vignette synthetic fallback) so a GEO format
   # change can never hard-fail the vignette build.
-  se <- tryCatch(
+  tryCatch(
     {
       # Bound the download time (Bioconductor Appendix C: web queries must
       # fail quickly on nightly builders); never shorten a user-configured
@@ -73,22 +51,10 @@ fetch_gse20685 <- function(cache = TRUE) {
       )
       if (is.null(geo) || length(geo) == 0L) stop("empty GEO result")
 
-      eset <- geo[[1]]
-
-      if (methods::is(eset, "ExpressionSet")) {
-        expr <- Biobase::exprs(eset)
-        fd <- Biobase::fData(eset)
-        p <- Biobase::pData(eset)
-      } else if (methods::is(eset, "SummarizedExperiment")) {
-        expr <- as.matrix(SummarizedExperiment::assay(eset, 1))
-        fd <- as.data.frame(SummarizedExperiment::rowData(eset))
-        p <- as.data.frame(SummarizedExperiment::colData(eset))
-      } else {
-        stop(
-          "unsupported GEO object class: ",
-          paste(class(eset), collapse = ", ")
-        )
-      }
+      se0 <- methods::as(geo[[1]], "SummarizedExperiment")
+      expr <- as.matrix(SummarizedExperiment::assay(se0, 1))
+      fd <- as.data.frame(SummarizedExperiment::rowData(se0))
+      p <- as.data.frame(SummarizedExperiment::colData(se0))
 
       # --- probe -> gene collapse (largest-mean probe per symbol) ---
       # Column is "Gene symbol" (lowercase s) on GPL570 via ExpressionSet,
@@ -171,23 +137,6 @@ fetch_gse20685 <- function(cache = TRUE) {
       NULL
     }
   )
-  if (is.null(se)) return(NULL)
-
-  # --- cache if available ---
-  if (!is.null(bfc)) {
-    tryCatch(
-      BiocFileCache::bfcadd(bfc, rname, rfile = function() {
-        tf <- tempfile(fileext = ".rds")
-        saveRDS(se, tf, compress = "xz")
-        tf
-      }),
-      error = function(e) {
-        message("BiocFileCache write failed: ", conditionMessage(e))
-      }
-    )
-  }
-
-  se
 }
 
 #' Synthetic BRCA fallback cohort (internal)

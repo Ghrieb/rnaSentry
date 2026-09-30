@@ -38,10 +38,11 @@ from GEO, processed to gene-level expression (probe-to-gene collapse by
 largest mean expression), and subset to the top 3000 most variable genes. The
 result is a `SummarizedExperiment` with a `logcounts` assay plus `time`
 (years), `event` (1 = death), `age`, and `subtype` in the sample metadata.
-The processed data is cached via `BiocFileCache` for subsequent calls. Only
-if `GEOquery` is unavailable or the download fails, an internal synthetic
-fallback of identical structure (`.brca_fallback_cohort()`, fixed seed for
-reproducibility) is used instead so the vignette still builds offline.
+`GEOquery` caches the series matrix itself, so repeat builds reuse the local
+copy. Only if `GEOquery` is unavailable or the download fails, an internal
+synthetic fallback of identical structure (`.brca_fallback_cohort()`, fixed
+seed for reproducibility) is used instead so the vignette still builds
+offline.
 
 ```{r load-data}
 library(rnaSentry)
@@ -61,7 +62,7 @@ table(se$subtype)
 sum(se$event)
 ```
 
-The cohort analyzed below is `r if (using_real) "the live GSE20685 series matrix from GEO (downloaded via GEOquery, cached with BiocFileCache)" else "a synthetic fallback cohort with the same structure (3000 genes x 327 samples, same logcounts/time/event/age/subtype layout), used because the GEO download was unavailable"`. It records `r sum(se$event)` deaths, so every number printed in this vignette reproduces whichever source was used.
+The cohort analyzed below is `r if (using_real) "the live GSE20685 series matrix from GEO (downloaded via GEOquery, which caches the series matrix locally)" else "a synthetic fallback cohort with the same structure (3000 genes x 327 samples, same logcounts/time/event/age/subtype layout), used because the GEO download was unavailable"`. It records `r sum(se$event)` deaths, so every number printed in this vignette reproduces whichever source was used.
 
 # Tier 1: the naive analysis
 

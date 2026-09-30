@@ -1,7 +1,7 @@
 Package: rnaSentry
 Type: Package
 Title: Guarded and Auditable Discovery of Prognostic RNA-Seq Signatures
-Version: 0.99.16
+Version: 0.99.17
 Authors@R: person("Abdelkarim Hani", "Ghrieb",
     email = "ghriebabdelkarimhani@gmail.com",
     role = c("aut", "cre"))
@@ -24,14 +24,13 @@ LazyData: false
 RoxygenNote: 7.3.3
 Depends: R (>= 4.5.0)
 Imports:
-    Biobase,
     S4Vectors,
     SummarizedExperiment,
     survival,
     withr,
     methods
 Suggests:
-    BiocFileCache,
+    Biobase,
     BiocParallel,
     BiocStyle,
     GEOquery,
