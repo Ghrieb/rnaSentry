@@ -388,14 +388,17 @@ analysis.</p>
 <span>    <span class="fu"><a href="../reference/lock_signature.html">lock_signature</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">stages</span><span class="op">$</span><span class="va">build_signature</span>, lock <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="assay-naming-counts-vs-logcounts">Assay naming: <code>counts</code> vs <code>logcounts</code><a class="anchor" aria-label="anchor" href="#assay-naming-counts-vs-logcounts"></a>
+<h2 id="assay-naming-counts-vs-logcounts-exprs-for-microarray">Assay naming: <code>counts</code> vs <code>logcounts</code>
+(<code>exprs</code> for microarray)<a class="anchor" aria-label="anchor" href="#assay-naming-counts-vs-logcounts-exprs-for-microarray"></a>
 </h2>
 <p><code><a href="../reference/load_counts.html">load_counts()</a></code> stores your matrix under the assay name
 <code>counts</code>, and the pipeline computes
 <code>log2(counts + 1)</code> when it runs. If your input file is
-<em>already normalized</em> (CPM, TPM, VST, or a microarray matrix),
-store it under the name <code>logcounts</code> instead so it is used
-as-is and not double-logged:</p>
+<em>already normalized</em> (CPM, TPM, VST), store it under the name
+<code>logcounts</code> instead so it is used as-is and not
+double-logged. For microarray log2 intensities, use the conventional
+assay name <code>exprs</code>, which the pipeline likewise uses
+as-is:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">se_norm</span> <span class="op">&lt;-</span> <span class="va">se</span></span>
 <span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">se_norm</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"logcounts"</span></span></code></pre></div>

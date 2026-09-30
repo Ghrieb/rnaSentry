@@ -179,7 +179,8 @@ PC whose score associates with <code>batch_col</code>. Defaults to <code>0.05</c
     <div id="details">
     <h2>Details</h2>
     <p>The analysis matrix is chosen by preference from an existing assay named
-<code>"logcounts"</code> or <code>"vst"</code>; if neither exists, <code>log2(counts +
+<code>"logcounts"</code> or <code>"vst"</code> (RNA-seq) or <code>"exprs"</code>
+(microarray); if none exists, <code>log2(counts +
 1)</code> is computed from the first assay. Genes with zero variance or missing
 values are removed because they carry no information for PCA and would
 make <code><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">stats::prcomp</a></code> fail; the number removed and the reason are

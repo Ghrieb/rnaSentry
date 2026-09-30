@@ -130,15 +130,15 @@ overall-survival follow-up. When <code>GEOquery</code> is available, the
 full series matrix is downloaded from GEO, processed to gene-level
 expression (probe-to-gene collapse by largest mean expression), and
 subset to the top 3000 most variable genes. The result is a
-<code>SummarizedExperiment</code> with a <code>logcounts</code> assay
-plus <code>time</code> (years), <code>event</code> (1 = death),
-<code>age</code>, and <code>subtype</code> in the sample metadata.
-<code>GEOquery</code> caches the series matrix itself, so repeat builds
-reuse the local copy. Only if <code>GEOquery</code> is unavailable or
-the download fails, an internal synthetic fallback of identical
-structure (<code>.brca_fallback_cohort()</code>, fixed seed for
-reproducibility) is used instead so the vignette still builds
-offline.</p>
+<code>SummarizedExperiment</code> with an <code>exprs</code> assay
+(microarray log2 intensities, used as-is) plus <code>time</code>
+(years), <code>event</code> (1 = death), <code>age</code>, and
+<code>subtype</code> in the sample metadata. <code>GEOquery</code>
+caches the series matrix itself, so repeat builds reuse the local copy.
+Only if <code>GEOquery</code> is unavailable or the download fails, an
+internal synthetic fallback of identical structure
+(<code>.brca_fallback_cohort()</code>, fixed seed for reproducibility)
+is used instead so the vignette still builds offline.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ghrieb.github.io/rnaSentry/" class="external-link">rnaSentry</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/SummarizedExperiment" class="external-link">SummarizedExperiment</a></span><span class="op">)</span></span>
@@ -230,7 +230,7 @@ offline.</p>
 <span><span class="co">#&gt; class: SummarizedExperiment </span></span>
 <span><span class="co">#&gt; dim: 3000 327 </span></span>
 <span><span class="co">#&gt; metadata(0):</span></span>
-<span><span class="co">#&gt; assays(1): logcounts</span></span>
+<span><span class="co">#&gt; assays(1): exprs</span></span>
 <span><span class="co">#&gt; rownames(3000): CRISP3 S100A7 ... HYDIN MAGEB3</span></span>
 <span><span class="co">#&gt; rowData names(0):</span></span>
 <span><span class="co">#&gt; colnames(327): GSM519117 GSM519118 ... GSM519442 GSM519443</span></span>
@@ -255,7 +255,7 @@ survival with univariate Cox regressions, average the survivors into a
 risk score, and quote the concordance that R prints by default. Let us
 run exactly that.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">logcounts</span></span>
+<code class="sourceCode R"><span><span class="va">lg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">exprs</span></span>
 <span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">lg</span>, <span class="fl">1</span>, <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">var</a></span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">cand</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">vars</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">200</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">cand</span>, <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">{</span></span>
@@ -530,10 +530,9 @@ limitations”.</li>
 <strong>Low events per parameter.</strong> The guardrail warning
 above is a real signal; this signature is a demonstration, not a
 published result.</li>
-<li>GSE20685 is an <em>Affymetrix</em> series; its
-<code>logcounts</code> are already log2 intensities, so no second
-transform is applied (the <code>logcounts</code> assay name is
-used).</li>
+<li>GSE20685 is an <em>Affymetrix</em> series; its <code>exprs</code>
+are already log2 intensities, used as-is (the microarray assay name, not
+log-counts).</li>
 </ul>
 </div>
 <div class="section level2">

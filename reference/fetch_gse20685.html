@@ -3,8 +3,9 @@
 GEOquery::getGEO() (which caches the series matrix itself),
 performs probe-to-gene collapse (largest mean expression per symbol),
 subsets to the top 3000 most variable genes, and returns a
-SummarizedExperiment with logcounts assay and clinical
-metadata (time, event, age, subtype)."><meta property="og:image" content="/logo.png"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+SummarizedExperiment with an exprs assay (microarray log2
+intensities, used as-is by the pipeline) and clinical metadata
+(time, event, age, subtype)."><meta property="og:image" content="/logo.png"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -83,8 +84,9 @@ metadata (time, event, age, subtype)."><meta property="og:image" content="/logo.
 <code><a href="http://seandavi.github.io/GEOquery/reference/getGEO.html" class="external-link">GEOquery::getGEO()</a></code> (which caches the series matrix itself),
 performs probe-to-gene collapse (largest mean expression per symbol),
 subsets to the top 3000 most variable genes, and returns a
-<code>SummarizedExperiment</code> with <code>logcounts</code> assay and clinical
-metadata (<code>time</code>, <code>event</code>, <code>age</code>, <code>subtype</code>).</p>
+<code>SummarizedExperiment</code> with an <code>exprs</code> assay (microarray log2
+intensities, used as-is by the pipeline) and clinical metadata
+(<code>time</code>, <code>event</code>, <code>age</code>, <code>subtype</code>).</p>
     </div>
 
     <div id="ref-usage">
@@ -119,7 +121,7 @@ subtype.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> class: SummarizedExperiment </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dim: 3000 327 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> metadata(0):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> assays(1): logcounts</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> assays(1): exprs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rownames(3000): CRISP3 S100A7 ... HYDIN MAGEB3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rowData names(0):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> colnames(327): GSM519117 GSM519118 ... GSM519442 GSM519443</span>

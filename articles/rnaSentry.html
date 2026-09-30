@@ -590,12 +590,13 @@ this and warns:</p>
 <span>                folds <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span>, min_events_per_parameter <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: The first assay looks already log-transformed (non-integer values with</span></span>
 <span><span class="co">#&gt; a maximum below 40). rnaSentry will log2-transform it again, double-logging</span></span>
-<span><span class="co">#&gt; expression. Rename the assay to "logcounts" or supply raw integer counts.</span></span>
+<span><span class="co">#&gt; expression. Rename the assay to "logcounts" (RNA-seq) or "exprs" (microarray),</span></span>
+<span><span class="co">#&gt; or supply raw integer counts.</span></span>
 <span><span class="co">#&gt; rnaSentry signature: 5 gene(s), outcome 'overall_survival'.</span></span>
 <span><span class="co">#&gt; Selection: top_n (5 gene(s)). CV concordance: mean 0.626, sd 0.014.</span></span>
 <span><span class="co">#&gt; Not locked.</span></span>
 <span><span class="co">#&gt; 1 issue(s) flagged:</span></span>
-<span><span class="co">#&gt;   [warning] possibly_log_scaled: The first assay looks already log-transformed (non-integer values with a maximum below 40). rnaSentry will log2-transform it again, double-logging expression. Rename the assay to "logcounts" or supply raw integer counts.</span></span></code></pre></div>
+<span><span class="co">#&gt;   [warning] possibly_log_scaled: The first assay looks already log-transformed (non-integer values with a maximum below 40). rnaSentry will log2-transform it again, double-logging expression. Rename the assay to "logcounts" (RNA-seq) or "exprs" (microarray), or supply raw integer counts.</span></span></code></pre></div>
 <p>The fix is to name such an assay <code>logcounts</code>, which the
 pipeline uses as-is without a second transform.</p>
 <p>Second, underpowered discovery. On a small cohort,
