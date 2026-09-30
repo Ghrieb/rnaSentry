@@ -133,8 +133,10 @@ remain re-runnable on the locked signature.
 The concordance reported by `build_signature()` is a **screening-internal**
 metric: genes are selected on the full cohort *before* the CV split, so the
 CV fold is not fully untouched by selection. On a large candidate panel the
-value is *optimistic* — even survival-permuted data yields a high null
-concordance (≈0.8 on ~21k genes) rather than 0.5. Always interpret it
+value is *optimistic*: on GSE20685, a post-hoc full-protocol build on
+survival-permuted data gives CV C = 0.82, versus 0.582 for a no-selection
+random-gene control (face-validity run record) and 0.490 for the same
+no-selection protocol on simulated null data. Always interpret it
 **relative to a matched null** (a permutation-null or random-gene control),
 and treat `validate_external()` on an independent cohort as the only fully
 out-of-sample estimate.

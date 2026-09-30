@@ -141,6 +141,44 @@ test_that("fetch_gse20685 returns NULL (not error) on bad input or failed downlo
   expect_null(out_dl)
 })
 
+test_that("fetch_gse20685 retries transient failures then succeeds", {
+  skip_if_not_installed("GEOquery")
+  skip_if_not_installed("Biobase")
+  m <- mock_geo_objects()
+  calls <- new.env(parent = emptyenv())
+  calls$n <- 0L
+  flaky_getGEO <- function(...) {
+    calls$n <- calls$n + 1L
+    if (calls$n < 3L) stop("transient FTP timeout")
+    list(m$eset)
+  }
+  out <- testthat::with_mocked_bindings(
+    getGEO = flaky_getGEO,
+    .package = "GEOquery",
+    fetch_gse20685()
+  )
+  expect_true(!is.null(out))
+  expect_equal(calls$n, 3L)
+  expect_equal(nrow(out), 30L)
+})
+
+test_that("fetch_gse20685 gives up after 3 attempts and returns NULL", {
+  skip_if_not_installed("GEOquery")
+  calls <- new.env(parent = emptyenv())
+  calls$n <- 0L
+  dead_getGEO <- function(...) {
+    calls$n <- calls$n + 1L
+    stop("network down")
+  }
+  out <- testthat::with_mocked_bindings(
+    getGEO = dead_getGEO,
+    .package = "GEOquery",
+    fetch_gse20685()
+  )
+  expect_null(out)
+  expect_equal(calls$n, 3L)
+})
+
 test_that(".brca_fallback_cohort matches the fetch contract and is deterministic", {
   fb1 <- rnaSentry:::.brca_fallback_cohort()
   fb2 <- rnaSentry:::.brca_fallback_cohort()
