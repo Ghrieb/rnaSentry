@@ -226,10 +226,11 @@ GPL570, 83 deaths) is fetched via `GEOquery::getGEO("GSE20685")` — see
 `inst/scripts/repro_gse20685.R` to regenerate a local
 `SummarizedExperiment` (not committed to `inst/extdata`; vignettes use a
 synthetic offline fallback with the same structure) — and is walked through
-in `vignette("case-study-brca")`. On the bundled subset the
-pipeline finds a 20-gene signature with screening-internal CV C = 0.80
-(sd 0.03) and log-rank p = 3.0e-15 at the discovery cutpoint; the design
-audit flags `subtype` (eta-squared = 0.78) and recommends adjusting for it.
+in `vignette("case-study-brca")`. On the live-GEO cohort (3000 genes
+x 327 samples, 83 deaths; GEO annotation of September 2026) the
+pipeline finds a 20-gene signature with screening-internal CV C = 0.78
+(sd 0.03) and log-rank p = 3.3e-17 at the discovery cutpoint; the design
+audit flags `subtype` (eta-squared = 0.79) and recommends adjusting for it.
 The narrative contrasts this with the naive default-convention concordance
 read (C ~ 0.2, i.e. "below chance"), which the `reverse = TRUE` convention
 and the `C + C_rev = 1` parity test prevent -- the exact mechanism behind the
@@ -284,7 +285,7 @@ finalized.
 
 | Planned case study | Data (public GEO) | What it will demonstrate |
 |---|---|---|
-| Clinical-covariate trap (BRCA) | bundled `gse20685_case_study.rds` (GSE20685, 327 tumors) | a naive 10-gene signature looks significant univariately but loses significance after adjusting for `age` + `subtype`; `design_audit()` flags the covariates before modeling |
+| Clinical-covariate trap (BRCA) | live GSE20685 via `fetch_gse20685()` (shipped as `vignette("case-study-brca")`; synthetic offline fallback) | a naive 10-gene signature looks significant univariately but loses significance after adjusting for `age` + `subtype`; `design_audit()` flags the covariates before modeling |
 | Batch catastrophe (identical-platform merge) | GSE31210 (n = 246, GPL570) + GSE30219 (n = 293, GPL570) | merging two same-platform studies creates a batch-only signal; ~50 "prognostic" genes track study/batch; `design_audit()` exposes the association before modeling |
 | Cross-histology false transfer (LUAD → LUSC) | GSE30219 (single cohort, both histologies + survival) | a signature discovered on LUAD fails to transfer across the histology boundary, reported as an honest negative |
 

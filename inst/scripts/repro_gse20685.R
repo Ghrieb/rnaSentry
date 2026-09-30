@@ -119,7 +119,7 @@ v[!is.finite(v)] <- 0
 ord <- order(v, decreasing = TRUE)
 genes_top <- rownames(expr_gene)[ord[seq_len(n_top)]]
 expr_sub <- expr_gene[genes_top, , drop = FALSE]
-cat(sprintf("bundled subset: %d genes x %d samples (top %d by variance)\n",
+cat(sprintf("subset: %d genes x %d samples (top %d by variance)\n",
             nrow(expr_sub), ncol(expr_sub), n_top))
 
 coldata <- S4Vectors::DataFrame(

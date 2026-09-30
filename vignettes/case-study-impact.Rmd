@@ -58,8 +58,10 @@ library(SummarizedExperiment)
 library(survival)
 
 # Synthetic cohort for the sign-convention demo (real GEO via GEOquery
-# shown in case-study-brca; synthetic used here for offline builds)
-set.seed(20685)
+# shown in case-study-brca; synthetic used here for offline builds).
+# NOTE: seed deliberately differs from any GEO accession so future
+# `git log -S "set.seed(20685)"` audits stay unambiguous.
+set.seed(42)
 n_genes <- 3000
 n_samples <- 327
 genes <- paste0("GENE", seq_len(n_genes))
@@ -83,8 +85,8 @@ c_reverse <- as.numeric(concordance(Surv(se$time, se$event) ~ score,
 c(c_default = c_default, c_reverse = c_reverse, sum = c_default + c_reverse)
 ```
 
-A naive reading of the default concordance convention reports 0.217 and
-would rationalize it as winner's curse; `1 - 0.217 = 0.783` is the correct,
+A naive reading of the default concordance convention reports 0.349 and
+would rationalize it as winner's curse; `1 - 0.349 = 0.651` is the correct,
 biologically expected value all along. The same class of error has appeared
 in published survival literature; rnaSentry pins the convention in code, in
 parity tests, and in the rendered report.
