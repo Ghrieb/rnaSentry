@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE)
 [![Bioconductor devel](https://img.shields.io/badge/Bioconductor-devel-6a5acd)](https://bioconductor.org/packages/devel/bioc/)
 [![R >= 4.5](https://img.shields.io/badge/R-%E2%89%A5_4.5-276dc3)](https://www.r-project.org/)
-[![GitHub stars](https://img.shields.io/github/stars/Ghrieb/rnaSentry?style=flat&color=yellow)](https://github.com/Ghrieb/rnaSentry/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Ghrieb/rnaSentry?style=flat&color=yellow&logo=github)](https://github.com/Ghrieb/rnaSentry/stargazers)
 <!-- badges: end -->
 
 Guarded and auditable discovery of prognostic RNA-seq signatures.
