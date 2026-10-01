@@ -1,7 +1,7 @@
 # rnaSentry <img align="right" src="man/figures/logo.png" alt="rnaSentry hex-sticker logo" width="220" />
 
 <!-- badges: start -->
-[![pkgdown](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml)
+[![pkgdown](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml/badge.svg?branch=ci)](https://github.com/Ghrieb/rnaSentry/actions/workflows/pkgdown.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/Ghrieb/rnaSentry/blob/main/LICENSE)
 [![Bioconductor devel](https://img.shields.io/badge/Bioconductor-devel-6a5acd)](https://bioconductor.org/packages/devel/bioc/)
@@ -20,7 +20,7 @@ transparent, reproducible, and reviewable end to end.
 
 ## Status
 
-rnaSentry 0.99.0 is a development release under active development. The
+rnaSentry is a development release (0.99.x) under active development. The
 case-study numbers in this README and the package vignettes are illustrative
 walkthroughs of the pipeline on public datasets. They are **not peer-reviewed**
 and should be treated as demonstrations, not clinical claims.
@@ -146,7 +146,8 @@ out-of-sample estimate.
 
 - **Bulk RNA-seq** expression, with **gene symbols** as rownames.
 - Either **raw integer counts** (log2-transformed internally) or an assay
-  already named `logcounts`/`vst`.
+  already named `logcounts`/`vst` (RNA-seq) or `exprs` (microarray log2
+  intensities).
 - **Standard right-censored survival metadata**: a numeric follow-up time
   column and a 0/1 event indicator.
 - Use `load_counts()` to validate the count matrix and metadata before the
@@ -172,7 +173,7 @@ out-of-sample estimate.
   are out of scope.
 - **Data already log-transformed but stored as `counts`.** The pipeline
   detects this and warns (`possibly_log_scaled`), but you should store such
-  data under the name `logcounts` instead.
+  data under the name `logcounts` (RNA-seq) or `exprs` (microarray) instead.
 - **Cohorts too small to support the signature size.** With fewer than
   roughly 5 events per signature gene, cross-validated concordance and
   hazard ratios are unstable; `build_signature()` warns
@@ -211,9 +212,10 @@ Every case study is written as a three-tier narrative: a **naive analysis**
 guard** (the same data through the pipeline, with the flag ledger), and the
 **counterfactual** (the error prevented and the true signal recovered).
 `vignette("case-study-impact")` is the landing page with the master impact
-table. Three studies are bundled so the pipeline's behaviour can be inspected
-without pulling data from the network; the fourth (LUAD) is reproduced from
-live GEO and documented here.
+table. Three studies run on synthetic cohorts so the pipeline's behaviour can
+be inspected offline, with a synthetic fallback behind every live-data step;
+the BRCA study additionally pulls live GEO data, and the fourth (LUAD) is
+reproduced from live GEO and documented here.
 
 | Failure mode | Naive headline | Guarded headline |
 |---|---|---|
@@ -331,7 +333,8 @@ the developer workflow, and the gate suite that every change must pass.
   `vignette("case-study-impact")` is the naive-vs-guarded landing page;
   `vignette("case-study-brca")`,
   `vignette("case-study-confounder-audit")`, and
-  `vignette("case-study-small-cohort")` are the bundled case studies.
+  `vignette("case-study-small-cohort")` are the three synthetic-cohort case
+  studies (BRCA additionally uses live GEO data).
 - Function reference: `help(package = "rnaSentry")`
 - Validation dossier (statistical-parity tests, simulation study, power
   analysis, real-data reproduction): see the `validation/` directory of the
