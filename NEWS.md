@@ -1,3 +1,12 @@
+# rnaSentry 0.99.19 (development)
+
+## New in this release
+
+- README audit fixes (stale version wording, bundled-era phrasing,
+  `exprs` assay guidance, pkgdown badge branch, Stargazers icon) and
+  `seq_len()` uniformity in test fixtures.
+- Bump to `0.99.19`.
+
 # rnaSentry 0.99.18 (development)
 
 ## New in this release
